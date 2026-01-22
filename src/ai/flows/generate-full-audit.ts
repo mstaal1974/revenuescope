@@ -26,10 +26,9 @@ const prompt = ai.definePrompt({
 **Core Logic: The Validated Data Chain**
 This data chain is non-negotiable. It is the mandatory pathway for your analysis, bridging Australian compliance data (TGA/ANZSCO) with global skill standards (ESCO) and local market reality (ABS). All strategic advice must stem from this validated process.
 
-1.  **Input Data: TGA RTO Scope.** You will be provided with the RTO's verified scope of registration, fetched directly from training.gov.au.
-2.  **Step 1: ANZSCO Mapping.** For each qualification in the provided scope, your first step is to map it to its corresponding ANZSCO Occupation Code (Australian and New Zealand Standard Classification of Occupations). You must simulate calling the TGA Training Component service to find this mapping in the qualification's classification data.
-3.  **Step 2: ESCO Bridge.** Use the ANZSCO Code to bridge to the International Standard Classification of Occupations (ISCO-08), and then use that to query the ESCO API (European Skills, Competences, Qualifications and Occupations) to extract granular skills (e.g., 'manage construction budget').
-4.  **Step 3: ABS Labour Data.** Use the ANZSCO code to query the ABS SDMX API (Australian Bureau of Statistics) for macro data like 'Total Employment Volume' and 'Average Wage'.
+1.  **Input Data: TGA RTO Scope & ANZSCO Mappings.** You will be provided with the RTO's verified scope of registration, including the direct ANZSCO mapping for each qualification, fetched live from the TGA Organisation and Training Component web services.
+2.  **Step 1: ESCO Bridge.** Use the provided ANZSCO Code for each qualification to bridge to the International Standard Classification of Occupations (ISCO-08), and then use that to query the ESCO API (European Skills, Competences, Qualifications and Occupations) to extract granular skills (e.g., 'manage construction budget').
+3.  **Step 2: ABS Labour Data.** Use the provided ANZSCO code to query the ABS SDMX API (Australian Bureau of Statistics) for macro data like 'Total Employment Volume' and 'Average Wage'.
 
 **Part 1: Skills Heatmap Analysis (The Foundation)**
 - Your first task is to act as a **Labor Market Intelligence Analyst**.
@@ -62,7 +61,7 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
-*   RTO Scope: {{{scope}}}
+*   RTO Scope & ANZSCO Data: {{{scope}}}
 
 Begin analysis.`,
 });
@@ -74,9 +73,14 @@ const generateFullAuditFlow = ai.defineFlow(
     outputSchema: FullAuditOutputSchema,
   },
   async (input) => {
-    // First, get the RTO's scope using the real flow.
+    // First, get the RTO's scope, now enriched with ANZSCO codes.
     const { scope, name } = await searchForRtoScope({ rtoId: input.rtoId });
-    const scopeString = `Current scope for ${name}:\n- ${scope.map(item => `${item.Code} ${item.Name}`).join("\n- ")}`;
+
+    const scopeString = `
+RTO Name: ${name} (${input.rtoId})
+Verified Scope of Registration & ANZSCO Mappings:
+${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO Match: ${item.Anzsco}`).join("\n")}
+`;
 
     // Then, run the main audit prompt.
     const { output } = await prompt({ scope: scopeString, rtoId: input.rtoId });

@@ -117,10 +117,11 @@ export type SearchForRtoScopeInput = z.infer<
 const TgaScopeItemSchema = z.object({
   Code: z.string(),
   Name: z.string(),
+  Anzsco: z.string().nullable(),
 });
 
 export const SearchForRtoScopeOutputSchema = z.object({
-  scope: z.array(TgaScopeItemSchema).describe("The RTO scope information as a list of qualifications."),
+  scope: z.array(TgaScopeItemSchema).describe("The RTO scope information as a list of qualifications, including ANZSCO codes."),
   name: z.string().describe("The name of the RTO."),
 });
 export type SearchForRtoScopeOutput = z.infer<

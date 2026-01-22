@@ -1,8 +1,9 @@
 "use server";
 /**
- * @fileOverview A flow that searches for an RTO scope by its ID. It fetches the scope from the TGA registry directly.
+ * @fileOverview A flow that searches for an RTO scope by its ID. It fetches the scope from the TGA registry directly
+ * and then enriches each qualification with its corresponding ANZSCO code from the Training Component service.
  *
- * - searchForRtoScope - A function that handles the RTO scope search process.
+ * - searchForRtoScope - A function that handles the RTO scope search and enrichment process.
  */
 
 import { ai } from "@/ai/genkit";
@@ -17,20 +18,74 @@ export async function searchForRtoScope(
   return searchForRtoScopeFlow(input);
 }
 
-const searchForRtoScopeFlow = ai.defineFlow(
-  {
-    name: "searchForRtoScopeFlow",
-    inputSchema: SearchForRtoScopeInputSchema,
-    outputSchema: SearchForRtoScopeOutputSchema,
-  },
-  async (input) => {
-    // Fetch RTO scope from the TGA registry directly.
-    // If this fails, the entire flow will fail, ensuring we only use the official TGA source.
-    const { scope, name } = await fetchRtoScopeFromRegistry(input.rtoId);
-    return { scope, name };
-  }
-);
+/**
+ * Fetches details for a specific training component (like a qualification) to get its ANZSCO code.
+ */
+async function fetchTrainingComponentDetails(
+  trainingComponentCode: string
+): Promise<{ anzsco: string | null; title: string | null }> {
+  const soapRequest = `
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/">
+    <soapenv:Header>
+      <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+        <wsse:UsernameToken>
+          <wsse:Username>${process.env.TGA_USER}</wsse:Username>
+          <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
+        </wsse:UsernameToken>
+      </wsse:Security>
+    </soapenv:Header>
+    <soapenv:Body>
+      <ser:GetDetails>
+          <ser:request>
+            <ser:Code>${trainingComponentCode}</ser:Code>
+          </ser:request>
+      </ser:GetDetails>
+    </soapenv:Body>
+  </soapenv:Envelope>
+  `;
 
+  try {
+    const { data: xmlData } = await axios.post(
+      process.env.TGA_TRAINING_COMPONENT_ENDPOINT!,
+      soapRequest,
+      {
+        headers: {
+          "Content-Type": "text/xml;charset=UTF-8",
+          SOAPAction: "http://training.gov.au/services/ITrainingComponentService/GetDetails",
+        },
+      }
+    );
+    const result = await parseStringPromise(xmlData, {
+      explicitArray: false,
+      tagNameProcessors: [(name) => name.split(":").pop()!],
+      ignoreAttrs: true,
+    });
+    
+    const details = result.Envelope.Body.GetDetailsResponse.GetDetailsResult;
+    
+    if (!details || !details.Classifications) {
+      return { anzsco: null, title: details?.Title || null };
+    }
+
+    const classifications = Array.isArray(details.Classifications.Classification) ? details.Classifications.Classification : [details.Classifications.Classification];
+    const anzscoClassification = classifications.find((c: any) => c.Scheme && c.Scheme.includes('ANZSCO'));
+    
+    return {
+        title: details.Title,
+        anzsco: anzscoClassification ? anzscoClassification.Code : null
+    };
+
+  } catch (error) {
+    console.error(`Error fetching training component details for ${trainingComponentCode}:`, error);
+    // Return nulls so the main flow can decide how to handle it
+    return { anzsco: null, title: null };
+  }
+}
+
+
+/**
+ * Fetches the list of qualifications for a given RTO ID.
+ */
 async function fetchRtoScopeFromRegistry(
   rtoId: string
 ): Promise<{ scope: {Code: string, Name: string}[]; name: string }> {
@@ -104,3 +159,30 @@ async function fetchRtoScopeFromRegistry(
     throw new Error(`Failed to fetch RTO scope from TGA registry for ${rtoId}. The service may be down or the RTO ID is invalid.`);
   }
 }
+
+const searchForRtoScopeFlow = ai.defineFlow(
+  {
+    name: "searchForRtoScopeFlow",
+    inputSchema: SearchForRtoScopeInputSchema,
+    outputSchema: SearchForRtoScopeOutputSchema,
+  },
+  async (input) => {
+    // 1. Fetch RTO scope from the TGA registry directly.
+    const { scope: initialScope, name } = await fetchRtoScopeFromRegistry(input.rtoId);
+
+    // 2. For each scope item, fetch its training component details to get the ANZSCO code.
+    const enrichedScopePromises = initialScope.map(async (item) => {
+      const details = await fetchTrainingComponentDetails(item.Code);
+      return {
+        Code: item.Code,
+        Name: details?.title || item.Name, // Prefer the title from component details
+        Anzsco: details?.anzsco || null,
+      };
+    });
+
+    const enrichedScope = await Promise.all(enrichedScopePromises);
+
+    // The main prompt can decide what to do with items that have no ANZSCO code.
+    return { scope: enrichedScope, name };
+  }
+);
