@@ -3,15 +3,13 @@
 import { useState } from "react";
 import type { AuditData } from "@/app/actions";
 import { LeadCaptureOverlay } from "./lead-capture-overlay";
-import { AnalysisSummary } from "./analysis-summary";
-import { IndividualCourseCard } from "./individual-course-card";
-import { MasterStackCard } from "./master-stack-card";
 import { ExecutiveSummary } from "./executive-summary";
 import { SectorCard } from "./sector-card";
 import { Separator } from "../ui/separator";
-import { ArrowRight, Microscope, PackageCheck } from "lucide-react";
+import { Microscope, PackageCheck, TrendingUp } from "lucide-react";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
+import { ProductTierCard } from "./individual-course-card";
 
 interface DashboardClientProps {
   data: AuditData;
@@ -20,11 +18,6 @@ interface DashboardClientProps {
 export function DashboardClient({ data }: DashboardClientProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [view, setView] = useState<'rto' | 'student'>('rto');
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
-  const handleExpand = (index: number) => {
-    setExpandedIndex(expandedIndex === index ? null : index);
-  };
 
   return (
     <div className="container mx-auto py-8 px-4 relative">
@@ -59,44 +52,35 @@ export function DashboardClient({ data }: DashboardClientProps) {
             </div>
         </div>
 
-        <Separator className="my-12" />
+        <Separator className="my-24" />
 
-        {/* Part 2: Stackable Product Ecosystem */}
+        {/* Part 2: Stackable Product Ecosystem - The Revenue Staircase */}
         {data.product_ecosystem && (
-            <div>
-                 <div className="flex items-center gap-3 mb-4">
-                    <PackageCheck className="h-8 w-8 text-primary" />
-                    <h2 className="text-3xl font-black font-headline tracking-tight">Recommended Product Ecosystem</h2>
-                </div>
-                <p className="text-lg text-muted-foreground mb-6">A detailed product blueprint for your top-performing sector.</p>
-
-                <AnalysisSummary
-                    theme={data.product_ecosystem.strategic_theme}
-                    justification={data.product_ecosystem.market_justification}
-                />
-
-                <div className="text-center my-12">
-                    <h3 className="text-2xl font-black font-headline tracking-tight">Your Stackable Learning Pathway</h3>
-                    <p className="text-lg text-muted-foreground">Guide students from Foundation to Strategic Mastery.</p>
+            <div id="revenue-staircase">
+                 <div className="text-center mb-24 max-w-4xl mx-auto">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/50 rounded-full text-blue-600 dark:text-blue-300 text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-blue-100 dark:border-blue-800">
+                        <TrendingUp size={12} />
+                        The Revenue Staircase
+                    </div>
+                    <h2 className="text-5xl lg:text-7xl font-black text-slate-950 dark:text-slate-50 tracking-tighter leading-none mb-10">
+                        Don't Just Sell a Course. <br />
+                        <span className="text-blue-600 dark:text-blue-400 italic">Sell a Career.</span>
+                    </h2>
+                    <p className="text-xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                        Turn one-off enrollments into high-value lifetime subscribers. Our AI automatically slices your qualifications into stackable revenue tiers that drive recurring student growth.
+                    </p>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
                     {(data.product_ecosystem.individual_courses || []).map((course, index) => (
-                      <IndividualCourseCard 
+                      <ProductTierCard 
                         key={index}
                         course={course} 
-                        view={view}
-                        isExpanded={expandedIndex === index}
-                        onExpand={() => handleExpand(index)}
+                        stack={data.product_ecosystem.stackable_product}
+                        isHighlighted={index === 2}
+                        tierNumber={index + 1}
                       />
                     ))}
-                    {expandedIndex === null && (
-                      <MasterStackCard 
-                        stack={data.product_ecosystem.stackable_product} 
-                        view={view} 
-                        className="lg:col-span-3"
-                      />
-                    )}
                 </div>
             </div>
         )}

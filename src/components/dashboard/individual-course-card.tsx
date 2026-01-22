@@ -1,194 +1,110 @@
 import type { AuditData } from "@/app/actions";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Briefcase, CheckCircle, ChevronRight, Clock, DollarSign, Users, Target, ClipboardList, Megaphone, Rocket, Award } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Star, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "../ui/separator";
 
 type Course = AuditData["product_ecosystem"]["individual_courses"][0];
+type Stack = AuditData["product_ecosystem"]["stackable_product"];
 
-interface IndividualCourseCardProps {
+interface ProductTierCardProps {
   course: Course;
-  view: 'rto' | 'student';
-  isExpanded: boolean;
-  onExpand: () => void;
-  className?: string;
+  stack: Stack;
+  isHighlighted: boolean;
+  tierNumber: number;
 }
 
-const tierDetails = {
-    '1': { name: "TIER_1", color: "orange", badgeBg: "bg-orange-200", badgeText: "text-orange-800" },
-    '2': { name: "TIER_2", color: "slate", badgeBg: "bg-slate-300", badgeText: "text-slate-800" },
-    '3': { name: "TIER_3", color: "amber", badgeBg: "bg-amber-400", badgeText: "text-amber-800" },
-};
+const tierDescriptions = [
+  "Low barrier, high volume acquisition. Designed to capture immediate student intent and build initial trust.",
+  "Technical competency and retention layer. Deepens the student relationship by providing core, job-ready skills.",
+  "Leadership focus for maximum margin. The strategic final step that creates an expert and unlocks lifetime value."
+];
 
-const getTierNumber = (tier: string) => tier.match(/\d+/)?.[0] || '1';
+const getTierFeatures = (tierNumber: number) => {
+    const staticFeatures = {
+        1: ["Foundational Skill", "Digital Badge", "1-Week Access"],
+        2: ["Applied Lab", "Practitioner Badge", "Community Access"],
+        3: ["Expert Portfolio", "Gold Master Badge", "LTV Multiplier"]
+    };
+    return staticFeatures[tierNumber as keyof typeof staticFeatures];
+}
 
-const BadgePreview = ({ course, view }: { course: Course; view: 'rto' | 'student' }) => {
-    const tierNumber = getTierNumber(course.tier);
-    const tierInfo = tierDetails[tierNumber as keyof typeof tierDetails];
 
-    return (
-        <div className="perspective-1000">
-            <div className={`relative w-64 h-40 rounded-2xl ${tierInfo.badgeBg} flex flex-col justify-between p-4 text-sm transition-transform duration-300 transform-gpu hover:rotate-y-12`}>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <p className={`font-bold text-xs ${tierInfo.badgeText} opacity-70`}>MICROCREDENTIALS.IO</p>
-                        <p className={`font-bold ${tierInfo.badgeText}`}>{view === 'student' ? course.badge?.title || course.course_title : course.course_title}</p>
-                    </div>
-                    <Award className={`h-8 w-8 ${tierInfo.badgeText}`} />
-                </div>
-                <div>
-                    <p className={`font-bold text-xs ${tierInfo.badgeText} opacity-70`}>VERIFIED SKILL</p>
-                    <p className={`font-semibold text-xs ${tierInfo.badgeText}`}>{course.key_skill}</p>
-                </div>
-            </div>
+export function ProductTierCard({ course, stack, isHighlighted, tierNumber }: ProductTierCardProps) {
+    const description = tierDescriptions[tierNumber - 1];
+    const features = getTierFeatures(tierNumber);
+
+  return (
+    <div
+      className={cn(
+        'relative flex flex-col p-10 rounded-[3rem] border transition-all duration-500 hover:-translate-y-4',
+        isHighlighted
+          ? 'bg-slate-950 text-white border-slate-800 shadow-2xl scale-105 z-10 hover:shadow-blue-500/20'
+          : 'bg-white dark:bg-card text-slate-950 dark:text-slate-50 border-slate-200 dark:border-border shadow-sm hover:shadow-2xl'
+      )}
+    >
+      {isHighlighted && (
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-xl flex items-center gap-2">
+          <Star size={12} fill="currentColor" />
+          Most Profitable
         </div>
-    );
-}
+      )}
 
-export function IndividualCourseCard({ course, view, isExpanded, onExpand, className }: IndividualCourseCardProps) {
-    const tierNumber = getTierNumber(course.tier);
-    const tierInfo = tierDetails[tierNumber as keyof typeof tierDetails];
-    const tierPillStyles = `bg-blue-50 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300`;
+      <div className="mb-8">
+        <span className={cn(
+            'text-[10px] font-black uppercase tracking-widest',
+             isHighlighted ? 'text-blue-400' : 'text-blue-600 dark:text-blue-400'
+        )}>
+          {course.tier}
+        </span>
+        <h3 className="text-3xl font-black tracking-tight mt-2">{course.course_title}</h3>
+      </div>
 
-    if (isExpanded) {
-        return (
-          <Card className={cn("lg:col-span-3 rounded-[2.5rem] shadow-2xl border-blue-200/50 w-full overflow-hidden blueprint-grid-expanded", className)}>
-            <div className="p-6">
-                <button onClick={onExpand} className="flex items-center text-sm text-primary font-semibold mb-4">
-                    <ChevronRight className="h-4 w-4 rotate-180 mr-1"/>
-                    Back to Pathway
-                </button>
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <div className="lg:col-span-3 space-y-6">
-                        <div className="flex items-center gap-4">
-                            <Badge className={cn(tierPillStyles, "font-code text-xs")}>{tierInfo.name}</Badge>
-                            <h2 className="text-2xl font-bold font-headline">{view === 'student' ? course.badge?.title || course.course_title : course.course_title}</h2>
-                        </div>
-                        <p className="text-muted-foreground">
-                            {view === 'rto' 
-                                ? `A ${course.duration} course designed for ${course.target_student}, focusing on the key skill of ${course.key_skill}.`
-                                : `Achieve mastery in ${course.key_skill} and earn a verified digital badge.`
-                            }
-                        </p>
-                        
-                        <Separator />
-                        
-                        <div className="font-code text-sm space-y-4">
-                             <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">SUGGESTED PRICE</span>
-                                <span className="font-bold text-lg">{course.suggested_price}</span>
-                             </div>
-                             <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">CONTACT HOURS</span>
-                                <span className="font-bold">{course.duration}</span>
-                             </div>
-                             {view === 'rto' && (
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">TARGET PERSONA</span>
-                                    <span className="font-bold">{course.sales_kit?.target_personas?.join(', ') || 'N/A'}</span>
-                                </div>
-                             )}
-                             {view === 'student' && course.career_roi && (
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">CAREER ROI</span>
-                                    <span className="font-bold">{course.career_roi}</span>
-                                </div>
-                             )}
-                        </div>
+      <div className="mb-8">
+        <div className="text-5xl font-black tracking-tighter mb-2">{course.suggested_price}</div>
+        <div className="text-[10px] font-black uppercase tracking-widest opacity-60">Per Enrollment</div>
+      </div>
 
-                        <Separator />
+      <div className="flex gap-1 mb-10 h-3">
+        {[...Array(3)].map((_, idx) => (
+          <div
+            key={idx}
+            className={cn(
+                'flex-1 rounded-full transition-all duration-1000',
+              idx < tierNumber
+                ? (isHighlighted ? 'bg-blue-500' : 'bg-blue-600')
+                : (isHighlighted ? 'bg-white/5' : 'bg-slate-100 dark:bg-slate-800')
+            )}
+          ></div>
+        ))}
+      </div>
 
-                         <div>
-                            <h4 className="font-bold font-headline mb-2">{view === 'student' ? 'Rich Skill Descriptors' : 'Learning Outcomes'}</h4>
-                            <ul className="space-y-2">
-                                {((view === 'student' ? course.badge?.rich_skill_descriptors : course.learning_outcomes) || []).map((item, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm">
-                                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="lg:col-span-2 flex flex-col gap-6">
-                        {/* Sales Enablement Kit */}
-                        {course.sales_kit && (
-                            <div className="bg-slate-950 text-slate-100 rounded-2xl p-4">
-                                 <h4 className="font-bold font-headline mb-2 text-slate-300">Sales Enablement Kit</h4>
-                                 <p className="text-sm font-medium italic text-slate-400">"{course.sales_kit.b2b_pitch}"</p>
-                            </div>
-                        )}
-                        {/* Marketing Launch Unit */}
-                        {course.marketing_launch_unit && (
-                            <div className="border rounded-2xl p-4 space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="font-bold font-headline">Marketing Launch Unit</h4>
-                                    <Badge variant="outline">AD UNIT</Badge>
-                                </div>
-                                <div className="bg-muted p-4 rounded-lg">
-                                    <p className="text-sm font-medium">{course.marketing_launch_unit.ad_copy}</p>
-                                    <Button size="sm" className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Learn More</Button>
-                                </div>
-                                <div>
-                                     <h5 className="font-semibold text-xs text-muted-foreground mb-2">LAUNCH TIMELINE</h5>
-                                     <ul className="space-y-1">
-                                        {(course.marketing_launch_unit.launch_timeline || []).map((item, i) => (
-                                            <li key={i} className="flex items-center gap-2 text-sm font-code">
-                                                <span className="text-muted-foreground">{i+1}.</span>
-                                                <span>{item}</span>
-                                            </li>
-                                        ))}
-                                     </ul>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+      <p className={cn('text-sm font-medium mb-10 leading-relaxed', isHighlighted ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400')}>
+        {description}
+      </p>
+
+      <div className="space-y-4 mb-12">
+        {(features || []).map((feature, idx) => (
+          <div key={idx} className="flex items-center gap-3">
+            <CheckCircle2 size={16} className={isHighlighted ? 'text-blue-400' : 'text-blue-600 dark:text-blue-400'} />
+            <span className="text-xs font-bold uppercase tracking-wide opacity-80">{feature}</span>
+          </div>
+        ))}
+      </div>
+
+      {isHighlighted && stack && (
+        <div className="mt-auto pt-8 border-t border-white/10">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Old Way</span>
+            <span className="text-[10px] font-black uppercase text-blue-400 tracking-widest">Our Stack</span>
+          </div>
+          <div className="flex justify-between items-end">
+            <span className="text-xl font-bold text-slate-700 line-through">$300</span>
+            <div className="text-right">
+               <div className="text-xs font-black text-emerald-400 uppercase tracking-widest mb-1">Total Stack Value</div>
+               <div className="text-3xl font-black text-white">{stack.total_value}</div>
             </div>
-          </Card>
-        );
-    }
-
-    return (
-      <Card
-        onClick={onExpand}
-        className={cn(
-          "rounded-[2.5rem] bg-white dark:bg-card shadow-sm hover:shadow-2xl hover:border-primary/20 border border-transparent transition-all cursor-pointer",
-          className
-        )}
-      >
-        <CardHeader>
-            <div className="flex justify-between items-start">
-                <div>
-                    <Badge className={cn(tierPillStyles, 'font-code text-xs mb-2')}>{tierInfo.name}</Badge>
-                    <CardTitle className="text-lg font-bold font-headline">{course.course_title}</CardTitle>
-                </div>
-                <div className="text-right">
-                    <p className="font-bold text-lg">{course.suggested_price}</p>
-                    <p className="text-xs text-muted-foreground">/ per student</p>
-                </div>
-            </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="flex items-center justify-center">
-                <BadgePreview course={course} view={view} />
-            </div>
-            <div className="text-center">
-                <p className="font-semibold">{view === 'student' ? 'Key Skill' : 'Primary Focus'}</p>
-                <p className="text-muted-foreground text-sm">{course.key_skill}</p>
-            </div>
-          <Button variant="outline" className="w-full">
-              View Blueprint <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </CardContent>
-      </Card>
-    );
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
