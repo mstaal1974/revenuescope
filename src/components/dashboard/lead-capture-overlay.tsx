@@ -9,11 +9,12 @@ interface LeadCaptureOverlayProps {
 
 export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      console.log("Email captured:", email);
+    if (email && phone) {
+      console.log("Email captured:", email, "Phone:", phone);
       onUnlock();
     }
   };
@@ -34,6 +35,14 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
             placeholder="rto-manager@training.edu.au"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+            required
+          />
+          <input
+            type="tel"
+            placeholder="Your Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
             required
           />

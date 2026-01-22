@@ -55,6 +55,7 @@ const AuditWidget: React.FC = () => {
   const [result, setResult] = useState<AuditResult | null>(null);
   const [tgaData, setTgaData] = useState<{ rtoName: string, scope: TgaScopeItem[] } | null>(null);
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
@@ -180,7 +181,7 @@ const AuditWidget: React.FC = () => {
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) setIsUnlocked(true);
+    if (email && phone) setIsUnlocked(true);
   };
 
   const handleDownloadPdf = () => {
@@ -607,6 +608,14 @@ const AuditWidget: React.FC = () => {
                     placeholder="rto-manager@training.edu.au"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+                    required
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Your Phone Number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
                     required
                   />
