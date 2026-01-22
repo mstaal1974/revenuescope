@@ -9,17 +9,15 @@ import { useToast } from "@/hooks/use-toast";
 import { runFullAudit } from "@/app/actions";
 
 const logs = [
-  { text: "Initializing audit sequence...", delay: 100 },
+  { text: "Initializing Micro-Credential Product Architect...", delay: 100 },
   { text: "Establishing secure connection to TGA...", delay: 200 },
-  { text: "Fetching RTO scope from registry by ID...", delay: 500 },
-  { text: "Successfully retrieved scope from TGA registry.", delay: 800 },
-  { text: "Curriculum scope identified. Beginning analysis.", delay: 200 },
-  { text: "Activating Revenue Opportunity Model...", delay: 500 },
-  { text: "Analyzing market demand vectors...", delay: 1000 },
-  { text: "Cross-referencing skill gap database...", delay: 1200 },
-  { text: "Calibrating pricing models...", delay: 600 },
-  { text: "Generating multi-perspective report...", delay: 900 },
-  { text: "Audit complete. Finalizing dashboard...", delay: 500 },
+  { text: "Analyzing RTO scope for anchor qualification...", delay: 500 },
+  { text: "Deconstructing qualification into ESCO skills...", delay: 800 },
+  { text: "Clustering skills into commercial products...", delay: 1200 },
+  { text: "Cross-referencing with ABS market data...", delay: 1000 },
+  { text: "Applying dynamic pricing models...", delay: 600 },
+  { text: "Generating product blueprints...", delay: 900 },
+  { text: "Blueprint complete. Finalizing dashboard...", delay: 500 },
 ];
 
 export function TerminalLoader() {
@@ -102,7 +100,7 @@ export function TerminalLoader() {
         <div className="w-3 h-3 rounded-full bg-red-500"></div>
         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
         <div className="w-3 h-3 rounded-full bg-green-500"></div>
-        <p className="ml-auto text-sm text-gray-400">/revenue-audit/v1</p>
+        <p className="ml-auto text-sm text-gray-400">/product-architect/v1</p>
       </div>
       <div className="p-4 md:p-6">
         {isLoading ? (
@@ -125,9 +123,9 @@ export function TerminalLoader() {
             <div className="flex items-start gap-3">
               <HardDrive className="h-6 w-6 text-primary mt-2" />
               <div>
-                <h3 className="text-lg font-bold">Start Your Revenue Audit</h3>
+                <h3 className="text-lg font-bold">Start Product Blueprint</h3>
                 <p className="text-sm text-gray-400">
-                  Enter the ID of your Registered Training Organisation to begin analysis.
+                  Enter your Registered Training Organisation ID to begin.
                 </p>
               </div>
             </div>
@@ -146,7 +144,7 @@ export function TerminalLoader() {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               <Search className="mr-2 h-4 w-4" />
-              Begin Audit
+              Generate Blueprint
             </Button>
           </form>
         )}
