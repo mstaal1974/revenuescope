@@ -24,6 +24,7 @@ const SectorAnalysisDataSchema = z.object({
         annual_revenue_gap: z.string(),
         student_volume_potential: z.number(),
       }),
+      key_skills_in_demand: z.array(z.string()),
       recommended_actions: z.array(z.string()),
     })
   ),

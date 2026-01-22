@@ -14,6 +14,7 @@ import {
   DollarSign,
   Users,
   CheckCircle,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -102,6 +103,24 @@ export function SectorCard({ sector }: SectorCardProps) {
             </div>
           </div>
         </div>
+
+        {(sector.key_skills_in_demand || []).length > 0 && (
+          <>
+            <Separator className="my-4" />
+            <div>
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Wrench className="h-4 w-4" />
+                Key Skills in Demand
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {(sector.key_skills_in_demand || []).map((skill, i) => (
+                    <Badge key={i} variant="outline" className="font-normal">{skill}</Badge>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
         <Separator className="my-4" />
 
         {/* Recommended Actions */}

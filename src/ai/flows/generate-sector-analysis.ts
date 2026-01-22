@@ -33,7 +33,8 @@ const SectorAnalysisOutputSchema = z.object({
       annual_revenue_gap: z.string().describe("e.g., '$1,200,000'"),
       student_volume_potential: z.number().int(),
     }),
-    recommended_actions: z.array(z.string()).describe("e.g., ['Launch Micro-credential in Site Safety']"),
+    key_skills_in_demand: z.array(z.string()).describe("A list of specific, in-demand skills derived from ESCO, e.g., ['monitor construction progress', 'manage construction budget']"),
+    recommended_actions: z.array(z.string()).describe("Actionable recommendations based on the key skills, e.g., ['Launch Micro-credential in Site Safety']"),
   })),
 });
 export type SectorAnalysisOutput = z.infer<typeof SectorAnalysisOutputSchema>;
@@ -46,11 +47,14 @@ const prompt = ai.definePrompt({
   name: 'sectorAnalysisPrompt',
   input: { schema: SectorAnalysisInputSchema },
   output: { schema: SectorAnalysisOutputSchema },
-  prompt: `You are the "Strategic Growth Director" for a leading EdTech platform. Your role is to analyze an RTO's scope and produce a High-Level Sector Analysis that highlights their biggest revenue opportunities by industry group.
+  prompt: `You are the "Strategic Growth Director" for a leading EdTech platform. Your role is to analyze an RTO's scope and produce a High-Level Sector Analysis that highlights their biggest revenue opportunities by industry group, backed by a validated data chain.
+
+**VALIDATED DATA CHAIN (LOGIC):**
+Qualification -> TGA -> ANZSCO -> ISCO-08 -> ESCO -> Detailed Skills -> ABS (SDMX)
 
 **LOGIC PROCESS (AGGREGATION ENGINE):**
 
-1.  **Input Scope:** You will receive the RTO's full scope. Example: [CPC50220, CPC40120, BSB50420, BSB30120, ICT50220].
+1.  **Input Scope:** You will receive the RTO's full scope. Example: [CPC50220, CPC40120, BSB50420].
 
 2.  **Sector Grouping (The Grouper):**
     *   Group qualifications by their Training Package Code (the first 3 letters).
@@ -61,22 +65,28 @@ const prompt = ai.definePrompt({
         *   \`HLT\`/\`CHC\` -> "Health & Community Services"
         *   Any others, use a reasonable industry name.
 
-3.  **Simulated ABS Data Aggregation:**
-    *   For *each* Sector, simulate looking up linked ANZSCO Unit Groups.
-    *   **Total Employment Volume:** Estimate the sum of all employed persons in these linked occupations in Australia.
-    *   **Average Wage:** Estimate the average weekly earnings for these occupations.
-    *   **Growth Trend:** If *any* occupation in the group has >5% projected growth, mark the whole sector as "Growing". Otherwise, mark as "Stable" or "Declining" based on simulated data.
-    *   **Demand Level**: Based on the growth and employment volume, classify demand as High, Med, or Low.
+3.  **Skill & Market Analysis (Per Sector):**
+    For each sector, perform the following simulation:
+    a.  **Qualification to ANZSCO:** Identify the primary ANZSCO occupation codes linked to the qualifications in this sector. (e.g., CPC50220 Diploma of Building and Construction -> 133111 Construction Project Manager).
+    b.  **ANZSCO to ISCO-08 (The Bridge):** Map the Australian ANZSCO code to the global ISCO-08 standard. (e.g., ANZSCO 133111 -> ISCO-08 1323 'Construction managers').
+    c.  **ISCO-08 to ESCO Skills:** Simulate a query to the ESCO API using the ISCO code to get a list of granular, job-specific skills. (e.g., From 'Construction managers', extract skills like "monitor construction progress", "manage construction budget", "liaise with clients"). Aggregate the top 3-5 most relevant skills for the sector and place them in the \`key_skills_in_demand\` array.
+    d.  **ABS Data Aggregation (using ANZSCO):**
+        *   Simulate using the ANZSCO codes as keys to query ABS data.
+        *   **Total Employment Volume:** Estimate the sum of all employed persons in these linked occupations in Australia.
+        *   **Average Wage:** Estimate the average weekly earnings for these occupations.
+        *   **Growth Trend:** If *any* occupation in the group has >5% projected growth, mark the whole sector as "Growing". Otherwise, mark as "Stable" or "Declining".
+        *   **Demand Level**: Based on the growth and employment volume, classify demand as High, Med, or Low.
 
 4.  **Revenue Calculation (The Opportunity):**
     *   Define a base "Avg Course Price" of $450.
     *   Define a base "Upskilling Rate" of 5% (0.05).
     *   **Constraint:** Adjust the "Upskilling Rate" based on the sector. Cap it at 2% for saturated sectors (like Business) and use up to 8% for high-demand sectors (like Health/Care or Tech).
-    *   Calculate \`sector_revenue_gap\` = (Total Employment Volume * adjusted upskilling rate) * (Avg Course Price $450).
+    *   Calculate \`annual_revenue_gap\` = (Total Employment Volume * adjusted upskilling rate) * (Avg Course Price $450).
     *   Calculate \`student_volume_potential\` = (Total Employment Volume * adjusted upskilling rate).
 
 5.  **Synthesize Output:**
-    *   Compile all sector breakdowns.
+    *   Compile all sector breakdowns, including the \`key_skills_in_demand\`.
+    *   Generate \`recommended_actions\` that are directly linked to the identified skills.
     *   Create the executive summary by summing total revenue, identifying the top sector, and providing a concise, actionable strategic recommendation.
 
 **RTO Scope to Analyze:**
