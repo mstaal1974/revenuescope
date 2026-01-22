@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { performFullAudit, searchRtoScope } from '@/app/actions';
-import type { FullAuditOutput, TgaScopeItem } from '@/ai/types';
+import type { FullAuditOutput } from '@/ai/types';
 import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
+import { Textarea } from './ui/textarea';
 
 
 type AuditResult = FullAuditOutput;
 type IndividualCourse = FullAuditOutput['individual_courses'][0];
+type TgaScopeItem = SearchForRtoScopeOutput['scope'][0];
 
 enum AuditState {
   IDLE,
@@ -58,6 +60,12 @@ const AuditWidget: React.FC = () => {
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Fallback state
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualScopeInput, setManualScopeInput] = useState('');
+  const [currentRtoForAudit, setCurrentRtoForAudit] = useState('');
+
+
   const addLog = (message: string, status: AuditLog['status'] = 'info') => {
     setLogs(prev => [...prev, { message, status, timestamp: new Date() }]);
   };
@@ -72,15 +80,17 @@ const AuditWidget: React.FC = () => {
     e?.preventDefault();
     if (!rtoCode) return;
 
+    setCurrentRtoForAudit(rtoCode);
     setState(AuditState.PROCESSING);
     setLogs([]);
+    setShowManualInput(false);
     
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
     await delay(100);
     addLog('[1/5] ANALYZING TGA SCOPE FOR SHORT-FORM CLUSTERS...', 'info');
     
     try {
-      const data = await performFullAudit(rtoCode);
+      const data = await performFullAudit({ rtoId: rtoCode });
       addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
       await delay(150);
       addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
@@ -95,10 +105,57 @@ const AuditWidget: React.FC = () => {
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
+      addLog(`ERROR: ${message}`, 'error');
+      
+      if (message.includes('TGA') || message.includes('registry') || message.includes('fetch')) {
+        addLog(`FALLBACK: TGA lookup failed. You can manually enter course codes to proceed.`, 'warning');
+        setShowManualInput(true);
+      } else {
+        addLog(`FATAL: An unexpected error occurred.`, 'error');
+      }
+      setState(AuditState.ERROR);
+    }
+  };
+
+  const handleManualAudit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualScopeInput || !currentRtoForAudit) return;
+
+    const manualScope = manualScopeInput.split(',').map(s => s.trim()).filter(Boolean);
+    if (manualScope.length === 0) {
+      addLog('Please enter at least one course code.', 'error');
+      return;
+    }
+
+    setState(AuditState.PROCESSING);
+    setLogs([]); // Reset for new audit
+    setShowManualInput(false);
+    
+    addLog(`INITIATING AUDIT WITH MANUAL SCOPE...`, 'warning');
+    await delay(100);
+    addLog(`[1/5] Using ${manualScope.length} manually provided course codes...`, 'info');
+    
+    try {
+      const data = await performFullAudit({ rtoId: currentRtoForAudit, manualScope, rtoName: `RTO ${currentRtoForAudit}` });
+      addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
+      await delay(150);
+      addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
+      await delay(150);
+      addLog('[4/5] VALIDATING DATA INTEGRITY PROTOCOLS...', 'info');
+      await delay(150);
+      addLog('[5/5] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
+      await delay(100);
+      
+      setResult(data);
+      setState(AuditState.RESULTS);
+    } catch (err) {
+       console.error(err);
+      const message = err instanceof Error ? err.message : "An unknown error occurred.";
       addLog(`FATAL: ${message}`, 'error');
       setState(AuditState.ERROR);
     }
   };
+
 
   const handleTgaLookup = async () => {
     if (!rtoCode) return;
@@ -199,13 +256,37 @@ const AuditWidget: React.FC = () => {
             </div>
           )}
         </div>
+        
         {state === AuditState.ERROR && (
-          <button
-            onClick={() => setState(AuditState.IDLE)}
-            className="mt-8 w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
-          >
-            Try Again
-          </button>
+          <div className="mt-8">
+            {showManualInput ? (
+              <form onSubmit={handleManualAudit} className="space-y-4 animate-in fade-in">
+                <p className="text-amber-400 font-bold text-sm text-left">
+                  Enter course codes separated by commas (e.g., CPC50220, ICT50220)
+                </p>
+                <Textarea
+                  value={manualScopeInput}
+                  onChange={(e) => setManualScopeInput(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono"
+                  placeholder="BSB50215, CPC30211, HLT54115"
+                  rows={3}
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
+                >
+                  Run Audit with Manual Scope
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={() => setState(AuditState.IDLE)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
+              >
+                Try Again
+              </button>
+            )}
+          </div>
         )}
       </div>
     );
@@ -561,5 +642,3 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
-
-    

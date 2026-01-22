@@ -1,7 +1,7 @@
 "use server";
 
 import { generateFullAudit } from "@/ai/flows/generate-full-audit";
-import { FullAuditOutputSchema, type FullAuditOutput, type SearchForRtoScopeOutput } from "@/ai/types";
+import { FullAuditOutputSchema, type FullAuditOutput, type SearchForRtoScopeOutput, type FullAuditInput } from "@/ai/types";
 import { searchForRtoScope as searchRtoScopeFlow } from "@/ai/flows/search-for-rto-scope";
 
 export type AuditData = FullAuditOutput;
@@ -12,14 +12,14 @@ export type TgaScopeItem = {
 };
 
 export async function performFullAudit(
-  rtoId: string
+  input: FullAuditInput
 ): Promise<AuditData> {
-  if (!rtoId) {
+  if (!input.rtoId) {
     throw new Error("RTO ID is required.");
   }
 
   try {
-    const result = await generateFullAudit({ rtoId });
+    const result = await generateFullAudit(input);
 
     const parsedData = FullAuditOutputSchema.safeParse(result);
 
