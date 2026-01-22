@@ -22,7 +22,7 @@ const rtoScopePrompt = ai.definePrompt({
   name: "rtoScopePrompt",
   input: { schema: SearchForRtoScopeInputSchema },
   output: { schema: SearchForRtoScopeOutputSchema },
-  prompt: `You are an AI assistant specialized in retrieving RTO scope information. The user will provide the ID of the RTO. Your task is to find the RTO's official name and its scope of registration. The scope should be a list of qualifications, where each qualification has a 'Code' and a 'Name'.
+  prompt: `You are an AI assistant specialized in retrieving RTO scope information. The live connection to the training.gov.au (TGA) registry failed. Your task is to use your existing knowledge and search capabilities to act as a fallback. Find the RTO's official name and its scope of registration for the provided RTO ID. The scope should be a list of qualifications, where each qualification has a 'Code' and a 'Name'.
 
   RTO ID: {{{rtoId}}}
   `,
