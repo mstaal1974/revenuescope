@@ -62,33 +62,31 @@ const searchForRtoScopeFlow = ai.defineFlow(
 
 async function fetchRtoScopeFromRegistry(rtoName: string): Promise<string> {
     const soapRequest = `
-    <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:tga="http://tga.gov.au/services" xmlns:dat="http://schemas.datacontract.org/2004/07/Deewr.Tga.WebServices.DataContracts">
-      <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
-        <wsse:Security soap:mustUnderstand="true" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
-          <wsse:UsernameToken wsu:Id="UsernameToken-1">
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/" xmlns:dat="http://schemas.datacontract.org/2004/07/Deewr.Tga.WebServices.DataContracts">
+      <soapenv:Header>
+        <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+          <wsse:UsernameToken>
             <wsse:Username>${process.env.TGA_USER}</wsse:Username>
             <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
           </wsse:UsernameToken>
         </wsse:Security>
-        <wsa:Action>http://tga.gov.au/services/IOrganisationService/SearchByName</wsa:Action>
-        <wsa:To>${process.env.TGA_ENDPOINT}</wsa:To>
-      </soap:Header>
-      <soap:Body>
-        <tga:SearchByName>
-          <tga:request>
+      </soapenv:Header>
+      <soapenv:Body>
+        <ser:SearchByName>
+          <ser:request>
             <dat:Name>${rtoName}</dat:Name>
             <dat:IncludeRtoScope>true</dat:IncludeRtoScope>
-          </tga:request>
-        </tga:SearchByName>
-      </soap:Body>
-    </soap:Envelope>
+          </ser:request>
+        </ser:SearchByName>
+      </soapenv:Body>
+    </soapenv:Envelope>
   `;
 
   try {
     const { data: xmlData } = await axios.post(process.env.TGA_ENDPOINT!, soapRequest, {
       headers: {
-        'Content-Type': 'application/soap+xml; charset=utf-8',
-        'Action': 'http://tga.gov.au/services/IOrganisationService/SearchByName'
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': 'http://training.gov.au/services/IOrganisationService/SearchByName'
       }
     });
 
