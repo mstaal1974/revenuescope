@@ -122,7 +122,8 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
 
 **Part 3: Top Occupations Analysis (The Granular View)**
 - Now, act as a **Labour Market Data Scientist**.
-- Based on the individual ANZSCO codes from the input scope, identify the top 10 most relevant occupations.
+- **First, determine the primary industry sector** by looking at the training package codes in the provided scope (e.g., CPC -> Construction, BSB -> Business, HLT -> Health). **Focus on the sector identified as 'top_performing_sector' in Part 2.**
+- Based on the individual ANZSCO codes from the input scope **that belong to this primary industry sector**, identify the top 10 most relevant occupations.
 - For each occupation, use the ABS data to find the precise 'Total Employment Volume' (\`labour_market_size\`) and calculate the projected growth rate (e.g., from employment projections).
 - Also assess the qualitative demand level ('High', 'Medium', 'Low') based on your market knowledge.
 - Populate the \`occupation_analysis\` array with these 10 occupations, ordered from highest demand to lowest. Ensure the growth rate is formatted as a percentage string (e.g., '+8.2%').
