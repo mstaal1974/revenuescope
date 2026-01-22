@@ -1,6 +1,6 @@
 "use server";
 /**
- * @fileOverview A flow that searches for an RTO scope by its ID. It fetches the scope from the TGA registry directly
+ * @fileOverview A flow that searches for an RTO scope by its ID. It fetches the scope from a database
  * and then enriches each qualification with its corresponding ANZSCO code from the Training Component service.
  *
  * - searchForRtoScope - A function that handles the RTO scope search and enrichment process.
@@ -29,15 +29,15 @@ export async function fetchTrainingComponentDetails(
     <soapenv:Header>
       <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
         <wsse:UsernameToken>
-          <wsse:Username>\${process.env.TGA_USER}</wsse:Username>
-          <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">\${process.env.TGA_PASS}</wsse:Password>
+          <wsse:Username>${process.env.TGA_USER}</wsse:Username>
+          <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
         </wsse:UsernameToken>
       </wsse:Security>
     </soapenv:Header>
     <soapenv:Body>
       <ser:GetDetails>
           <ser:request>
-            <ser:Code>\${trainingComponentCode}</ser:Code>
+            <ser:Code>${trainingComponentCode}</ser:Code>
           </ser:request>
       </ser:GetDetails>
     </soapenv:Body>
@@ -64,7 +64,7 @@ export async function fetchTrainingComponentDetails(
     
     if (result?.Envelope?.Body?.Fault) {
       const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
-      console.warn(`SOAP Fault from TGA TrainingComponentService for \${trainingComponentCode}: \${faultString}`);
+      console.warn(`SOAP Fault from TGA TrainingComponentService for ${trainingComponentCode}: ${faultString}`);
       return { anzsco: null, title: null };
     }
 
@@ -83,15 +83,15 @@ export async function fetchTrainingComponentDetails(
     };
 
   } catch (error) {
-    console.error(`Error fetching training component details for \${trainingComponentCode}:`, error);
+    console.error(`Error fetching training component details for ${trainingComponentCode}:`, error);
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
-        console.warn(`TGA TrainingComponentService request timed out for \${trainingComponentCode}.`);
+        console.warn(`TGA TrainingComponentService request timed out for ${trainingComponentCode}.`);
       } else if (error.response) {
         console.error("Axios error details:", error.response.data);
         if (error.response.status === 500) {
           // A 500 error from this service can indicate the training component code was not found.
-          console.warn(`Could not find training component \${trainingComponentCode} in TGA registry. It may be an invalid code.`);
+          console.warn(`Could not find training component ${trainingComponentCode} in TGA registry. It may be an invalid code.`);
         }
       }
     }
@@ -102,102 +102,42 @@ export async function fetchTrainingComponentDetails(
 
 
 /**
- * Fetches the list of qualifications for a given RTO ID.
+ * Fetches the list of qualifications for a given RTO ID from a Firebase database.
  */
 async function fetchRtoScopeFromRegistry(
   rtoId: string
 ): Promise<{ scope: {Code: string, Name: string}[]; name: string }> {
-  const soapRequest = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/">
-      <soapenv:Header>
-        <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-          <wsse:UsernameToken>
-            <wsse:Username>\${process.env.TGA_USER}</wsse:Username>
-            <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">\${process.env.TGA_PASS}</wsse:Password>
-          </wsse:UsernameToken>
-        </wsse:Security>
-      </soapenv:Header>
-      <soapenv:Body>
-        <ser:Details>
-            <ser:request>
-              <ser:Code>\${rtoId}</ser:Code>
-              <ser:IncludeScope>true</ser:IncludeScope>
-            </ser:request>
-        </ser:Details>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
+  const url = `https://rto-scope-check-default-rtdb.asia-southeast1.firebasedatabase.app/scopes/${rtoId}.json`;
 
   try {
-    const { data: xmlData } = await axios.post(
-      process.env.TGA_ENDPOINT!,
-      soapRequest,
-      {
-        headers: {
-          "Content-Type": "text/xml;charset=UTF-8",
-          SOAPAction: "http://training.gov.au/services/IOrganisationService/Details",
-        },
-        timeout: 15000,
-      }
-    );
+    const { data } = await axios.get(url, { timeout: 15000 });
 
-    const result = await parseStringPromise(xmlData, {
-      explicitArray: false,
-      tagNameProcessors: [(name) => name.split(":").pop()!],
-      ignoreAttrs: true,
-    });
-    
-    if (result?.Envelope?.Body?.Fault) {
-      const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
-      console.error(`SOAP Fault from TGA OrganisationService: \${faultString}`);
-      const detail = result.Envelope.Body.Fault.detail;
-      if (detail) {
-        console.error("SOAP Fault Detail:", JSON.stringify(detail));
-      }
-      throw new Error(`TGA service returned an error: \${faultString}`);
-    }
-
-    const orgDetails = result?.Envelope?.Body?.DetailsResponse?.DetailsResult;
-
-    if (!orgDetails || !orgDetails.OrganisationName) {
-        throw new Error(`No matching RTO found in registry for ID \${rtoId}. The TGA response was empty or malformed.`);
+    // Firebase RTDB returns null for a path that doesn't exist. Axios will treat this as a successful request (200 OK) with `data` being null.
+    if (!data || !data.name) {
+        throw new Error(`RTO ID "${rtoId}" is invalid or not found in the scope database.`);
     }
     
-    const orgName = orgDetails.OrganisationName;
+    const orgName = data.name;
 
-    if (!orgDetails.Scope || !orgDetails.Scope.ScopeItem) {
-      return { name: orgName, scope: []};
-    }
-
-    const items = Array.isArray(orgDetails.Scope.ScopeItem)
-      ? orgDetails.Scope.ScopeItem
-      : [orgDetails.Scope.ScopeItem];
-
-    const scopeItems = items
-      .map((item: any) => {
-        if (!item) return null;
-        const code = item.Identifier?.Code || item.TrainingComponent?.Code;
-        const name = item.Identifier?.Name || item.TrainingComponent?.Name;
-        if (code && name) {
-          return { Code: code, Name: name };
-        }
-        return null;
-      })
-      .filter((item): item is { Code: string; Name: string } => item !== null && !!item.Code);
+    // Assuming `data.scope` is an array of objects like `{ Code: string, Name: string }`.
+    const scopeItems = data.scope || [];
     
     return { name: orgName, scope: scopeItems };
 
   } catch (error) {
-    console.error(`Error fetching or parsing RTO scope for \${rtoId}:`, error);
+    // If it's the error I threw myself, just rethrow it.
+    if (error instanceof Error && error.message.includes("is invalid or not found")) {
+        throw error;
+    }
+
+    console.error(`Error fetching or parsing RTO scope for ${rtoId} from Firebase:`, error);
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
-        throw new Error(`Connection to TGA registry timed out. The service may be overloaded. Please try again.`);
-      }
-      if (error.response && error.response.status === 500) {
-        throw new Error(`RTO ID "\${rtoId}" is invalid or not found in the TGA registry. Please use a valid ID (e.g., a known sandbox ID like 90003).`);
+        throw new Error(`Connection to the scope database timed out. The service may be overloaded. Please try again.`);
       }
     }
-    throw new Error(`Failed to connect to TGA registry for RTO \${rtoId}. The service may be down or the credentials may be incorrect.`);
+    // Generic fallback error
+    throw new Error(`Failed to connect to the scope database for RTO ${rtoId}. The service may be down or there might be a network issue.`);
   }
 }
 
@@ -208,7 +148,7 @@ const searchForRtoScopeFlow = ai.defineFlow(
     outputSchema: SearchForRtoScopeOutputSchema,
   },
   async (input) => {
-    // 1. Fetch RTO scope from the TGA registry directly.
+    // 1. Fetch RTO scope from the Firebase database.
     const { scope: initialScope, name } = await fetchRtoScopeFromRegistry(input.rtoId);
 
     // 2. For each scope item, fetch its training component details to get the ANZSCO code.
