@@ -29,12 +29,20 @@ const SectorBreakdownSchema = z.object({
   recommended_actions: z.array(z.string()).describe("e.g., ['Launch Micro-credential in Site Safety']")
 });
 
+const SkillHeatmapItemSchema = z.object({
+  skill_name: z.string().describe("A specific granular skill, e.g., 'manage construction budget'"),
+  demand_level: z.string().describe("High/Medium/Low"),
+});
+
 export const FullAuditOutputSchema = z.object({
   rto_id: z.string(),
 
   // From Strategic Growth Director
   executive_summary: ExecutiveSummarySchema,
   sector_breakdown: z.array(SectorBreakdownSchema),
+
+  // New Skills Heatmap
+  skills_heatmap: z.array(SkillHeatmapItemSchema).describe("A heatmap of all identified skills from the RTO's scope, with demand levels."),
   
   // From Micro-Stack Architect
   strategic_theme: z.string().describe("e.g., 'Site Safety Leadership'"),
