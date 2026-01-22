@@ -9,7 +9,9 @@ export function Header() {
         <Link href="/">
           <Logo />
         </Link>
-        <Button>Get Started</Button>
+        <Button asChild>
+          <Link href="/">Get Started</Link>
+        </Button>
       </div>
     </header>
   );
