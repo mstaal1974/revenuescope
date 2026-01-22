@@ -10,24 +10,30 @@ const CourseBlueprintDataSchema = z.object({
     parent_qualification_used: z.string(),
     market_context: z.string(),
   }),
-  suggested_short_courses: z.array(z.object({
-    course_title: z.string(),
-    target_audience: z.string(),
-    duration: z.string(),
-    suggested_price: z.string(),
-    revenue_potential: z.string(),
-    skill_demand_trend: z.object({
-        growth_percentage: z.string(),
-        narrative: z.string(),
-    }),
-    included_skills: z.array(z.object({
-      skill_name: z.string(),
-      esco_uri: z.string(),
-      learning_outcome: z.string(),
-    })),
-    marketing_hook: z.string(),
-  })),
+  learning_pathway: z.object({
+    pathway_title: z.string(),
+    total_student_value: z.string(),
+    courses: z.array(z.object({
+        level: z.number(),
+        course_title: z.string(),
+        target_audience: z.string(),
+        duration: z.string(),
+        suggested_price: z.string(),
+        revenue_potential: z.string(),
+        skill_demand_trend: z.object({
+            growth_percentage: z.string(),
+            narrative: z.string(),
+        }),
+        included_skills: z.array(z.object({
+          skill_name: z.string(),
+          esco_uri: z.string(),
+          learning_outcome: z.string(),
+        })),
+        marketing_hook: z.string(),
+      })),
+  }),
 });
+
 
 export type AuditData = z.infer<typeof CourseBlueprintDataSchema>;
 

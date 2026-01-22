@@ -1,14 +1,11 @@
 import type { AuditData } from "@/app/actions";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
     CircleDollarSign,
     Clock,
@@ -21,10 +18,10 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 
-type ShortCourse = AuditData["suggested_short_courses"][0];
+type Course = AuditData["learning_pathway"]["courses"][0];
 
 interface CourseBlueprintCardProps {
-  course: ShortCourse;
+  course: Course;
 }
 
 const InfoBadge = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
@@ -35,7 +32,7 @@ const InfoBadge = ({ icon, label, value }: { icon: React.ReactNode, label: strin
     </div>
 );
 
-const SkillDemandVisual = ({ trend }: { trend: ShortCourse['skill_demand_trend'] }) => {
+const SkillDemandVisual = ({ trend }: { trend: Course['skill_demand_trend'] }) => {
     if (!trend) return null;
 
     return (
@@ -56,14 +53,14 @@ const SkillDemandVisual = ({ trend }: { trend: ShortCourse['skill_demand_trend']
 
 export function CourseBlueprintCard({ course }: CourseBlueprintCardProps) {
   return (
-    <Card className="rounded-2xl shadow-lg flex flex-col bg-card/70 backdrop-blur-sm border-primary/10">
+    <Card className="rounded-2xl shadow-lg bg-card/70 backdrop-blur-sm border-primary/10">
       <CardHeader>
         <CardTitle>{course.course_title}</CardTitle>
         <CardDescription>
           For: <span className="font-semibold text-primary">{course.target_audience}</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-4 gap-2 text-center p-3 bg-muted/50 rounded-lg">
             <InfoBadge icon={<CircleDollarSign size={20} />} label="Price" value={course.suggested_price} />
             <InfoBadge icon={<Clock size={20} />} label="Duration" value={course.duration} />
