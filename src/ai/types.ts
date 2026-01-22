@@ -118,26 +118,3 @@ export const FullAuditOutputSchema = z.object({
   citations: z.array(z.string()),
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
-
-
-// From search-for-rto-scope.ts
-export const SearchForRtoScopeInputSchema = z.object({
-  rtoId: z.string().describe("The ID of the RTO to search for."),
-});
-export type SearchForRtoScopeInput = z.infer<
-  typeof SearchForRtoScopeInputSchema
->;
-
-const TgaScopeItemSchema = z.object({
-  Code: z.string(),
-  Name: z.string(),
-  Anzsco: z.string().nullable(),
-});
-
-export const SearchForRtoScopeOutputSchema = z.object({
-  scope: z.array(TgaScopeItemSchema).describe("The RTO scope information as a list of qualifications, including ANZSCO codes."),
-  name: z.string().describe("The name of the RTO."),
-});
-export type SearchForRtoScopeOutput = z.infer<
-  typeof SearchForRtoScopeOutputSchema
->;

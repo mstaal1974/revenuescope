@@ -2,25 +2,25 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { performFullAudit, searchRtoScope } from '@/app/actions';
-import type { FullAuditInput, FullAuditOutput, SearchForRtoScopeOutput } from '@/ai/types';
+import { performFullAudit } from '@/app/actions';
+import type { FullAuditInput, FullAuditOutput, } from '@/ai/types';
 import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { Textarea } from './ui/textarea';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
+import { useFirestore } from '@/firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 
 type AuditResult = FullAuditOutput;
 type IndividualCourse = FullAuditOutput['individual_courses'][0];
-type TgaScopeItem = SearchForRtoScopeOutput['scope'][0];
 
 enum AuditState {
   IDLE,
   PROCESSING,
   ERROR,
   RESULTS,
-  TGA_RESULTS,
 }
 
 type AuditLog = {
@@ -55,18 +55,13 @@ const AuditWidget: React.FC = () => {
   const [state, setState] = useState<AuditState>(AuditState.IDLE);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [result, setResult] = useState<AuditResult | null>(null);
-  const [tgaData, setTgaData] = useState<{ rtoName: string, scope: TgaScopeItem[] } | null>(null);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Fallback state
-  const [showManualInput, setShowManualInput] = useState(false);
-  const [manualScopeInput, setManualScopeInput] = useState('');
-  const [currentRtoForAudit, setCurrentRtoForAudit] = useState('');
+  const firestore = useFirestore();
 
 
   const addLog = (message: string, status: AuditLog['status'] = 'info') => {
@@ -81,75 +76,46 @@ const AuditWidget: React.FC = () => {
 
   const handleAudit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!rtoCode) return;
+    if (!rtoCode || !firestore) {
+        addLog('RTO Code is required and Firestore must be available.', 'error');
+        return;
+    }
 
-    setCurrentRtoForAudit(rtoCode);
     setState(AuditState.PROCESSING);
     setLogs([]);
-    setShowManualInput(false);
     
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
-    await delay(100);
-    addLog('[1/5] ANALYZING SCOPE FOR SHORT-FORM CLUSTERS...', 'info');
     
     try {
-      const data = await performFullAudit({ rtoId: rtoCode });
-      addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
-      await delay(150);
-      addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
-      await delay(150);
-      addLog('[4/5] VALIDATING DATA INTEGRITY PROTOCOLS...', 'info');
-      await delay(150);
-      addLog('[5/5] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
-      await delay(100);
-      
-      setResult(data);
-      setState(AuditState.RESULTS);
-    } catch (err) {
-      console.error(err);
-      const message = err instanceof Error ? err.message : "An unknown error occurred.";
-      addLog(`ERROR: ${message}`, 'error');
-      
-      if (message.includes('TGA') || message.includes('registry') || message.includes('fetch') || message.includes('timed out') || message.includes('invalid or not found')) {
-        addLog(`FALLBACK: The RTO ID could not be found or the lookup service failed. You can manually enter course codes to proceed.`, 'warning');
-        setShowManualInput(true);
-      } else {
-        addLog(`FATAL: An unexpected error occurred.`, 'error');
-      }
-      setState(AuditState.ERROR);
-    }
-  };
+      addLog('[1/5] FETCHING SCOPE FROM DATABASE...', 'info');
+      const qualificationsRef = collection(firestore, "qualifications");
+      const q = query(qualificationsRef, where("rtoCode", "==", rtoCode));
+      const querySnapshot = await getDocs(q);
 
-  const handleManualAudit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!manualScopeInput || !currentRtoForAudit) return;
-  
-    setState(AuditState.PROCESSING);
-    setLogs([]); // Reset for new audit
-    setShowManualInput(false);
-  
-    const isDataset = manualScopeInput.includes('\n');
-    let auditInput: FullAuditInput = { rtoId: currentRtoForAudit, rtoName: `RTO ${currentRtoForAudit}` };
-  
-    if (isDataset) {
-      auditInput.manualScopeDataset = manualScopeInput;
-      addLog(`INITIATING AUDIT WITH PASTED DATASET...`, 'warning');
-      addLog(`[1/5] Using manually provided dataset to bypass TGA lookup...`, 'info');
-    } else {
-      const manualScope = manualScopeInput.split(',').map(s => s.trim()).filter(Boolean);
-      if (manualScope.length === 0) {
-        addLog('Please enter at least one course code.', 'error');
-        setState(AuditState.ERROR);
-        setShowManualInput(true);
-        return;
+      if (querySnapshot.empty) {
+          throw new Error(`RTO ID "${rtoCode}" is invalid or not found in the scope database.`);
       }
-      auditInput.manualScope = manualScope;
-      addLog(`INITIATING AUDIT WITH MANUAL SCOPE...`, 'warning');
-      addLog(`[1/5] Using ${manualScope.length} manually provided course codes...`, 'info');
-    }
-  
-    try {
+
+      let rtoName = "";
+      const scopeItems: string[] = [];
+      querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (!rtoName && data.rtoLegalName) {
+              rtoName = data.rtoLegalName;
+          }
+          // Format for manualScopeDataset: Code,Name,Anzsco (Anzsco is blank, will be enriched in flow)
+          scopeItems.push(`${data.code || ''},${data.title || ''},`);
+      });
+      const manualScopeDataset = scopeItems.join('\n');
+      
+      const auditInput: FullAuditInput = { 
+          rtoId: rtoCode, 
+          rtoName: rtoName,
+          manualScopeDataset: manualScopeDataset 
+      };
+      
       const data = await performFullAudit(auditInput);
+
       addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
       await delay(150);
       addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
@@ -164,29 +130,8 @@ const AuditWidget: React.FC = () => {
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
-      addLog(`FATAL: ${message}`, 'error');
-      setState(AuditState.ERROR);
-    }
-  };
-
-
-  const handleTgaLookup = async () => {
-    if (!rtoCode) return;
-    setState(AuditState.PROCESSING);
-    setLogs([]);
-    addLog(`DEBUG: INITIATING SCOPE REGISTRY FETCH...`, 'warning');
-    await delay(100);
-    addLog(`SEARCHING SCOPE DATABASE FOR ID: ${rtoCode}...`, 'info');
-    
-    try {
-      const data = await searchRtoScope(rtoCode);
-      addLog(`SUCCESS: RETRIEVED ${data.scope.length} SCOPE ITEMS.`, 'success');
-      setTgaData(data);
-      setState(AuditState.TGA_RESULTS);
-    } catch (err) {
-      console.error(err);
-      const message = err instanceof Error ? err.message : "An unknown error occurred during TGA lookup.";
       addLog(`ERROR: ${message}`, 'error');
+      addLog(`FATAL: An unexpected error occurred. Please check the RTO code or try again later.`, 'error');
       setState(AuditState.ERROR);
     }
   };
@@ -210,32 +155,23 @@ const AuditWidget: React.FC = () => {
           <h3 className="text-3xl font-black text-slate-900 tracking-tight italic">Verified Audit AI</h3>
         </div>
         <p className="text-slate-500 mb-10 leading-relaxed text-lg font-medium text-left">
-          Our v5.0 engine uses real-time ABS and verified scope feeds with <strong>calibrated anchor pricing</strong> to architect high-intent course stacks.
+          Our v5.0 engine uses your live scope data with <strong>calibrated anchor pricing</strong> to architect high-intent course stacks.
         </p>
         <form onSubmit={handleAudit} className="flex flex-col gap-4">
           <input
             type="text"
-            placeholder="RTO Code (e.g. 90003)"
+            placeholder="RTO Code (e.g. 0022)"
             value={rtoCode}
             onChange={(e) => setRtoCode(e.target.value)}
             className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl transition-all"
             required
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              type="submit"
-              className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
-            >
-              Start Audit
-            </button>
-            <button
-              type="button"
-              onClick={handleTgaLookup}
-              className="w-full bg-white border-2 border-slate-200 text-slate-950 hover:bg-slate-50 font-black px-8 py-5 rounded-2xl transition-all active:scale-[0.98] text-xl"
-            >
-              Verify Scope
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
+          >
+            Start Audit
+          </button>
         </form>
       </div>
     );
@@ -272,62 +208,18 @@ const AuditWidget: React.FC = () => {
         
         {state === AuditState.ERROR && (
           <div className="mt-8">
-            {showManualInput ? (
-              <form onSubmit={handleManualAudit} className="space-y-4 animate-in fade-in">
-                <div className="text-amber-400 font-bold text-sm text-left p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  <p>Enter comma-separated course codes, OR paste a dataset below (one per line) to bypass the scope lookup.</p>
-                  <p className="font-mono text-xs mt-2">Format: Code,Name,Anzsco (Anzsco is optional)</p>
-                </div>
-                <Textarea
-                  value={manualScopeInput}
-                  onChange={(e) => setManualScopeInput(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono"
-                  placeholder="e.g., BSB50215, CPC30211...\nOr:\nCPC50220,Diploma of Building...,123456"
-                  rows={4}
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
-                >
-                  Run Audit with Manual Data
-                </button>
-              </form>
-            ) : (
-              <button
-                onClick={() => setState(AuditState.IDLE)}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
-              >
-                Try Again
-              </button>
-            )}
+            <button
+              onClick={() => setState(AuditState.IDLE)}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
+            >
+              Try Again
+            </button>
           </div>
         )}
       </div>
     );
   }
   
-  if (state === AuditState.TGA_RESULTS) {
-    return (
-      <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200 max-w-4xl mx-auto">
-        <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Scope Verification</h3>
-        <p className="text-lg font-bold text-blue-600 mb-8">{tgaData?.rtoName}</p>
-        <div className="h-96 overflow-y-auto space-y-2 pr-4 scrollbar-hide">
-          {(tgaData?.scope || []).map((item, index) => (
-            <div key={index} className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-4">
-              <span className="font-mono text-sm text-slate-500">{item.Code}</span>
-              <span className="font-bold text-slate-800">{item.Name}</span>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={() => setState(AuditState.IDLE)}
-          className="mt-8 w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
-        >
-          Back to Audit
-        </button>
-      </div>
-    );
-  }
 
   if (!result) {
       return (

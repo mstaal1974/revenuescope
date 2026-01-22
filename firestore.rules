@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to qualifications for the app to function.
+    // This is a permissive rule for demonstration purposes.
+    // For production, you should implement stricter access control.
+    match /qualifications/{qualificationId} {
+      allow read: if true;
+      allow write: if false; // Disallow write access from the client
+    }
+    
+    // Users can only read and write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

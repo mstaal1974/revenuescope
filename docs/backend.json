@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "qualification": {
+      "title": "Qualification",
+      "description": "A single RTO qualification record.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the record."
+        },
+        "rtoCode": {
+          "type": "string",
+          "description": "The RTO code."
+        },
+        "rtoLegalName": {
+          "type": "string",
+          "description": "The legal name of the RTO."
+        },
+        "code": {
+          "type": "string",
+          "description": "The qualification code."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the qualification."
+        },
+        "usageRecommendation": {
+          "type": "string",
+          "description": "Usage recommendation, e.g., 'Current'."
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "QLD": { "type": "boolean" },
+            "SA": { "type": "boolean" },
+            "NSW": { "type": "boolean" },
+            "VIC": { "type": "boolean" },
+            "TAS": { "type": "boolean" },
+            "NT": { "type": "boolean" },
+            "WA": { "type": "boolean" },
+            "ACT": { "type": "boolean" }
+          }
+        }
+      },
+      "required": ["id", "rtoCode", "code", "title"]
+    },
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        }
+      }
+    }
+  },
+  "auth": {
+    "providers": [
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "/qualifications/{qualificationId}": {
+      "schema": {
+        "$ref": "#/entities/qualification"
+      },
+      "description": "Stores individual RTO qualification documents."
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/userProfile"
+      },
+      "description": "Stores public user profile information."
+    }
+  }
+}
