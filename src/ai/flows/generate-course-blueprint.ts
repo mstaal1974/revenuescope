@@ -31,6 +31,10 @@ const CourseBlueprintOutputSchema = z.object({
     duration: z.string().describe("The estimated time to complete the course, e.g., '12 Hours'"),
     suggested_price: z.string().describe("The recommended price point, e.g., '$295'"),
     revenue_potential: z.string().describe("An estimated revenue calculation based on market size and capture rate."),
+    skill_demand_trend: z.object({
+        growth_percentage: z.string().describe("e.g., '+12%'"),
+        narrative: z.string().describe("e.g., 'Outpacing general Construction jobs'"),
+    }).describe("The year-on-year demand growth for the skills in this course."),
     included_skills: z.array(z.object({
       skill_name: z.string().describe("The specific skill taught, derived from ESCO."),
       esco_uri: z.string().describe("A simulated URI for the skill in the ESCO database."),
@@ -72,6 +76,7 @@ const prompt = ai.definePrompt({
 **4. Market Validation (Simulated ABS Data):**
 *   Use the ANZSCO code to simulate a query to ABS Labour Force data.
 *   **Logic:** Assume high demand if the parent occupation has >50k employed persons in Australia. Use this to formulate the 'market_context'.
+*   **NEW: Skill Demand Trend:** For each suggested course, simulate a more granular data query. Find a YoY growth percentage for the *specific skills* within it. This should often be higher than the general occupation's growth. Formulate a narrative, e.g., "Outpacing general construction jobs." Populate the \`skill_demand_trend\` object.
 
 **5. Pricing & Revenue Strategy:**
 *   Set a price for each course between $150 - $450.

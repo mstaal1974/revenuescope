@@ -35,6 +35,24 @@ const InfoBadge = ({ icon, label, value }: { icon: React.ReactNode, label: strin
     </div>
 );
 
+const SkillDemandVisual = ({ trend }: { trend: ShortCourse['skill_demand_trend'] }) => {
+    if (!trend) return null;
+
+    return (
+        <div className="flex items-center gap-3 p-3 bg-green-100/50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/30">
+            <div className="text-green-600 dark:text-green-400">
+                <TrendingUp size={24} />
+            </div>
+            <div>
+                <p className="font-bold text-green-700 dark:text-green-300">
+                    {trend.growth_percentage} YoY Demand
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-500">{trend.narrative}</p>
+            </div>
+        </div>
+    );
+};
+
 
 export function CourseBlueprintCard({ course }: CourseBlueprintCardProps) {
   return (
@@ -52,6 +70,8 @@ export function CourseBlueprintCard({ course }: CourseBlueprintCardProps) {
             <InfoBadge icon={<TrendingUp size={20} />} label="Revenue" value={course.revenue_potential.split(' ')[0]} />
             <InfoBadge icon={<Users size={20} />} label="Audience" value={course.target_audience.split(' ')[0]} />
         </div>
+        
+        {course.skill_demand_trend && <SkillDemandVisual trend={course.skill_demand_trend} />}
         
         <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">

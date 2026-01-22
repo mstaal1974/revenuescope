@@ -16,6 +16,10 @@ const CourseBlueprintDataSchema = z.object({
     duration: z.string(),
     suggested_price: z.string(),
     revenue_potential: z.string(),
+    skill_demand_trend: z.object({
+        growth_percentage: z.string(),
+        narrative: z.string(),
+    }),
     included_skills: z.array(z.object({
       skill_name: z.string(),
       esco_uri: z.string(),
