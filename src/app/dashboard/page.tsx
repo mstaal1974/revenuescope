@@ -15,7 +15,7 @@ function DashboardPageContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const dataString = sessionStorage.getItem("auditData");
+    const dataString = localStorage.getItem("auditData");
     if (!dataString) {
       setError("No audit data found. Please start a new audit from the homepage.");
       setLoading(false);

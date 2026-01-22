@@ -15,7 +15,7 @@ export default function ReportPage() {
 
   useEffect(() => {
     // This code runs only on the client
-    const dataString = sessionStorage.getItem('auditData');
+    const dataString = localStorage.getItem('auditData');
     if (dataString) {
       try {
         setData(JSON.parse(dataString));

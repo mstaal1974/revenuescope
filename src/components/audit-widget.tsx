@@ -186,7 +186,7 @@ const AuditWidget: React.FC = () => {
 
   const handleDownloadPdf = () => {
     if (result) {
-        sessionStorage.setItem('auditData', JSON.stringify(result));
+        localStorage.setItem('auditData', JSON.stringify(result));
         window.open('/dashboard/report', '_blank');
     }
   };

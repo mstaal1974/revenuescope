@@ -14,7 +14,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
   const formatValue = (val: string | undefined) => (val === '[REAL_DATA_REQUIRED]' || !val) ? 'DATA UNAVAILABLE' : val;
 
   const handleDownloadPdf = () => {
-    sessionStorage.setItem('auditData', JSON.stringify(data));
+    localStorage.setItem('auditData', JSON.stringify(data));
     window.open('/dashboard/report', '_blank');
   };
 

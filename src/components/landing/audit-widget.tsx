@@ -74,7 +74,7 @@ export function AuditWidget() {
       addLog('[5/5] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
       await delay(500);
       
-      sessionStorage.setItem("auditData", JSON.stringify(result.data));
+      localStorage.setItem("auditData", JSON.stringify(result.data));
       router.push(`/dashboard`);
 
     } catch (err) {
