@@ -4,45 +4,11 @@
  * It functions as a "Curriculum Strategist" to design structured learning pathways from an RTO's scope.
  *
  * - generateCourseBlueprint - A function that orchestrates the product ecosystem generation.
- * - CourseBlueprintInput - The input type for the generateCourseBlueprint function.
- * - CourseBlueprintOutput - The return type for the generateCourseBlueprint function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-const CourseBlueprintInputSchema = z.object({
-  rtoId: z.string().describe("The ID of the RTO to analyze."),
-  scope: z.string().describe("The RTO's full scope, e.g., [CPC50220, CPC40120, BSB50420]."),
-  absApiKey: z.string().optional().describe("An optional API key for the Australian Bureau of Statistics."),
-  targetSector: z.string().optional().describe("An optional target sector to focus the analysis on."),
-});
-export type CourseBlueprintInput = z.infer<typeof CourseBlueprintInputSchema>;
-
-const CourseBlueprintOutputSchema = z.object({
-  rto_id: z.string(),
-  strategic_theme: z.string().describe("A single, high-value theme, e.g., 'Site Safety Leadership'"),
-  market_justification: z.string().describe("A brief summary of why this theme is valuable, e.g., 'Safety roles are growing at 8% YoY'"),
-  
-  individual_courses: z.array(z.object({
-      tier: z.string().describe("e.g. 'Level 1: Foundation'"),
-      course_title: z.string(),
-      duration: z.string().describe("e.g. '4 Hours'"),
-      suggested_price: z.string().describe("e.g. '$195'"),
-      target_student: z.string().describe("e.g. 'Entry-level staff'"),
-      key_skill: z.string().describe("The primary ESCO skill taught")
-  })).length(3),
-  
-  stackable_product: z.object({
-    bundle_title: z.string().describe("e.g. 'Executive Certificate in Site Safety'"),
-    total_value: z.string().describe("The sum of individual course prices, e.g., '$1095'"),
-    bundle_price: z.string().describe("The discounted price, e.g., '$930'"),
-    discount_applied: z.string().describe("The percentage discount, e.g., '15%'"),
-    marketing_pitch: z.string().describe("A compelling pitch for the bundle, e.g., 'Save 15% and go from novice to leader.'"),
-    badges_issued: z.number().describe("The number of badges issued for completing the full stack (3 courses + 1 master).")
-  })
-});
-export type CourseBlueprintOutput = z.infer<typeof CourseBlueprintOutputSchema>;
+import { CourseBlueprintInputSchema, CourseBlueprintOutputSchema, type CourseBlueprintInput, type CourseBlueprintOutput } from '@/ai/types';
 
 export async function generateCourseBlueprint(
   input: CourseBlueprintInput

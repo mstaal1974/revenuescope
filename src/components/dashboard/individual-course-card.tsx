@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Clock, DollarSign, Target, User } from "lucide-react";
 import { Badge } from "../ui/badge";
 
-type Course = AuditData["individual_courses"][0];
+type Course = AuditData["product_ecosystem"]["individual_courses"][0];
 
 interface IndividualCourseCardProps {
   course: Course;

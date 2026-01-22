@@ -1,5 +1,4 @@
-import type { AuditData } from "@/app/actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layers, BarChart3, Lightbulb } from "lucide-react";
 
 interface AnalysisSummaryProps {

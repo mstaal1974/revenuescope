@@ -4,29 +4,13 @@
  * If that fails, it uses Gemini Search as a fallback.
  *
  * - searchForRtoScope - A function that handles the RTO scope search process.
- * - SearchForRtoScopeInput - The input type for the searchForRtoScope function.
- * - SearchForRtoScopeOutput - The return type for the searchForRtoScope function.
  */
 
 import { ai } from "@/ai/genkit";
 import { z } from "zod";
 import axios from "axios";
 import { parseStringPromise } from "xml2js";
-
-const SearchForRtoScopeInputSchema = z.object({
-  rtoId: z.string().describe("The ID of the RTO to search for."),
-});
-export type SearchForRtoScopeInput = z.infer<
-  typeof SearchForRtoScopeInputSchema
->;
-
-const SearchForRtoScopeOutputSchema = z.object({
-  scope: z.string().describe("The RTO scope information."),
-  name: z.string().describe("The name of the RTO."),
-});
-export type SearchForRtoScopeOutput = z.infer<
-  typeof SearchForRtoScopeOutputSchema
->;
+import { SearchForRtoScopeInputSchema, SearchForRtoScopeOutputSchema, type SearchForRtoScopeInput, type SearchForRtoScopeOutput } from "@/ai/types";
 
 export async function searchForRtoScope(
   input: SearchForRtoScopeInput

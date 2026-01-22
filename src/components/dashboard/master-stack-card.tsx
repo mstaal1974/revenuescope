@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Award, Package, Percent, Star } from "lucide-react";
 
-type Stack = AuditData["stackable_product"];
+type Stack = AuditData["product_ecosystem"]["stackable_product"];
 
 interface MasterStackCardProps {
   stack: Stack;

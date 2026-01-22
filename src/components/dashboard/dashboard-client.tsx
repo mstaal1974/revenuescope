@@ -6,7 +6,10 @@ import { LeadCaptureOverlay } from "./lead-capture-overlay";
 import { AnalysisSummary } from "./analysis-summary";
 import { IndividualCourseCard } from "./individual-course-card";
 import { MasterStackCard } from "./master-stack-card";
-import { ArrowRight } from "lucide-react";
+import { ExecutiveSummary } from "./executive-summary";
+import { SectorCard } from "./sector-card";
+import { Separator } from "../ui/separator";
+import { ArrowRight, Microscope, PackageCheck } from "lucide-react";
 
 interface DashboardClientProps {
   data: AuditData;
@@ -17,45 +20,76 @@ export function DashboardClient({ data }: DashboardClientProps) {
 
   return (
     <div className="container mx-auto py-8 px-4 relative">
-      <AnalysisSummary
-        theme={data.strategic_theme}
-        justification={data.market_justification}
-      />
 
       {!isUnlocked && <LeadCaptureOverlay onUnlock={() => setIsUnlocked(true)} />}
 
       <div
-        className={`relative transition-all duration-500 mt-12 ${
+        className={`transition-all duration-500 ${
           !isUnlocked ? "blur-lg pointer-events-none" : ""
         }`}
       >
-        <div className="text-center mb-8">
-            <h2 className="text-3xl font-black font-headline tracking-tight">Your Stackable Product Ecosystem</h2>
-            <p className="text-lg text-muted-foreground">Go from Foundation to Strategic Mastery.</p>
+        {/* Part 1: Strategic Growth Director Analysis */}
+        <div className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+                <Microscope className="h-8 w-8 text-primary" />
+                <h2 className="text-3xl font-black font-headline tracking-tight">Macro Sector Analysis</h2>
+            </div>
+            <p className="text-lg text-muted-foreground mb-6">A high-level view of your biggest revenue opportunities by industry group.</p>
+            
+            {data.executive_summary && <ExecutiveSummary summary={data.executive_summary} />}
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
+              {(data.sector_breakdown || []).map((sector) => (
+                <SectorCard key={sector.sector_name} sector={sector} />
+              ))}
+            </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-10 items-start">
-          {/* Left Column: Individual Courses Staircase */}
-          <div className="space-y-6 relative">
-            <h3 className="font-bold text-xl text-center lg:text-left">Individual Courses</h3>
-            {(data.individual_courses || []).map((course, index) => (
-              <div key={index} className="relative">
-                <IndividualCourseCard course={course} />
-                {index < (data.individual_courses || []).length - 1 && (
-                  <div className="hidden lg:block absolute top-full left-1/2 -translate-x-1/2 w-px h-6 bg-border" />
-                )}
-              </div>
-            ))}
-          </div>
+        <Separator className="my-12" />
 
-          {/* Right Column: Master Stack */}
-          <div className="relative">
-             <div className="hidden lg:flex absolute top-1/2 -left-8 -translate-y-1/2 items-center justify-center bg-background p-2 rounded-full">
-                <ArrowRight className="h-6 w-6 text-primary" />
-             </div>
-            <MasterStackCard stack={data.stackable_product} />
-          </div>
-        </div>
+        {/* Part 2: Stackable Product Ecosystem */}
+        {data.product_ecosystem && (
+            <div>
+                 <div className="flex items-center gap-3 mb-4">
+                    <PackageCheck className="h-8 w-8 text-primary" />
+                    <h2 className="text-3xl font-black font-headline tracking-tight">Recommended Product Ecosystem</h2>
+                </div>
+                <p className="text-lg text-muted-foreground mb-6">A detailed product blueprint for your top-performing sector.</p>
+
+                <AnalysisSummary
+                    theme={data.product_ecosystem.strategic_theme}
+                    justification={data.product_ecosystem.market_justification}
+                />
+
+                <div className="text-center my-12">
+                    <h3 className="text-2xl font-black font-headline tracking-tight">Your Stackable Learning Pathway</h3>
+                    <p className="text-lg text-muted-foreground">Guide students from Foundation to Strategic Mastery.</p>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-10 items-start">
+                    {/* Left Column: Individual Courses Staircase */}
+                    <div className="space-y-6 relative">
+                        <h4 className="font-bold text-xl text-center lg:text-left">Individual Courses</h4>
+                        {(data.product_ecosystem.individual_courses || []).map((course, index) => (
+                        <div key={index} className="relative">
+                            <IndividualCourseCard course={course} />
+                            {index < (data.product_ecosystem.individual_courses || []).length - 1 && (
+                            <div className="hidden lg:block absolute top-full left-1/2 -translate-x-1/2 w-px h-6 bg-border" />
+                            )}
+                        </div>
+                        ))}
+                    </div>
+
+                    {/* Right Column: Master Stack */}
+                    <div className="relative">
+                        <div className="hidden lg:flex absolute top-1/2 -left-8 -translate-y-1/2 items-center justify-center bg-background p-2 rounded-full">
+                            <ArrowRight className="h-6 w-6 text-primary" />
+                        </div>
+                        <MasterStackCard stack={data.product_ecosystem.stackable_product} />
+                    </div>
+                </div>
+            </div>
+        )}
       </div>
     </div>
   );
