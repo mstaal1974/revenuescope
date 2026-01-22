@@ -13,6 +13,11 @@ export function DashboardClient({ data }: { data: AuditData }) {
 
   const formatValue = (val: string | undefined) => (val === '[REAL_DATA_REQUIRED]' || !val) ? 'DATA UNAVAILABLE' : val;
 
+  const handleDownloadPdf = () => {
+    sessionStorage.setItem('auditData', JSON.stringify(data));
+    window.open('/dashboard/report', '_blank');
+  };
+
   return (
     <div className="bg-white rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-slate-200 max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-1000">
       {/* 1. THE AUDIT HEADER (Summary Data) */}
@@ -56,7 +61,9 @@ export function DashboardClient({ data }: { data: AuditData }) {
                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 font-mono text-left">Total Niche Workforce (TAM)</div>
                <div className="text-5xl font-black text-white tracking-tighter mb-4 text-left">{formatValue(data.revenue_opportunity?.total_market_size)}</div>
                <p className="text-slate-400 font-medium italic mb-10 leading-relaxed text-left">"{data.stackable_product?.marketing_pitch}"</p>
-               <button className="w-full bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-600/20 active:scale-95 text-xl uppercase tracking-widest">
+               <button 
+                  onClick={handleDownloadPdf}
+                  className="w-full bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-600/20 active:scale-95 text-xl uppercase tracking-widest">
                   Download Cited Audit PDF
                </button>
             </div>

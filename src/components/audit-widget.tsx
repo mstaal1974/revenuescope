@@ -183,6 +183,13 @@ const AuditWidget: React.FC = () => {
     if (email) setIsUnlocked(true);
   };
 
+  const handleDownloadPdf = () => {
+    if (result) {
+        sessionStorage.setItem('auditData', JSON.stringify(result));
+        window.open('/dashboard/report', '_blank');
+    }
+  };
+
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   const formatValue = (val: string | undefined) => (!val || val === '[REAL_DATA_REQUIRED]') ? 'DATA UNAVAILABLE' : val;
@@ -405,7 +412,9 @@ const AuditWidget: React.FC = () => {
                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 font-mono text-left">Total Niche Workforce (TAM)</div>
                  <div className="text-5xl font-black text-white tracking-tighter mb-4 text-left">{formatValue(result?.revenue_opportunity.total_market_size)}</div>
                  <p className="text-slate-400 font-medium italic mb-10 leading-relaxed text-left">"{result?.stackable_product.marketing_pitch}"</p>
-                 <button className="w-full bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-600/20 active:scale-95 text-xl uppercase tracking-widest">
+                 <button 
+                    onClick={handleDownloadPdf}
+                    className="w-full bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-600/20 active:scale-95 text-xl uppercase tracking-widest">
                     Download Cited Audit PDF
                  </button>
               </div>
