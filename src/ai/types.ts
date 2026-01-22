@@ -8,8 +8,35 @@ export const FullAuditInputSchema = z.object({
 });
 export type FullAuditInput = z.infer<typeof FullAuditInputSchema>;
 
+const ExecutiveSummarySchema = z.object({
+  total_revenue_opportunity: z.string().describe("Sum of all sectors, e.g., '$2.4M'"),
+  top_performing_sector: z.string().describe("e.g., 'Construction'"),
+  strategic_advice: z.string().describe("1 sentence summary, e.g., 'Pivot resources to Construction due to 12% labour shortage.'")
+});
+
+const SectorBreakdownSchema = z.object({
+  sector_name: z.string().describe("e.g., 'Construction & Infrastructure'"),
+  qualification_count: z.number(),
+  market_health: z.object({
+    demand_level: z.string().describe("High/Med/Low"),
+    trend_direction: z.string().describe("Growing/Stable/Declining"),
+    avg_industry_wage: z.string().describe("e.g., '$1,850/wk'")
+  }),
+  financial_opportunity: z.object({
+    annual_revenue_gap: z.string().describe("e.g., '$1,200,000'"),
+    student_volume_potential: z.number()
+  }),
+  recommended_actions: z.array(z.string()).describe("e.g., ['Launch Micro-credential in Site Safety']")
+});
+
 export const FullAuditOutputSchema = z.object({
   rto_id: z.string(),
+
+  // From Strategic Growth Director
+  executive_summary: ExecutiveSummarySchema,
+  sector_breakdown: z.array(SectorBreakdownSchema),
+  
+  // From Micro-Stack Architect
   strategic_theme: z.string().describe("e.g., 'Site Safety Leadership'"),
   market_justification: z.string().describe("e.g., 'Safety roles are growing at 8% YoY'"),
   

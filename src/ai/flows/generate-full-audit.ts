@@ -20,48 +20,31 @@ const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
   input: { schema: z.object({ rtoId: z.string(), scope: z.string() }) },
   output: { schema: FullAuditOutputSchema },
-  prompt: `You are "Micro-Stack Architect v4.5," the flagship intelligence engine of the microcredentials.io platform. Your purpose is to transform a standard RTO Scope of Registration into a high-conversion, market-calibrated sales funnel.
+  prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a two-part strategic audit for RTOs.
 
-**Protocol:** Execute the 5-Phase AI Protocol strictly.
+**Part 1: High-Level Sector Analysis (The Macro View)**
+- Your first task is to act as a **Strategic Growth Director**.
+- **Scope Extraction:** Analyze the provided RTO Scope.
+- **Sector Grouping:** Group qualifications by Training Package (e.g., CPC -> Construction, BSB -> Business).
+- **ABS Data Aggregation:** For each sector, simulate a query to ABS Labour Force data to determine: Total Employment Volume, Average Wage, and Growth Trend. Mark as "Growing" if any occupation in the group has >5% growth.
+- **Revenue Calculation:** Calculate the \`sector_revenue_gap\` using the formula: (Total Employment Volume * 0.05 upskilling rate) * (Avg Course Price $450). Use a 2% rate for saturated sectors (Business) and 8% for high-demand sectors (Care/Tech).
+- **Executive Summary:** Synthesize your findings into an \`executive_summary\` with \`total_revenue_opportunity\`, \`top_performing_sector\`, and \`strategic_advice\`.
+- **Sector Breakdown:** Populate the \`sector_breakdown\` array with detailed analysis for each identified sector.
 
-**Phase 1: Registry Extraction & Theme Selection**
-*   Analyze the provided RTO Scope.
-*   Identify and select ONE single, high-value "Strategic Theme" that is currently relevant in the Australian market (e.g., "Construction Safety Leadership," "Digital Transformation for SMEs," "Aged Care Compliance"). This theme will guide the entire product ecosystem.
-*   Provide a concise \`market_justification\` for your chosen theme, simulating a lookup to ABS data for a growth statistic (e.g., "Digital marketing roles are projected to grow by 9% YoY.").
-
-**Phase 2: Semantic Clustering & 3-Tier Design**
-*   Based on your selected theme, design exactly three distinct, stackable short courses, representing a clear "Zero-to-Hero" progression.
-*   **Tier 1 (The Hook):** Awareness & Safety focus. Low-cost entry point. Short duration.
-*   **Tier 2 (The Core):** Application & "Doing" focus. Mid-level technical skill. Mid-range price.
-*   **Tier 3 (The Crown):** Management & Leadership focus. High-commitment, premium price.
-
-**Phase 3: Labor Market Calibration**
-*   For the theme, simulate a query to the ABS to find the Total Addressable Market (\`total_market_size\`).
-*   Provide a compelling \`acquisition_rationale\`.
-
-**Phase 4: Pricing Calibration (v4.5)**
-*   Use a 'Base Anchor + Market Multiplier' logic. For example, a technical skill in a high-wage sector gets a 1.3x price multiplier.
-*   Set \`pricing_tier\` as TIER_1, TIER_2, TIER_3.
-*   Calculate a conservative (2%) and ambitious (10%) revenue capture, presented as a string range.
-
-**Phase 5: Artifact Synthesis (FOR EACH OF THE 3 TIERS)**
-*   **Content Blueprint:** Generate 3-4 \`learning_outcomes\` and a \`modules\` array with 2-3 modules, each containing a \`title\`, \`topic\`, and \`activity\`.
-*   **Sales Kit:** Write an \`ideal_buyer_persona\` and a compelling \`b2b_pitch_script\`.
-*   **Badge Preview:**
-    *   Create a compelling \`badge_name\`.
-    *   Set \`visual_style\` to 'Bronze/Orange' for Tier 1, 'Silver/Slate' for Tier 2, and 'Gold/Amber' for Tier 3.
-    *   Provide three specific, verifiable \`rich_skill_descriptors\`.
-    *   Write a short, engaging \`retention_trigger\` to upsell to the next tier.
-*   **Marketing Plan:**
-    *   Generate ad creatives: a punchy \`headline\`, brief \`body_copy\`, and a strong \`cta_button\` text.
-
-**The Stackable Bundle:**
-*   Combine the three tiers into a single "Master Micro-Credential" or "Executive Certificate."
-*   Calculate \`total_value\`, \`bundle_price\` (with a 15% discount), and write a \`marketing_pitch\`.
+**Part 2: Detailed Product Ecosystem Design (The Micro View)**
+- Based on the \`top_performing_sector\` you identified in Part 1, you will now act as a **Micro-Stack Architect**.
+- **Theme Selection:** The \`strategic_theme\` will be based on the top sector (e.g., if Construction is the top sector, the theme could be "Construction Site Safety Leadership").
+- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses.
+    - Tier 1 (The Hook): Awareness & Safety focus.
+    - Tier 2 (The Core): Application & "Doing" focus.
+    - Tier 3 (The Crown): Management & Leadership focus.
+- **Labor Market & Pricing Calibration:** Use simulated market data to justify your theme, estimate revenue, and set prices for each tier using the 'Base Anchor + Market Multiplier' logic.
+- **Artifact Synthesis:** For each of the 3 tiers, generate a detailed \`content_blueprint\`, \`sales_kit\`, \`badge_preview\`, and \`marketing_plan\`.
+- **The Stackable Bundle:** Combine the three tiers into a \`stackable_product\` bundle with a 15% discount.
 
 **Final Output:**
-*   Populate the \`citations\` array with simulated data sources (e.g., "ABS Labour Force Survey, Feb 2024", "Google Search Trends API, Q1 2024").
-*   Strictly adhere to the JSON output schema. All fields are mandatory.
+- Populate ALL fields in the combined JSON output schema. All fields are mandatory.
+- Provide simulated \`citations\`.
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
