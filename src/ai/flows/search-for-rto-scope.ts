@@ -61,14 +61,20 @@ async function fetchTrainingComponentDetails(
       ignoreAttrs: true,
     });
     
-    const details = result.Envelope.Body.GetDetailsResponse.GetDetailsResult;
+    if (result?.Envelope?.Body?.Fault) {
+      const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
+      console.warn(`SOAP Fault from TGA TrainingComponentService for ${trainingComponentCode}: ${faultString}`);
+      return { anzsco: null, title: null };
+    }
+
+    const details = result?.Envelope?.Body?.GetDetailsResponse?.GetDetailsResult;
     
     if (!details || !details.Classifications) {
       return { anzsco: null, title: details?.Title || null };
     }
 
     const classifications = Array.isArray(details.Classifications.Classification) ? details.Classifications.Classification : [details.Classifications.Classification];
-    const anzscoClassification = classifications.find((c: any) => c.Scheme && c.Scheme.includes('ANZSCO'));
+    const anzscoClassification = classifications.find((c: any) => c?.Scheme?.includes('ANZSCO'));
     
     return {
         title: details.Title,
@@ -135,11 +141,21 @@ async function fetchRtoScopeFromRegistry(
       tagNameProcessors: [(name) => name.split(":").pop()!],
       ignoreAttrs: true,
     });
+    
+    if (result?.Envelope?.Body?.Fault) {
+      const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
+      console.error(`SOAP Fault from TGA OrganisationService: ${faultString}`);
+      const detail = result.Envelope.Body.Fault.detail;
+      if (detail) {
+        console.error("SOAP Fault Detail:", JSON.stringify(detail));
+      }
+      throw new Error(`TGA service returned an error: ${faultString}`);
+    }
 
-    const orgDetails = result.Envelope.Body.DetailsResponse.DetailsResult;
+    const orgDetails = result?.Envelope?.Body?.DetailsResponse?.DetailsResult;
 
     if (!orgDetails || !orgDetails.OrganisationName) {
-      throw new Error(`No matching RTO found in registry for ID ${rtoId}.`);
+        throw new Error(`No matching RTO found in registry for ID ${rtoId}. The TGA response was empty or malformed.`);
     }
     
     const orgName = orgDetails.OrganisationName;
@@ -155,20 +171,10 @@ async function fetchRtoScopeFromRegistry(
     const scopeItems = items
       .map((item: any) => {
         if (!item) return null;
-        if (item.Identifier) {
-          return {
-            Code: item.Identifier.Code,
-            Name: item.Identifier.Name,
-          };
-        }
-        if (item.TrainingComponent) {
-          return {
-            Code: item.TrainingComponent.Code,
-            Name: item.TrainingComponent.Name,
-          };
-        }
-        if (item.Code && item.Name) {
-          return { Code: item.Code, Name: item.Name };
+        const code = item.Identifier?.Code || item.TrainingComponent?.Code;
+        const name = item.Identifier?.Name || item.TrainingComponent?.Name;
+        if (code && name) {
+          return { Code: code, Name: name };
         }
         return null;
       })
