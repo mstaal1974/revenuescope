@@ -38,10 +38,10 @@ export function TerminalLoader() {
       let logIndex = 0;
       const processLogs = () => {
         if (logIndex < logs.length) {
-          setDisplayedLogs((prev) => [...prev, logs[logIndex].text]);
-          const nextDelay = logs[logIndex].delay;
+          const log = logs[logIndex];
+          setDisplayedLogs((prev) => [...prev, log.text]);
           logIndex++;
-          setTimeout(processLogs, nextDelay);
+          setTimeout(processLogs, log.delay);
         }
       };
       processLogs();
