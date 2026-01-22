@@ -1,8 +1,9 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { performFullAudit, searchRtoScope } from '@/app/actions';
-import type { FullAuditInput, FullAuditOutput } from '@/ai/types';
+import type { FullAuditInput, FullAuditOutput, SearchForRtoScopeOutput } from '@/ai/types';
 import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
@@ -89,7 +90,7 @@ const AuditWidget: React.FC = () => {
     
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
     await delay(100);
-    addLog('[1/5] ANALYZING TGA SCOPE FOR SHORT-FORM CLUSTERS...', 'info');
+    addLog('[1/5] ANALYZING SCOPE FOR SHORT-FORM CLUSTERS...', 'info');
     
     try {
       const data = await performFullAudit({ rtoId: rtoCode });
@@ -109,8 +110,8 @@ const AuditWidget: React.FC = () => {
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
       addLog(`ERROR: ${message}`, 'error');
       
-      if (message.includes('TGA') || message.includes('registry') || message.includes('fetch') || message.includes('timed out')) {
-        addLog(`FALLBACK: TGA lookup failed. You can manually enter course codes to proceed.`, 'warning');
+      if (message.includes('TGA') || message.includes('registry') || message.includes('fetch') || message.includes('timed out') || message.includes('invalid or not found')) {
+        addLog(`FALLBACK: The RTO ID could not be found or the lookup service failed. You can manually enter course codes to proceed.`, 'warning');
         setShowManualInput(true);
       } else {
         addLog(`FATAL: An unexpected error occurred.`, 'error');
@@ -173,9 +174,9 @@ const AuditWidget: React.FC = () => {
     if (!rtoCode) return;
     setState(AuditState.PROCESSING);
     setLogs([]);
-    addLog(`DEBUG: INITIATING TGA REGISTRY FETCH...`, 'warning');
+    addLog(`DEBUG: INITIATING SCOPE REGISTRY FETCH...`, 'warning');
     await delay(100);
-    addLog(`SEARCHING TRAINING.GOV.AU FOR ID: ${rtoCode}...`, 'info');
+    addLog(`SEARCHING SCOPE DATABASE FOR ID: ${rtoCode}...`, 'info');
     
     try {
       const data = await searchRtoScope(rtoCode);
@@ -209,7 +210,7 @@ const AuditWidget: React.FC = () => {
           <h3 className="text-3xl font-black text-slate-900 tracking-tight italic">Verified Audit AI</h3>
         </div>
         <p className="text-slate-500 mb-10 leading-relaxed text-lg font-medium text-left">
-          Our v5.0 engine uses real-time ABS and TGA feeds with <strong>calibrated anchor pricing</strong> to architect high-intent course stacks.
+          Our v5.0 engine uses real-time ABS and verified scope feeds with <strong>calibrated anchor pricing</strong> to architect high-intent course stacks.
         </p>
         <form onSubmit={handleAudit} className="flex flex-col gap-4">
           <input
@@ -274,7 +275,7 @@ const AuditWidget: React.FC = () => {
             {showManualInput ? (
               <form onSubmit={handleManualAudit} className="space-y-4 animate-in fade-in">
                 <div className="text-amber-400 font-bold text-sm text-left p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  <p>Enter comma-separated course codes, OR paste a dataset below (one per line) to bypass the TGA API.</p>
+                  <p>Enter comma-separated course codes, OR paste a dataset below (one per line) to bypass the scope lookup.</p>
                   <p className="font-mono text-xs mt-2">Format: Code,Name,Anzsco (Anzsco is optional)</p>
                 </div>
                 <Textarea
@@ -308,7 +309,7 @@ const AuditWidget: React.FC = () => {
   if (state === AuditState.TGA_RESULTS) {
     return (
       <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200 max-w-4xl mx-auto">
-        <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">TGA Scope Verification</h3>
+        <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Scope Verification</h3>
         <p className="text-lg font-bold text-blue-600 mb-8">{tgaData?.rtoName}</p>
         <div className="h-96 overflow-y-auto space-y-2 pr-4 scrollbar-hide">
           {(tgaData?.scope || []).map((item, index) => (
@@ -642,3 +643,5 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
