@@ -88,7 +88,19 @@ const generateFullAuditFlow = ai.defineFlow(
     let scope: { Code: string; Name: string; Anzsco: string | null }[] = [];
     let rtoName = input.rtoName || `RTO ${input.rtoId}`;
 
-    if (input.manualScope && input.manualScope.length > 0) {
+    if (input.manualScopeDataset) {
+      scope = input.manualScopeDataset
+        .split('\n')
+        .map(line => {
+          const parts = line.split(',').map(s => s.trim());
+          const [Code, Name, Anzsco] = parts;
+          if (Code && Name) {
+            return { Code, Name, Anzsco: Anzsco || null };
+          }
+          return null;
+        })
+        .filter((item): item is { Code: string; Name: string; Anzsco: string | null } => item !== null);
+    } else if (input.manualScope && input.manualScope.length > 0) {
       // Manual scope provided, enrich it with ANZSCO codes.
       const enrichedScopePromises = input.manualScope.map(async (code) => {
         const details = await fetchTrainingComponentDetails(code);

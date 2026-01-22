@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { performFullAudit, searchRtoScope } from '@/app/actions';
-import type { FullAuditOutput } from '@/ai/types';
+import type { FullAuditInput, FullAuditOutput } from '@/ai/types';
 import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
@@ -109,7 +109,7 @@ const AuditWidget: React.FC = () => {
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
       addLog(`ERROR: ${message}`, 'error');
       
-      if (message.includes('TGA') || message.includes('registry') || message.includes('fetch')) {
+      if (message.includes('TGA') || message.includes('registry') || message.includes('fetch') || message.includes('timed out')) {
         addLog(`FALLBACK: TGA lookup failed. You can manually enter course codes to proceed.`, 'warning');
         setShowManualInput(true);
       } else {
@@ -122,23 +122,33 @@ const AuditWidget: React.FC = () => {
   const handleManualAudit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!manualScopeInput || !currentRtoForAudit) return;
-
-    const manualScope = manualScopeInput.split(',').map(s => s.trim()).filter(Boolean);
-    if (manualScope.length === 0) {
-      addLog('Please enter at least one course code.', 'error');
-      return;
-    }
-
+  
     setState(AuditState.PROCESSING);
     setLogs([]); // Reset for new audit
     setShowManualInput(false);
-    
-    addLog(`INITIATING AUDIT WITH MANUAL SCOPE...`, 'warning');
-    await delay(100);
-    addLog(`[1/5] Using ${manualScope.length} manually provided course codes...`, 'info');
-    
+  
+    const isDataset = manualScopeInput.includes('\n');
+    let auditInput: FullAuditInput = { rtoId: currentRtoForAudit, rtoName: `RTO ${currentRtoForAudit}` };
+  
+    if (isDataset) {
+      auditInput.manualScopeDataset = manualScopeInput;
+      addLog(`INITIATING AUDIT WITH PASTED DATASET...`, 'warning');
+      addLog(`[1/5] Using manually provided dataset to bypass TGA lookup...`, 'info');
+    } else {
+      const manualScope = manualScopeInput.split(',').map(s => s.trim()).filter(Boolean);
+      if (manualScope.length === 0) {
+        addLog('Please enter at least one course code.', 'error');
+        setState(AuditState.ERROR);
+        setShowManualInput(true);
+        return;
+      }
+      auditInput.manualScope = manualScope;
+      addLog(`INITIATING AUDIT WITH MANUAL SCOPE...`, 'warning');
+      addLog(`[1/5] Using ${manualScope.length} manually provided course codes...`, 'info');
+    }
+  
     try {
-      const data = await performFullAudit({ rtoId: currentRtoForAudit, manualScope, rtoName: `RTO ${currentRtoForAudit}` });
+      const data = await performFullAudit(auditInput);
       addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
       await delay(150);
       addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
@@ -151,7 +161,7 @@ const AuditWidget: React.FC = () => {
       setResult(data);
       setState(AuditState.RESULTS);
     } catch (err) {
-       console.error(err);
+      console.error(err);
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
       addLog(`FATAL: ${message}`, 'error');
       setState(AuditState.ERROR);
@@ -263,21 +273,22 @@ const AuditWidget: React.FC = () => {
           <div className="mt-8">
             {showManualInput ? (
               <form onSubmit={handleManualAudit} className="space-y-4 animate-in fade-in">
-                <p className="text-amber-400 font-bold text-sm text-left">
-                  Enter course codes separated by commas (e.g., CPC50220, ICT50220)
-                </p>
+                <div className="text-amber-400 font-bold text-sm text-left p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  <p>Enter comma-separated course codes, OR paste a dataset below (one per line) to bypass the TGA API.</p>
+                  <p className="font-mono text-xs mt-2">Format: Code,Name,Anzsco (Anzsco is optional)</p>
+                </div>
                 <Textarea
                   value={manualScopeInput}
                   onChange={(e) => setManualScopeInput(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono"
-                  placeholder="BSB50215, CPC30211, HLT54115"
-                  rows={3}
+                  placeholder="e.g., BSB50215, CPC30211...\nOr:\nCPC50220,Diploma of Building...,123456"
+                  rows={4}
                 />
                 <button
                   type="submit"
                   className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
                 >
-                  Run Audit with Manual Scope
+                  Run Audit with Manual Data
                 </button>
               </form>
             ) : (

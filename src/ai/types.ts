@@ -5,6 +5,7 @@ export const FullAuditInputSchema = z.object({
   rtoId: z.string().describe("The ID of the RTO to analyze."),
   rtoName: z.string().optional().describe("The name of the RTO, if known."),
   manualScope: z.array(z.string()).optional().describe("A list of course codes to use if TGA lookup fails."),
+  manualScopeDataset: z.string().optional().describe("A CSV-like string of scope items (Code,Name,Anzsco) to bypass TGA lookup."),
   absApiKey: z.string().optional().describe("An optional API key for the Australian Bureau of Statistics."),
   targetSector: z.string().optional().describe("An optional target sector to focus the analysis on."),
 });
