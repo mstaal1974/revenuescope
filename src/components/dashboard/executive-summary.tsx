@@ -25,6 +25,19 @@ const StatCard = ({
 );
 
 export function ExecutiveSummary({ summary }: ExecutiveSummaryProps) {
+  if (!summary) {
+    return (
+        <Card className="rounded-2xl shadow-lg">
+            <CardHeader>
+                <CardTitle>Executive Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">Executive summary data is not available.</p>
+            </CardContent>
+        </Card>
+    );
+  }
+
   return (
     <Card className="rounded-2xl shadow-lg">
       <CardHeader>
