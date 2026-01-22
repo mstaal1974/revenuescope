@@ -94,7 +94,8 @@ const AuditWidget: React.FC = () => {
       setState(AuditState.RESULTS);
     } catch (err) {
       console.error(err);
-      addLog('FATAL: Engine failed to validate market metrics.', 'error');
+      const message = err instanceof Error ? err.message : "An unknown error occurred.";
+      addLog(`FATAL: ${message}`, 'error');
       setState(AuditState.ERROR);
     }
   };
@@ -113,7 +114,9 @@ const AuditWidget: React.FC = () => {
       setTgaData(data);
       setState(AuditState.TGA_RESULTS);
     } catch (err) {
-      addLog('TGA REGISTRY LOOKUP FAILED.', 'error');
+      console.error(err);
+      const message = err instanceof Error ? err.message : "An unknown error occurred during TGA lookup.";
+      addLog(`ERROR: ${message}`, 'error');
       setState(AuditState.ERROR);
     }
   };
@@ -127,7 +130,7 @@ const AuditWidget: React.FC = () => {
 
   const formatValue = (val: string | undefined) => (!val || val === '[REAL_DATA_REQUIRED]') ? 'DATA UNAVAILABLE' : val;
 
-  if (state === AuditState.IDLE || state === AuditState.ERROR) {
+  if (state === AuditState.IDLE) {
     return (
       <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200 max-w-2xl mx-auto transform transition-all hover:border-blue-500/20">
         <div className="flex items-center gap-3 mb-6">
@@ -168,7 +171,7 @@ const AuditWidget: React.FC = () => {
     );
   }
 
-  if (state === AuditState.PROCESSING) {
+  if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     return (
       <div className="bg-slate-950 rounded-[2.5rem] shadow-2xl p-10 border border-slate-800 max-w-2xl mx-auto overflow-hidden ring-1 ring-slate-800">
         <div className="flex items-center justify-between mb-8">
@@ -190,10 +193,20 @@ const AuditWidget: React.FC = () => {
               <span className="font-bold">{log.message}</span>
             </div>
           ))}
-          <div className="text-slate-200 pl-4 border-l-2 border-slate-800 ml-1 py-1">
-             <div className="cursor-blink bg-blue-400 w-2 h-4"></div>
-          </div>
+          {state === AuditState.PROCESSING && (
+            <div className="text-slate-200 pl-4 border-l-2 border-slate-800 ml-1 py-1">
+              <div className="cursor-blink bg-blue-400 w-2 h-4"></div>
+            </div>
+          )}
         </div>
+        {state === AuditState.ERROR && (
+          <button
+            onClick={() => setState(AuditState.IDLE)}
+            className="mt-8 w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
+          >
+            Try Again
+          </button>
+        )}
       </div>
     );
   }
@@ -548,3 +561,5 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
