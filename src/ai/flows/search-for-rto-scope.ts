@@ -152,9 +152,27 @@ async function fetchRtoScopeFromRegistry(
       ? orgDetails.Scope.ScopeItem
       : [orgDetails.Scope.ScopeItem];
 
-    const scopeItems = items.map(
-      (item: any) => ({ Code: item.Code || item.Identifier, Name: item.Name })
-    );
+    const scopeItems = items
+      .map((item: any) => {
+        if (!item) return null;
+        if (item.Identifier) {
+          return {
+            Code: item.Identifier.Code,
+            Name: item.Identifier.Name,
+          };
+        }
+        if (item.TrainingComponent) {
+          return {
+            Code: item.TrainingComponent.Code,
+            Name: item.TrainingComponent.Name,
+          };
+        }
+        if (item.Code && item.Name) {
+          return { Code: item.Code, Name: item.Name };
+        }
+        return null;
+      })
+      .filter((item): item is { Code: string; Name: string } => item !== null && !!item.Code);
     
     return { name: orgName, scope: scopeItems };
 
