@@ -184,13 +184,6 @@ const AuditWidget: React.FC = () => {
     if (email && phone) setIsUnlocked(true);
   };
 
-  const handleDownloadPdf = () => {
-    if (result) {
-        localStorage.setItem('auditData', JSON.stringify(result));
-        window.open('/dashboard/report', '_blank');
-    }
-  };
-
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   const formatValue = (val: string | undefined) => (!val || val === '[REAL_DATA_REQUIRED]') ? 'DATA UNAVAILABLE' : val;
@@ -413,11 +406,14 @@ const AuditWidget: React.FC = () => {
                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 font-mono text-left">Total Niche Workforce (TAM)</div>
                  <div className="text-5xl font-black text-white tracking-tighter mb-4 text-left">{formatValue(result?.revenue_opportunity.total_market_size)}</div>
                  <p className="text-slate-400 font-medium italic mb-10 leading-relaxed text-left">"{result?.stackable_product.marketing_pitch}"</p>
-                 <button 
-                    onClick={handleDownloadPdf}
-                    className="w-full bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-600/20 active:scale-95 text-xl uppercase tracking-widest">
-                    Download Cited Audit PDF
-                 </button>
+                 <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-2xl text-center">
+                    <h4 className="text-lg font-black text-white">{result?.stackable_product.bundle_title}</h4>
+                    <p className="text-amber-400 font-bold mt-1">Save {result?.stackable_product.discount_applied} with this bundle!</p>
+                    <div className="flex justify-center items-center gap-4 mt-2">
+                         <p className="text-xl line-through text-slate-400">{result?.stackable_product.total_value}</p>
+                         <p className="text-3xl font-black text-white">{result?.stackable_product.bundle_price}</p>
+                    </div>
+                </div>
               </div>
             </div>
           </div>
