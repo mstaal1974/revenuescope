@@ -9,83 +9,9 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
-import { searchForRtoScope } from './search-for-rto-scope';
+import { searchForRtoScope, fetchTrainingComponentDetails } from './search-for-rto-scope';
 import axios from "axios";
 import { parseStringPromise } from "xml2js";
-
-// This function is duplicated from search-for-rto-scope.ts to be used in the manual fallback.
-async function fetchTrainingComponentDetails(
-  trainingComponentCode: string
-): Promise<{ anzsco: string | null; title: string | null }> {
-  const soapRequest = `
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/">
-    <soapenv:Header>
-      <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-        <wsse:UsernameToken>
-          <wsse:Username>${process.env.TGA_USER}</wsse:Username>
-          <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
-        </wsse:UsernameToken>
-      </wsse:Security>
-    </soapenv:Header>
-    <soapenv:Body>
-      <ser:GetDetails>
-          <ser:request>
-            <ser:Code>${trainingComponentCode}</ser:Code>
-          </ser:request>
-      </ser:GetDetails>
-    </soapenv:Body>
-  </soapenv:Envelope>
-  `;
-
-  try {
-    const { data: xmlData } = await axios.post(
-      process.env.TGA_TRAINING_COMPONENT_ENDPOINT!,
-      soapRequest,
-      {
-        headers: {
-          "Content-Type": "text/xml;charset=UTF-8",
-          SOAPAction: "http://training.gov.au/services/ITrainingComponentService/GetDetails",
-        },
-      }
-    );
-    const result = await parseStringPromise(xmlData, {
-      explicitArray: false,
-      tagNameProcessors: [(name) => name.split(":").pop()!],
-      ignoreAttrs: true,
-    });
-    
-    if (result?.Envelope?.Body?.Fault) {
-      const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
-      console.warn(`SOAP Fault from TGA TrainingComponentService for ${trainingComponentCode}: ${faultString}`);
-      return { anzsco: null, title: null };
-    }
-
-    const details = result?.Envelope?.Body?.GetDetailsResponse?.GetDetailsResult;
-    
-    if (!details || !details.Classifications) {
-      return { anzsco: null, title: details?.Title || null };
-    }
-
-    const classifications = Array.isArray(details.Classifications.Classification) ? details.Classifications.Classification : [details.Classifications.Classification];
-    const anzscoClassification = classifications.find((c: any) => c?.Scheme?.includes('ANZSCO'));
-    
-    return {
-        title: details.Title,
-        anzsco: anzscoClassification ? anzscoClassification.Code : null
-    };
-
-  } catch (error) {
-    console.error(`Error fetching training component details for ${trainingComponentCode}:`, error);
-    if (axios.isAxiosError(error) && error.response) {
-      console.error("Axios error details:", error.response.data);
-      if (error.response.status === 500) {
-        console.warn(`Could not find training component ${trainingComponentCode} in TGA registry. It may be an invalid code.`);
-        return { anzsco: null, title: null };
-      }
-    }
-    return { anzsco: null, title: null };
-  }
-}
 
 export async function generateFullAudit(
   input: FullAuditInput

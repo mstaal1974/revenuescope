@@ -21,7 +21,7 @@ export async function searchForRtoScope(
 /**
  * Fetches details for a specific training component (like a qualification) to get its ANZSCO code.
  */
-async function fetchTrainingComponentDetails(
+export async function fetchTrainingComponentDetails(
   trainingComponentCode: string
 ): Promise<{ anzsco: string | null; title: string | null }> {
   const soapRequest = `
@@ -29,15 +29,15 @@ async function fetchTrainingComponentDetails(
     <soapenv:Header>
       <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
         <wsse:UsernameToken>
-          <wsse:Username>${process.env.TGA_USER}</wsse:Username>
-          <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
+          <wsse:Username>\${process.env.TGA_USER}</wsse:Username>
+          <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">\${process.env.TGA_PASS}</wsse:Password>
         </wsse:UsernameToken>
       </wsse:Security>
     </soapenv:Header>
     <soapenv:Body>
       <ser:GetDetails>
           <ser:request>
-            <ser:Code>${trainingComponentCode}</ser:Code>
+            <ser:Code>\${trainingComponentCode}</ser:Code>
           </ser:request>
       </ser:GetDetails>
     </soapenv:Body>
@@ -53,6 +53,7 @@ async function fetchTrainingComponentDetails(
           "Content-Type": "text/xml;charset=UTF-8",
           SOAPAction: "http://training.gov.au/services/ITrainingComponentService/GetDetails",
         },
+        timeout: 15000,
       }
     );
     const result = await parseStringPromise(xmlData, {
@@ -63,7 +64,7 @@ async function fetchTrainingComponentDetails(
     
     if (result?.Envelope?.Body?.Fault) {
       const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
-      console.warn(`SOAP Fault from TGA TrainingComponentService for ${trainingComponentCode}: ${faultString}`);
+      console.warn(`SOAP Fault from TGA TrainingComponentService for \${trainingComponentCode}: \${faultString}`);
       return { anzsco: null, title: null };
     }
 
@@ -82,13 +83,16 @@ async function fetchTrainingComponentDetails(
     };
 
   } catch (error) {
-    console.error(`Error fetching training component details for ${trainingComponentCode}:`, error);
-    if (axios.isAxiosError(error) && error.response) {
-      console.error("Axios error details:", error.response.data);
-      if (error.response.status === 500) {
-        // A 500 error from this service can indicate the training component code was not found.
-        console.warn(`Could not find training component ${trainingComponentCode} in TGA registry. It may be an invalid code.`);
-        return { anzsco: null, title: null };
+    console.error(`Error fetching training component details for \${trainingComponentCode}:`, error);
+    if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        console.warn(`TGA TrainingComponentService request timed out for \${trainingComponentCode}.`);
+      } else if (error.response) {
+        console.error("Axios error details:", error.response.data);
+        if (error.response.status === 500) {
+          // A 500 error from this service can indicate the training component code was not found.
+          console.warn(`Could not find training component \${trainingComponentCode} in TGA registry. It may be an invalid code.`);
+        }
       }
     }
     // For other errors, we also return nulls and let the main flow continue if possible.
@@ -108,15 +112,15 @@ async function fetchRtoScopeFromRegistry(
       <soapenv:Header>
         <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
           <wsse:UsernameToken>
-            <wsse:Username>${process.env.TGA_USER}</wsse:Username>
-            <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
+            <wsse:Username>\${process.env.TGA_USER}</wsse:Username>
+            <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">\${process.env.TGA_PASS}</wsse:Password>
           </wsse:UsernameToken>
         </wsse:Security>
       </soapenv:Header>
       <soapenv:Body>
         <ser:Details>
             <ser:request>
-              <ser:Code>${rtoId}</ser:Code>
+              <ser:Code>\${rtoId}</ser:Code>
               <ser:IncludeScope>true</ser:IncludeScope>
             </ser:request>
         </ser:Details>
@@ -133,6 +137,7 @@ async function fetchRtoScopeFromRegistry(
           "Content-Type": "text/xml;charset=UTF-8",
           SOAPAction: "http://training.gov.au/services/IOrganisationService/Details",
         },
+        timeout: 15000,
       }
     );
 
@@ -144,18 +149,18 @@ async function fetchRtoScopeFromRegistry(
     
     if (result?.Envelope?.Body?.Fault) {
       const faultString = result.Envelope.Body.Fault.faultstring || "Unknown SOAP fault";
-      console.error(`SOAP Fault from TGA OrganisationService: ${faultString}`);
+      console.error(`SOAP Fault from TGA OrganisationService: \${faultString}`);
       const detail = result.Envelope.Body.Fault.detail;
       if (detail) {
         console.error("SOAP Fault Detail:", JSON.stringify(detail));
       }
-      throw new Error(`TGA service returned an error: ${faultString}`);
+      throw new Error(`TGA service returned an error: \${faultString}`);
     }
 
     const orgDetails = result?.Envelope?.Body?.DetailsResponse?.DetailsResult;
 
     if (!orgDetails || !orgDetails.OrganisationName) {
-        throw new Error(`No matching RTO found in registry for ID ${rtoId}. The TGA response was empty or malformed.`);
+        throw new Error(`No matching RTO found in registry for ID \${rtoId}. The TGA response was empty or malformed.`);
     }
     
     const orgName = orgDetails.OrganisationName;
@@ -183,16 +188,16 @@ async function fetchRtoScopeFromRegistry(
     return { name: orgName, scope: scopeItems };
 
   } catch (error) {
-    console.error(`Error fetching or parsing RTO scope for ${rtoId}:`, error);
-    if (axios.isAxiosError(error) && error.response) {
-      console.error("Axios error details:", error.response.data);
-       if (error.response.status === 500) {
-        // A 500 error from this service often indicates the RTO ID was not found.
-        throw new Error(`RTO ID "${rtoId}" is invalid or not found in the TGA registry. Please use a valid ID (e.g., a known sandbox ID like 90003).`);
+    console.error(`Error fetching or parsing RTO scope for \${rtoId}:`, error);
+    if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        throw new Error(`Connection to TGA registry timed out. The service may be overloaded. Please try again.`);
+      }
+      if (error.response && error.response.status === 500) {
+        throw new Error(`RTO ID "\${rtoId}" is invalid or not found in the TGA registry. Please use a valid ID (e.g., a known sandbox ID like 90003).`);
       }
     }
-    // Re-throwing the error will cause the main audit flow to fail, which is the desired behavior.
-    throw new Error(`Failed to connect to TGA registry for RTO ${rtoId}. The service may be down, or credentials may be incorrect.`);
+    throw new Error(`Failed to connect to TGA registry for RTO \${rtoId}. The service may be down or the credentials may be incorrect.`);
   }
 }
 
