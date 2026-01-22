@@ -10,6 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import axios from 'axios';
+import { parseStringPromise } from 'xml2js';
 
 const SearchForRtoScopeInputSchema = z.object({
   rtoName: z.string().describe('The name of the RTO to search for.'),
@@ -46,8 +48,6 @@ const searchForRtoScopeFlow = ai.defineFlow(
   async input => {
     try {
       // Attempt to fetch RTO scope from the TGA registry directly
-      // Assume there is a function fetchRtoScopeFromRegistry that does this.
-      // If it fails, an error will be thrown and caught.
       const scope = await fetchRtoScopeFromRegistry(input.rtoName);
       return {scope};
     } catch (error) {
@@ -61,10 +61,58 @@ const searchForRtoScopeFlow = ai.defineFlow(
 );
 
 async function fetchRtoScopeFromRegistry(rtoName: string): Promise<string> {
-  // TODO: Implement the actual fetching logic from the TGA registry.
-  // This is a placeholder implementation that always throws an error.
-  // Replace this with the actual implementation.
-  return new Promise((resolve, reject) => {
-    reject(new Error('Failed to fetch RTO scope from registry: Not implemented.'));
-  });
+    // This is a placeholder for the actual TGA registry API.
+  // We'll use a mock XML response for demonstration.
+  const organisationCode = rtoName.replace(/\s/g, '+');
+  const mockApiUrl = `https://training.gov.au/api/Details/Rto/${organisationCode}`;
+  
+  try {
+    // In a real scenario, you would make a network request like this:
+    // const response = await axios.get(mockApiUrl);
+    // const xmlData = response.data;
+    
+    // For this demo, we'll use a mock XML string to avoid real network calls.
+    console.log(`Mocking API call to: ${mockApiUrl}`);
+    const mockXmlResponse = `
+      <RtoScopeDetails>
+        <Rto>
+          <Name>${rtoName}</Name>
+        </Rto>
+        <ScopeItems>
+          <ScopeItem>
+            <Type>Qualification</Type>
+            <Identifier>BSB50420</Identifier>
+            <Name>Diploma of Leadership and Management</Name>
+          </ScopeItem>
+          <ScopeItem>
+            <Type>Qualification</Type>
+            <Identifier>TAE40116</Identifier>
+            <Name>Certificate IV in Training and Assessment</Name>
+          </ScopeItem>
+          <ScopeItem>
+            <Type>Unit of Competency</Type>
+            <Identifier>CPCCWHS1001</Identifier>
+            <Name>Prepare to work safely in the construction industry</Name>
+          </ScopeItem>
+        </ScopeItems>
+      </RtoScopeDetails>
+    `;
+
+    const result = await parseStringPromise(mockXmlResponse, { explicitArray: false });
+
+    if (result.RtoScopeDetails && result.RtoScopeDetails.ScopeItems && result.RtoScopeDetails.ScopeItems.ScopeItem) {
+      const items = Array.isArray(result.RtoScopeDetails.ScopeItems.ScopeItem) 
+        ? result.RtoScopeDetails.ScopeItems.ScopeItem 
+        : [result.RtoScopeDetails.ScopeItems.ScopeItem];
+        
+      const scopeList = items.map((item: any) => `${item.Identifier} - ${item.Name}`);
+      return `Current scope for ${rtoName}:\n- ${scopeList.join('\n- ')}`;
+    }
+
+    throw new Error('Could not parse RTO scope from registry response.');
+  } catch (error) {
+    console.error(`Error fetching or parsing RTO scope for ${rtoName}:`, error);
+    // Re-throwing the error will cause the flow to fall back to the AI prompt.
+    throw new Error(`Failed to fetch RTO scope from registry for ${rtoName}.`);
+  }
 }

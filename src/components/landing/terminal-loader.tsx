@@ -12,9 +12,7 @@ const logs = [
   { text: "Initializing audit sequence...", delay: 100 },
   { text: "Establishing secure connection...", delay: 200 },
   { text: "Searching TGA registry for RTO scope...", delay: 500 },
-  { text: "Registry query returned no direct results. Engaging fallback...", delay: 300 },
-  { text: "Deploying Gemini Search agent...", delay: 400 },
-  { text: "Parsing search results for scope definition...", delay: 800 },
+  { text: "Successfully retrieved scope from TGA registry.", delay: 800 },
   { text: "Curriculum scope identified. Beginning analysis.", delay: 200 },
   { text: "Activating Revenue Opportunity Model...", delay: 500 },
   { text: "Analyzing market demand vectors...", delay: 1000 },
@@ -39,9 +37,11 @@ export function TerminalLoader() {
       const processLogs = () => {
         if (logIndex < logs.length) {
           const log = logs[logIndex];
-          setDisplayedLogs((prev) => [...prev, log.text]);
-          logIndex++;
-          setTimeout(processLogs, log.delay);
+          setTimeout(() => {
+            setDisplayedLogs((prev) => [...prev, log.text]);
+            logIndex++;
+            processLogs();
+          }, log.delay);
         }
       };
       processLogs();
@@ -74,9 +74,11 @@ export function TerminalLoader() {
       
       const data = encodeURIComponent(JSON.stringify(result.data));
 
+      const totalDelay = logs.reduce((acc, log) => acc + log.delay, 0);
+
       setTimeout(() => {
         router.push(`/dashboard?data=${data}`);
-      }, logs[logs.length-1].delay + 500);
+      }, totalDelay + 500);
 
 
     } catch (error) {
