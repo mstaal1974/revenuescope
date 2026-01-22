@@ -61,57 +61,68 @@ const searchForRtoScopeFlow = ai.defineFlow(
 );
 
 async function fetchRtoScopeFromRegistry(rtoName: string): Promise<string> {
-    // This is a placeholder for the actual TGA registry API.
-  // We'll use a mock XML response for demonstration.
-  const organisationCode = rtoName.replace(/\s/g, '+');
-  const mockApiUrl = `https://training.gov.au/api/Details/Rto/${organisationCode}`;
-  
+    const soapRequest = `
+    <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:tga="http://tga.gov.au/services" xmlns:dat="http://schemas.datacontract.org/2004/07/Deewr.Tga.WebServices.DataContracts">
+      <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+        <wsse:Security soap:mustUnderstand="true" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+          <wsse:UsernameToken wsu:Id="UsernameToken-1">
+            <wsse:Username>${process.env.TGA_USER}</wsse:Username>
+            <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${process.env.TGA_PASS}</wsse:Password>
+          </wsse:UsernameToken>
+        </wsse:Security>
+        <wsa:Action>http://tga.gov.au/services/IOrganisationService/SearchByName</wsa:Action>
+        <wsa:To>${process.env.TGA_ENDPOINT}</wsa:To>
+      </soap:Header>
+      <soap:Body>
+        <tga:SearchByName>
+          <tga:request>
+            <dat:Name>${rtoName}</dat:Name>
+            <dat:IncludeRtoScope>true</dat:IncludeRtoScope>
+          </tga:request>
+        </tga:SearchByName>
+      </soap:Body>
+    </soap:Envelope>
+  `;
+
   try {
-    // In a real scenario, you would make a network request like this:
-    // const response = await axios.get(mockApiUrl);
-    // const xmlData = response.data;
-    
-    // For this demo, we'll use a mock XML string to avoid real network calls.
-    console.log(`Mocking API call to: ${mockApiUrl}`);
-    const mockXmlResponse = `
-      <RtoScopeDetails>
-        <Rto>
-          <Name>${rtoName}</Name>
-        </Rto>
-        <ScopeItems>
-          <ScopeItem>
-            <Type>Qualification</Type>
-            <Identifier>BSB50420</Identifier>
-            <Name>Diploma of Leadership and Management</Name>
-          </ScopeItem>
-          <ScopeItem>
-            <Type>Qualification</Type>
-            <Identifier>TAE40116</Identifier>
-            <Name>Certificate IV in Training and Assessment</Name>
-          </ScopeItem>
-          <ScopeItem>
-            <Type>Unit of Competency</Type>
-            <Identifier>CPCCWHS1001</Identifier>
-            <Name>Prepare to work safely in the construction industry</Name>
-          </ScopeItem>
-        </ScopeItems>
-      </RtoScopeDetails>
-    `;
+    const { data: xmlData } = await axios.post(process.env.TGA_ENDPOINT!, soapRequest, {
+      headers: {
+        'Content-Type': 'application/soap+xml; charset=utf-8',
+        'Action': 'http://tga.gov.au/services/IOrganisationService/SearchByName'
+      }
+    });
 
-    const result = await parseStringPromise(mockXmlResponse, { explicitArray: false });
+    const result = await parseStringPromise(xmlData, {
+      explicitArray: false,
+      tagNameProcessors: [name => name.split(':').pop()!],
+      ignoreAttrs: true,
+    });
 
-    if (result.RtoScopeDetails && result.RtoScopeDetails.ScopeItems && result.RtoScopeDetails.ScopeItems.ScopeItem) {
-      const items = Array.isArray(result.RtoScopeDetails.ScopeItems.ScopeItem) 
-        ? result.RtoScopeDetails.ScopeItems.ScopeItem 
-        : [result.RtoScopeDetails.ScopeItems.ScopeItem];
-        
-      const scopeList = items.map((item: any) => `${item.Identifier} - ${item.Name}`);
-      return `Current scope for ${rtoName}:\n- ${scopeList.join('\n- ')}`;
+    const searchResult = result.Envelope.Body.SearchByNameResponse.SearchByNameResult;
+
+    if (!searchResult || !searchResult.Organisation) {
+      throw new Error('No matching RTO found in registry.');
     }
 
-    throw new Error('Could not parse RTO scope from registry response.');
+    // Assuming the first result is the most relevant one.
+    const org = Array.isArray(searchResult.Organisation) ? searchResult.Organisation[0] : searchResult.Organisation;
+    
+    if (!org.Scope || !org.Scope.ScopeItem) {
+        throw new Error('RTO found, but scope is not available.');
+    }
+    
+    const items = Array.isArray(org.Scope.ScopeItem)
+      ? org.Scope.ScopeItem
+      : [org.Scope.ScopeItem];
+
+    const scopeList = items.map((item: any) => `${item.Code || item.Identifier} - ${item.Name}`);
+    return `Current scope for ${org.Name}:\n- ${scopeList.join('\n- ')}`;
+
   } catch (error) {
     console.error(`Error fetching or parsing RTO scope for ${rtoName}:`, error);
+    if (axios.isAxiosError(error) && error.response) {
+        console.error("Axios error details:", error.response.data);
+    }
     // Re-throwing the error will cause the flow to fall back to the AI prompt.
     throw new Error(`Failed to fetch RTO scope from registry for ${rtoName}.`);
   }
