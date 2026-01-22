@@ -1,7 +1,6 @@
 "use server";
 /**
- * @fileOverview A flow that searches for an RTO scope by its ID. It attempts to fetch the scope from the TGA registry directly.
- * If that fails, it uses Gemini Search as a fallback.
+ * @fileOverview A flow that searches for an RTO scope by its ID. It fetches the scope from the TGA registry directly.
  *
  * - searchForRtoScope - A function that handles the RTO scope search process.
  */
@@ -18,16 +17,6 @@ export async function searchForRtoScope(
   return searchForRtoScopeFlow(input);
 }
 
-const rtoScopePrompt = ai.definePrompt({
-  name: "rtoScopePrompt",
-  input: { schema: SearchForRtoScopeInputSchema },
-  output: { schema: SearchForRtoScopeOutputSchema },
-  prompt: `You are an AI assistant specialized in retrieving RTO scope information. The live connection to the training.gov.au (TGA) registry failed. Your task is to use your existing knowledge and search capabilities to act as a fallback. Find the RTO's official name and its scope of registration for the provided RTO ID. The scope should be a list of qualifications, where each qualification has a 'Code' and a 'Name'.
-
-  RTO ID: {{{rtoId}}}
-  `,
-});
-
 const searchForRtoScopeFlow = ai.defineFlow(
   {
     name: "searchForRtoScopeFlow",
@@ -35,20 +24,10 @@ const searchForRtoScopeFlow = ai.defineFlow(
     outputSchema: SearchForRtoScopeOutputSchema,
   },
   async (input) => {
-    try {
-      // Attempt to fetch RTO scope from the TGA registry directly
-      const { scope, name } = await fetchRtoScopeFromRegistry(input.rtoId);
-      return { scope, name };
-    } catch (error) {
-      // If direct registry fetch fails, use Gemini Search as a fallback
-      console.error("Failed to fetch RTO scope from registry:", error);
-      console.log("Using Gemini Search as a fallback.");
-      const { output } = await rtoScopePrompt(input);
-      if (!output) {
-        throw new Error("AI fallback failed to produce an output.");
-      }
-      return { scope: output.scope, name: output.name };
-    }
+    // Fetch RTO scope from the TGA registry directly.
+    // If this fails, the entire flow will fail, ensuring we only use the official TGA source.
+    const { scope, name } = await fetchRtoScopeFromRegistry(input.rtoId);
+    return { scope, name };
   }
 );
 
@@ -121,7 +100,7 @@ async function fetchRtoScopeFromRegistry(
     if (axios.isAxiosError(error) && error.response) {
       console.error("Axios error details:", error.response.data);
     }
-    // Re-throwing the error will cause the flow to fall back to the AI prompt.
-    throw new Error(`Failed to fetch RTO scope from registry for ${rtoId}.`);
+    // Re-throwing the error will cause the main audit flow to fail, which is the desired behavior.
+    throw new Error(`Failed to fetch RTO scope from TGA registry for ${rtoId}. The service may be down or the RTO ID is invalid.`);
   }
 }
