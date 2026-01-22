@@ -77,7 +77,15 @@ async function fetchTrainingComponentDetails(
 
   } catch (error) {
     console.error(`Error fetching training component details for ${trainingComponentCode}:`, error);
-    // Return nulls so the main flow can decide how to handle it
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("Axios error details:", error.response.data);
+      if (error.response.status === 500) {
+        // A 500 error from this service can indicate the training component code was not found.
+        console.warn(`Could not find training component ${trainingComponentCode} in TGA registry. It may be an invalid code.`);
+        return { anzsco: null, title: null };
+      }
+    }
+    // For other errors, we also return nulls and let the main flow continue if possible.
     return { anzsco: null, title: null };
   }
 }
@@ -154,9 +162,13 @@ async function fetchRtoScopeFromRegistry(
     console.error(`Error fetching or parsing RTO scope for ${rtoId}:`, error);
     if (axios.isAxiosError(error) && error.response) {
       console.error("Axios error details:", error.response.data);
+       if (error.response.status === 500) {
+        // A 500 error from this service often indicates the RTO ID was not found.
+        throw new Error(`RTO ID "${rtoId}" is invalid or not found in the TGA registry. Please use a valid ID (e.g., a known sandbox ID like 90003).`);
+      }
     }
     // Re-throwing the error will cause the main audit flow to fail, which is the desired behavior.
-    throw new Error(`Failed to fetch RTO scope from TGA registry for ${rtoId}. The service may be down or the RTO ID is invalid.`);
+    throw new Error(`Failed to connect to TGA registry for RTO ${rtoId}. The service may be down, or credentials may be incorrect.`);
   }
 }
 
