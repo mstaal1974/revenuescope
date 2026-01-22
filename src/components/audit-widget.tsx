@@ -7,6 +7,7 @@ import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { Textarea } from './ui/textarea';
+import { OccupationAnalysis } from './dashboard/occupation-analysis';
 
 
 type AuditResult = FullAuditOutput;
@@ -389,33 +390,7 @@ const AuditWidget: React.FC = () => {
               {formatValue(result?.strategic_theme)}
             </div>
             
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              <div className="space-y-6 text-left">
-                <p className="text-xl text-slate-400 leading-relaxed font-medium italic">
-                  {formatValue(result?.market_justification)}
-                </p>
-                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
-                   <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 italic font-mono">Acquisition Model (2% - 10%)</div>
-                   <div className="text-3xl font-black text-white">
-                      {formatValue(result?.revenue_opportunity.conservative_capture)} — {formatValue(result?.revenue_opportunity.ambitious_capture)}
-                   </div>
-                   <p className="text-xs text-slate-500 mt-2 font-bold leading-relaxed">{formatValue(result?.revenue_opportunity.acquisition_rationale)}</p>
-                </div>
-              </div>
-              <div className="bg-slate-900/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10 text-left">
-                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 font-mono text-left">Total Niche Workforce (TAM)</div>
-                 <div className="text-5xl font-black text-white tracking-tighter mb-4 text-left">{formatValue(result?.revenue_opportunity.total_market_size)}</div>
-                 <p className="text-slate-400 font-medium italic mb-10 leading-relaxed text-left">"{result?.stackable_product.marketing_pitch}"</p>
-                 <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-2xl text-center">
-                    <h4 className="text-lg font-black text-white">{result?.stackable_product.bundle_title}</h4>
-                    <p className="text-amber-400 font-bold mt-1">Save {result?.stackable_product.discount_applied} with this bundle!</p>
-                    <div className="flex justify-center items-center gap-4 mt-2">
-                         <p className="text-xl line-through text-slate-400">{result?.stackable_product.total_value}</p>
-                         <p className="text-3xl font-black text-white">{result?.stackable_product.bundle_price}</p>
-                    </div>
-                </div>
-              </div>
-            </div>
+            <OccupationAnalysis data={result.occupation_analysis} />
           </div>
         </div>
 

@@ -36,12 +36,23 @@ const SkillHeatmapItemSchema = z.object({
   demand_level: z.string().describe("High/Medium/Low"),
 });
 
+const OccupationAnalysisItemSchema = z.object({
+  occupation_name: z.string().describe("The name of the occupation, e.g., 'Construction Manager'"),
+  demand_level: z.string().describe("High/Medium/Low"),
+  labour_market_size: z.string().describe("Total employment volume for this occupation, e.g., '95,400'"),
+  growth_rate: z.string().describe("The projected growth or decline rate, e.g., '+8.2%' or '-1.5%'"),
+});
+
+
 export const FullAuditOutputSchema = z.object({
   rto_id: z.string(),
 
   // From Strategic Growth Director
   executive_summary: ExecutiveSummarySchema,
   sector_breakdown: z.array(SectorBreakdownSchema),
+  
+  // New Occupation Analysis
+  occupation_analysis: z.array(OccupationAnalysisItemSchema).max(10).describe("A list of up to 10 key occupations related to the RTO's scope, ordered by demand."),
 
   // New Skills Heatmap
   skills_heatmap: z.array(SkillHeatmapItemSchema).describe("A heatmap of all identified skills from the RTO's scope, with demand levels."),

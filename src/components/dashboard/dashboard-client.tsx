@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { AuditData } from "@/app/actions";
 import { LeadCaptureOverlay } from "./lead-capture-overlay";
 import { IndividualCourseCard } from "./individual-course-card";
+import { OccupationAnalysis } from "./occupation-analysis";
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -39,33 +40,8 @@ export function DashboardClient({ data }: { data: AuditData }) {
             {formatValue(data.strategic_theme)}
           </div>
           
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <div className="space-y-6 text-left">
-              <p className="text-xl text-slate-400 leading-relaxed font-medium italic">
-                {formatValue(data.market_justification)}
-              </p>
-              <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
-                 <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 italic font-mono">Acquisition Model (2% - 10%)</div>
-                 <div className="text-3xl font-black text-white">
-                    {formatValue(data.revenue_opportunity?.conservative_capture)} — {formatValue(data.revenue_opportunity?.ambitious_capture)}
-                 </div>
-                 <p className="text-xs text-slate-500 mt-2 font-bold leading-relaxed">{formatValue(data.revenue_opportunity?.acquisition_rationale)}</p>
-              </div>
-            </div>
-            <div className="bg-slate-900/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10 text-left">
-               <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 font-mono text-left">Total Niche Workforce (TAM)</div>
-               <div className="text-5xl font-black text-white tracking-tighter mb-4 text-left">{formatValue(data.revenue_opportunity?.total_market_size)}</div>
-               <p className="text-slate-400 font-medium italic mb-10 leading-relaxed text-left">"{data.stackable_product?.marketing_pitch}"</p>
-               <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-2xl text-center">
-                  <h4 className="text-lg font-black text-white">{data.stackable_product.bundle_title}</h4>
-                  <p className="text-amber-400 font-bold mt-1">Save {data.stackable_product.discount_applied} with this bundle!</p>
-                  <div className="flex justify-center items-center gap-4 mt-2">
-                      <p className="text-xl line-through text-slate-400">{data.stackable_product.total_value}</p>
-                      <p className="text-3xl font-black text-white">{data.stackable_product.bundle_price}</p>
-                  </div>
-              </div>
-            </div>
-          </div>
+          <OccupationAnalysis data={data.occupation_analysis} />
+
         </div>
       </div>
 
