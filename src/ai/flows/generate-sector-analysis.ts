@@ -34,7 +34,7 @@ const SectorAnalysisOutputSchema = z.object({
       student_volume_potential: z.number().int(),
     }),
     key_skills_in_demand: z.array(z.string()).describe("A list of specific, in-demand skills derived from ESCO, e.g., ['monitor construction progress', 'manage construction budget']"),
-    recommended_actions: z.array(z.string()).describe("Actionable recommendations based on the key skills, e.g., ['Launch Micro-credential in Site Safety']"),
+    recommended_actions: z.array(z.string()).describe("A list of commercially viable short courses or micro-credentials to develop, e.g., ['Short Course: Construction Budgeting Essentials', 'Micro-credential: Site Safety Supervision']"),
   })),
 });
 export type SectorAnalysisOutput = z.infer<typeof SectorAnalysisOutputSchema>;
@@ -69,7 +69,7 @@ Qualification -> TGA -> ANZSCO -> ISCO-08 -> ESCO -> Detailed Skills -> ABS (SDM
     For each sector, perform the following simulation:
     a.  **Qualification to ANZSCO:** Identify the primary ANZSCO occupation codes linked to the qualifications in this sector. (e.g., CPC50220 Diploma of Building and Construction -> 133111 Construction Project Manager).
     b.  **ANZSCO to ISCO-08 (The Bridge):** Map the Australian ANZSCO code to the global ISCO-08 standard. (e.g., ANZSCO 133111 -> ISCO-08 1323 'Construction managers').
-    c.  **ISCO-08 to ESCO Skills:** Simulate a query to the ESCO API using the ISCO code to get a list of granular, job-specific skills. (e.g., From 'Construction managers', extract skills like "monitor construction progress", "manage construction budget", "liaise with clients"). Aggregate the top 3-5 most relevant skills for the sector and place them in the \`key_skills_in_demand\` array.
+    c.  **ISCO-08 to ESCO Skills:** Simulate a query to the ESCO API using the ISCO code to get a list of granular, job-specific skills. (e.g., From 'Construction managers', extract skills like "monitor construction progress", "manage construction budget"). Aggregate the top 3-5 most relevant skills for the sector and place them in the \`key_skills_in_demand\` array.
     d.  **ABS Data Aggregation (using ANZSCO):**
         *   Simulate using the ANZSCO codes as keys to query ABS data.
         *   **Total Employment Volume:** Estimate the sum of all employed persons in these linked occupations in Australia.
@@ -86,7 +86,7 @@ Qualification -> TGA -> ANZSCO -> ISCO-08 -> ESCO -> Detailed Skills -> ABS (SDM
 
 5.  **Synthesize Output:**
     *   Compile all sector breakdowns, including the \`key_skills_in_demand\`.
-    *   Generate \`recommended_actions\` that are directly linked to the identified skills.
+    *   Based on the \`key_skills_in_demand\`, generate a list of commercially viable, non-accredited short courses or micro-credentials for the \`recommended_actions\` array. These should be practical, skill-focused training products that the RTO can develop and sell quickly.
     *   Create the executive summary by summing total revenue, identifying the top sector, and providing a concise, actionable strategic recommendation.
 
 **RTO Scope to Analyze:**
