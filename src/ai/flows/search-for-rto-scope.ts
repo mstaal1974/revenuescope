@@ -22,9 +22,7 @@ const rtoScopePrompt = ai.definePrompt({
   name: "rtoScopePrompt",
   input: { schema: SearchForRtoScopeInputSchema },
   output: { schema: SearchForRtoScopeOutputSchema },
-  prompt: `You are an AI assistant specialized in retrieving RTO scope information.
-
-  The user will provide the ID of the RTO, and you should respond with the RTO's name and scope.
+  prompt: `You are an AI assistant specialized in retrieving RTO scope information. The user will provide the ID of the RTO. Your task is to find the RTO's official name and its scope of registration. The scope should be a list of qualifications, where each qualification has a 'Code' and a 'Name'.
 
   RTO ID: {{{rtoId}}}
   `,
@@ -56,7 +54,7 @@ const searchForRtoScopeFlow = ai.defineFlow(
 
 async function fetchRtoScopeFromRegistry(
   rtoId: string
-): Promise<{ scope: string; name: string }> {
+): Promise<{ scope: {Code: string, Name: string}[]; name: string }> {
   const soapRequest = `
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/">
       <soapenv:Header>
@@ -105,21 +103,18 @@ async function fetchRtoScopeFromRegistry(
     const orgName = orgDetails.OrganisationName;
 
     if (!orgDetails.Scope || !orgDetails.Scope.ScopeItem) {
-      return { name: orgName, scope: `RTO '${orgName}' found, but scope is not available.`};
+      return { name: orgName, scope: []};
     }
 
     const items = Array.isArray(orgDetails.Scope.ScopeItem)
       ? orgDetails.Scope.ScopeItem
       : [orgDetails.Scope.ScopeItem];
 
-    const scopeList = items.map(
-      (item: any) => `${item.Code || item.Identifier} - ${item.Name}`
+    const scopeItems = items.map(
+      (item: any) => ({ Code: item.Code || item.Identifier, Name: item.Name })
     );
-    const scope = `Current scope for ${orgName}:\n- ${scopeList.join(
-      "\n- "
-    )}`;
     
-    return { name: orgName, scope };
+    return { name: orgName, scope: scopeItems };
 
   } catch (error) {
     console.error(`Error fetching or parsing RTO scope for ${rtoId}:`, error);

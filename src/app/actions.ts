@@ -1,15 +1,21 @@
 "use server";
 
 import { generateFullAudit } from "@/ai/flows/generate-full-audit";
-import { FullAuditOutputSchema, type FullAuditOutput } from "@/ai/types";
+import { FullAuditOutputSchema, type FullAuditOutput, type SearchForRtoScopeOutput } from "@/ai/types";
+import { searchForRtoScope as searchRtoScopeFlow } from "@/ai/flows/search-for-rto-scope";
 
 export type AuditData = FullAuditOutput;
 
-export async function runFullAudit(
+export type TgaScopeItem = {
+  Code: string;
+  Name: string;
+};
+
+export async function performFullAudit(
   rtoId: string
-): Promise<{ data?: AuditData; error?: string }> {
+): Promise<AuditData> {
   if (!rtoId) {
-    return { error: "RTO ID is required." };
+    throw new Error("RTO ID is required.");
   }
 
   try {
@@ -19,17 +25,32 @@ export async function runFullAudit(
 
     if (!parsedData.success) {
       console.error("Data validation failed:", parsedData.error);
-      return { error: "Failed to process blueprint data." };
+      throw new Error("Failed to process blueprint data.");
     }
 
-    return { data: parsedData.data };
+    return parsedData.data;
   } catch (e) {
     console.error("Full audit failed:", e);
-    return {
-      error:
-        e instanceof Error
-          ? e.message
-          : "An unexpected error occurred during the audit.",
-    };
+    const message =
+      e instanceof Error
+        ? e.message
+        : "An unexpected error occurred during the audit.";
+    throw new Error(message);
   }
+}
+
+export async function searchRtoScope(rtoId: string): Promise<{ rtoName: string; scope: SearchForRtoScopeOutput['scope'] }> {
+    if (!rtoId) {
+        throw new Error("RTO ID is required.");
+    }
+    try {
+        const result = await searchRtoScopeFlow({ rtoId });
+        return { rtoName: result.name, scope: result.scope };
+    } catch(e) {
+        console.error("TGA scope search failed:", e);
+        const message = e instanceof Error
+          ? e.message
+          : "An unexpected error occurred during TGA lookup.";
+        throw new Error(message);
+    }
 }

@@ -95,7 +95,7 @@
     @apply border-border;
   }
   body {
-    @apply text-foreground blueprint-grid-light dark:blueprint-grid-dark;
+    @apply text-foreground;
   }
 }
 
@@ -124,22 +124,29 @@
       linear-gradient(90deg, hsla(var(--border), 0.2) 1px, transparent 1px);
     background-size: 24px 24px;
   }
-  .blueprint-grid-expanded {
-    background-image:
-      linear-gradient(hsla(var(--border), 0.3) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--border), 0.3) 1px, transparent 1px);
-    background-size: 24px 24px;
+  .blueprint-bg {
     background-color: hsl(var(--card));
+    background-image:
+      linear-gradient(hsla(var(--border), 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--border), 0.5) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
-  .dark .blueprint-grid-expanded {
+  .dark .blueprint-bg {
+    background-color: hsl(var(--card));
     background-image:
       linear-gradient(hsla(var(--border), 0.1) 1px, transparent 1px),
       linear-gradient(90deg, hsla(var(--border), 0.1) 1px, transparent 1px);
     background-size: 24px 24px;
-    background-color: hsl(var(--card));
   }
   .perspective-1000 {
     perspective: 1000px;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 

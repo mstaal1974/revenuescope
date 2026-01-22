@@ -1,0 +1,514 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import { performFullAudit, searchRtoScope, type TgaScopeItem } from '@/app/actions';
+import type { FullAuditOutput } from '@/ai/types';
+import { Award, ChevronDown, ChevronUp, Lock, Rocket, Briefcase, Users, Zap } from 'lucide-react';
+
+type AuditResult = FullAuditOutput;
+type IndividualCourse = FullAuditOutput['individual_courses'][0];
+
+enum AuditState {
+  IDLE,
+  PROCESSING,
+  ERROR,
+  RESULTS,
+  TGA_RESULTS,
+}
+
+type AuditLog = {
+  message: string;
+  status: 'info' | 'success' | 'error' | 'warning';
+  timestamp: Date;
+};
+
+const BadgePreview: React.FC<{ title: string; tier: string; badgeName?: string; style?: string }> = ({ title, tier, badgeName }) => {
+  const isGold = tier.toLowerCase().includes('strategic') || tier.toLowerCase().includes('3');
+  const isSilver = tier.toLowerCase().includes('practitioner') || tier.toLowerCase().includes('2');
+
+  return (
+    <div className="relative w-28 h-28 shrink-0 perspective-1000 group">
+      <div className={`w-full h-full rounded-2xl flex flex-col items-center justify-center p-3 text-[7px] font-black text-center uppercase tracking-tighter border-4 shadow-xl transition-all duration-700 group-hover:rotate-12 group-hover:scale-110 ${
+        isGold ? 'bg-amber-400 border-amber-600 text-amber-900 shadow-amber-500/20' :
+        isSilver ? 'bg-slate-300 border-slate-400 text-slate-800 shadow-slate-400/20' :
+        'bg-orange-200 border-orange-400 text-orange-900 shadow-orange-500/20'
+      }`}>
+        <div className="mb-1 opacity-50 font-mono">microcredentials.io</div>
+        <div className="leading-tight mb-1 px-1 line-clamp-2">{badgeName || title}</div>
+        <div className={`px-2 py-0.5 rounded-full mt-auto text-[6px] ${
+          isGold ? 'bg-amber-900/10' : isSilver ? 'bg-slate-800/10' : 'bg-orange-950/10'
+        }`}>OFFICIAL CREDENTIAL</div>
+      </div>
+    </div>
+  );
+};
+
+const AuditWidget: React.FC = () => {
+  const [rtoCode, setRtoCode] = useState('');
+  const [state, setState] = useState<AuditState>(AuditState.IDLE);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [result, setResult] = useState<AuditResult | null>(null);
+  const [tgaData, setTgaData] = useState<{ rtoName: string, scope: TgaScopeItem[] } | null>(null);
+  const [email, setEmail] = useState('');
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
+  const [monitoring, setMonitoring] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const addLog = (message: string, status: AuditLog['status'] = 'info') => {
+    setLogs(prev => [...prev, { message, status, timestamp: new Date() }]);
+  };
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [logs]);
+
+  const handleAudit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!rtoCode) return;
+
+    setState(AuditState.PROCESSING);
+    setLogs([]);
+    
+    addLog(`INITIATING CALIBRATED PRICING AUDIT v4.5...`, 'info');
+    await delay(100);
+    addLog('[1/5] ANALYZING TGA SCOPE FOR SHORT-FORM CLUSTERS...', 'info');
+    
+    try {
+      const data = await performFullAudit(rtoCode);
+      addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
+      await delay(150);
+      addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
+      await delay(150);
+      addLog('[4/5] VALIDATING DATA INTEGRITY PROTOCOLS...', 'info');
+      await delay(150);
+      addLog('[5/5] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
+      await delay(100);
+      
+      setResult(data);
+      setState(AuditState.RESULTS);
+    } catch (err) {
+      console.error(err);
+      addLog('FATAL: Engine failed to validate market metrics.', 'error');
+      setState(AuditState.ERROR);
+    }
+  };
+
+  const handleTgaLookup = async () => {
+    if (!rtoCode) return;
+    setState(AuditState.PROCESSING);
+    setLogs([]);
+    addLog(`DEBUG: INITIATING TGA REGISTRY FETCH...`, 'warning');
+    await delay(100);
+    addLog(`SEARCHING TRAINING.GOV.AU FOR ID: ${rtoCode}...`, 'info');
+    
+    try {
+      const data = await searchRtoScope(rtoCode);
+      addLog(`SUCCESS: RETRIEVED ${data.scope.length} SCOPE ITEMS.`, 'success');
+      setTgaData(data);
+      setState(AuditState.TGA_RESULTS);
+    } catch (err) {
+      addLog('TGA REGISTRY LOOKUP FAILED.', 'error');
+      setState(AuditState.ERROR);
+    }
+  };
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) setIsUnlocked(true);
+  };
+
+  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+  const formatValue = (val: string | undefined) => (val === '[REAL_DATA_REQUIRED]' || !val) ? 'DATA UNAVAILABLE' : val;
+
+  if (state === AuditState.IDLE || state === AuditState.ERROR) {
+    return (
+      <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200 max-w-2xl mx-auto transform transition-all hover:border-blue-500/20">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <Zap className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-3xl font-black text-slate-900 tracking-tight italic">Verified Audit AI</h3>
+        </div>
+        <p className="text-slate-500 mb-10 leading-relaxed text-lg font-medium text-left">
+          Our v4.5 engine uses real-time ABS and TGA feeds with <strong>calibrated anchor pricing</strong> to architect high-intent course stacks.
+        </p>
+        <form onSubmit={handleAudit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="RTO Code (e.g. 90003)"
+            value={rtoCode}
+            onChange={(e) => setRtoCode(e.target.value)}
+            className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl transition-all"
+            required
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              type="submit"
+              className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
+            >
+              Start Audit
+            </button>
+            <button
+              type="button"
+              onClick={handleTgaLookup}
+              className="w-full bg-white border-2 border-slate-200 text-slate-950 hover:bg-slate-50 font-black px-8 py-5 rounded-2xl transition-all active:scale-[0.98] text-xl"
+            >
+              Verify Scope
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  if (state === AuditState.PROCESSING) {
+    return (
+      <div className="bg-slate-950 rounded-[2.5rem] shadow-2xl p-10 border border-slate-800 max-w-2xl mx-auto overflow-hidden ring-1 ring-slate-800">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex gap-2.5">
+            <div className="w-3 h-3 rounded-full bg-red-500/80 animate-pulse"></div>
+            <div className="w-3 h-3 rounded-full bg-amber-500/80 animate-pulse delay-75"></div>
+            <div className="w-3 h-3 rounded-full bg-emerald-500/80 animate-pulse delay-150"></div>
+          </div>
+          <span className="text-blue-500 text-xs font-black tracking-[0.2em] uppercase italic">Verifying Registry Data...</span>
+        </div>
+        <div ref={scrollRef} className="h-80 overflow-y-auto font-mono text-xs md:text-sm space-y-4 scrollbar-hide py-2 text-left">
+          {logs.map((log, i) => (
+            <div key={i} className={`flex gap-4 ${
+              log.status === 'success' ? 'text-emerald-400' : 
+              log.status === 'error' ? 'text-rose-400' : 
+              log.status === 'warning' ? 'text-amber-400' : 'text-blue-400'
+            }`}>
+              <span className="opacity-40 shrink-0">[{log.timestamp.toLocaleTimeString([], { hour12: false })}]</span>
+              <span className="font-bold">{log.message}</span>
+            </div>
+          ))}
+          <div className="text-slate-200 pl-4 border-l-2 border-slate-800 ml-1 py-1">
+             <div className="cursor-blink bg-blue-400 w-2 h-4"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (state === AuditState.TGA_RESULTS) {
+    return (
+      <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200 max-w-4xl mx-auto">
+        <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">TGA Scope Verification</h3>
+        <p className="text-lg font-bold text-blue-600 mb-8">{tgaData?.rtoName}</p>
+        <div className="h-96 overflow-y-auto space-y-2 pr-4 scrollbar-hide">
+          {(tgaData?.scope || []).map((item, index) => (
+            <div key={index} className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-4">
+              <span className="font-mono text-sm text-slate-500">{item.Code}</span>
+              <span className="font-bold text-slate-800">{item.Name}</span>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => setState(AuditState.IDLE)}
+          className="mt-8 w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
+        >
+          Back to Audit
+        </button>
+      </div>
+    );
+  }
+
+  if (!result) {
+      return (
+          <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold text-center">No audit data available. Please start a new audit.</h3>
+               <button
+                  onClick={() => setState(AuditState.IDLE)}
+                  className="mt-8 w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
+                >
+                  Back to Audit
+                </button>
+          </div>
+      )
+  }
+
+  return (
+    <div className="bg-white rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-slate-200 max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-1000">
+      {/* 1. THE AUDIT HEADER (Summary Data) */}
+      <div className="bg-slate-950 p-16 text-white text-left relative overflow-hidden border-b border-slate-800">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[180px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+            <div className="bg-emerald-500/20 text-emerald-400 text-xs font-black px-5 py-2 rounded-full uppercase tracking-[0.3em] border border-emerald-500/30 inline-flex items-center gap-3 shadow-lg shadow-emerald-500/10">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+              Verified 2%-10% Revenue Audit
+            </div>
+            <button 
+              onClick={() => setMonitoring(!monitoring)}
+              className={`flex items-center gap-3 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest border transition-all ${
+                monitoring ? 'bg-emerald-500 border-emerald-400 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+              }`}
+            >
+              {monitoring ? '✓ Active Market Watch' : 'Monitor Sector Demand'}
+            </button>
+          </div>
+          
+          <h3 className="text-slate-500 text-sm font-black uppercase tracking-[0.2em] mb-4 font-mono">Strategic Product Theme</h3>
+          <div className="text-5xl lg:text-7xl font-black mb-10 tracking-tighter text-white leading-none">
+            {formatValue(result?.strategic_theme)}
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div className="space-y-6 text-left">
+              <p className="text-xl text-slate-400 leading-relaxed font-medium italic">
+                {formatValue(result?.market_justification)}
+              </p>
+              <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
+                 <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 italic font-mono">Acquisition Model (2% - 10%)</div>
+                 <div className="text-3xl font-black text-white">
+                    {formatValue(result?.revenue_opportunity.conservative_capture)} — {formatValue(result?.revenue_opportunity.ambitious_capture)}
+                 </div>
+                 <p className="text-xs text-slate-500 mt-2 font-bold leading-relaxed">{formatValue(result?.revenue_opportunity.acquisition_rationale)}</p>
+              </div>
+            </div>
+            <div className="bg-slate-900/50 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10 text-left">
+               <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 font-mono text-left">Total Niche Workforce (TAM)</div>
+               <div className="text-5xl font-black text-white tracking-tighter mb-4 text-left">{formatValue(result?.revenue_opportunity.total_market_size)}</div>
+               <p className="text-slate-400 font-medium italic mb-10 leading-relaxed text-left">"{result?.stackable_product.marketing_pitch}"</p>
+               <button className="w-full bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-600/20 active:scale-95 text-xl uppercase tracking-widest">
+                  Download Cited Audit PDF
+               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-16 relative bg-slate-50/50">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-16">
+          <div className="text-left">
+            <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Micro-Stack Architect</h4>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Calibrated Sequential Pathway v4.5</p>
+          </div>
+          
+          <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center shadow-inner relative">
+            <div className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-500 ease-out ${viewMode === 'rto' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}></div>
+            <button 
+              onClick={() => setViewMode('rto')}
+              className={`relative z-10 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                viewMode === 'rto' ? 'text-slate-950' : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              RTO Perspective
+            </button>
+            <button 
+              onClick={() => setViewMode('student')}
+              className={`relative z-10 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                viewMode === 'student' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Student Perspective
+            </button>
+          </div>
+        </div>
+
+        <div className={`grid lg:grid-cols-3 gap-8 transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
+          {(result?.individual_courses || []).map((course, i) => (
+            <div key={i} className={`bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200 flex flex-col hover:shadow-2xl hover:border-blue-200 transition-all group relative overflow-hidden ${expandedCourse === i ? 'lg:col-span-3 ring-4 ring-blue-500/10' : ''}`}>
+              
+              <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">{course.tier}</span>
+                    <div className="flex items-center gap-2">
+                       <span className="text-xl font-black text-slate-900">{formatValue(course.suggested_price)}</span>
+                       <span className="text-[8px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-widest font-mono">{course.pricing_tier}</span>
+                    </div>
+                  </div>
+                  <h5 className="text-2xl font-black text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">
+                    {viewMode === 'student' ? (course.badge_preview?.badge_name || course.course_title) : course.course_title}
+                  </h5>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+                    {viewMode === 'student' ? 'EARN DIGITAL CREDENTIAL' : `${course.duration} CONTACT HOURS`}
+                  </p>
+                </div>
+                <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_preview?.badge_name} />
+              </div>
+
+              {expandedCourse !== i && (
+                <div className={`mb-8 p-6 rounded-2xl border text-left ${viewMode === 'rto' ? 'bg-slate-50 border-slate-100' : 'bg-blue-50/50 border-blue-100'}`}>
+                   <div className={`text-[8px] font-black uppercase tracking-widest mb-2 font-mono ${viewMode === 'rto' ? 'text-slate-400' : 'text-blue-400'}`}>
+                      {viewMode === 'rto' ? 'Primary Sales Target' : 'Career Impact / RSD'}
+                   </div>
+                   <div className="text-sm font-bold text-slate-900 leading-relaxed italic">
+                      {viewMode === 'rto' ? course.target_student : `"${course.badge_preview?.rich_skill_descriptors?.[0]}"`}
+                   </div>
+                </div>
+              )}
+
+              {expandedCourse !== i ? (
+                <>
+                  <p className="text-sm font-medium text-slate-500 mb-8 line-clamp-2 italic text-left">"{course.content_blueprint?.learning_outcomes?.[0]}..."</p>
+                  <button 
+                    onClick={() => setExpandedCourse(i)}
+                    className="mt-auto w-full bg-slate-50 hover:bg-slate-100 text-slate-950 font-black py-4 rounded-2xl border border-slate-200 transition-all text-xs uppercase tracking-widest active:scale-95"
+                  >
+                    Generate Full Skeleton
+                  </button>
+                </>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-12 mt-4 animate-in fade-in slide-in-from-top-4 duration-500 relative text-left blueprint-bg">
+                  <div className="space-y-10 relative z-10 pt-8">
+                    <div>
+                      <h6 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                        <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black shadow-lg">1</span>
+                        80% Ready Skeleton
+                      </h6>
+                      <div className="space-y-6 relative">
+                         <div className="absolute left-3 top-6 bottom-6 w-px border-l border-dashed border-slate-300 -z-10"></div>
+                        {course.content_blueprint?.modules?.map((m, j) => (
+                          <div key={j} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm ml-4 relative">
+                            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-600 rounded-full"></div>
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Module {j + 1}: {m.title}</div>
+                            <div className="text-sm font-black text-slate-900 mb-2">{m.topic}</div>
+                            <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block border border-blue-100">Activity: {m.activity}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-slate-950 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
+                       <h6 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                          <span className="w-6 h-6 bg-blue-900/50 rounded flex items-center justify-center text-[10px] border border-blue-500/30">2</span>
+                          B2B Sales Enablement
+                       </h6>
+                       <div className="mb-8">
+                          <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Ideal Corporate Persona</div>
+                          <div className="text-sm font-black text-white">{course.sales_kit?.ideal_buyer_persona}</div>
+                       </div>
+                       <div>
+                          <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Pre-Written Sales Script</div>
+                          <p className="text-xs leading-relaxed text-slate-300 font-medium italic">"{course.sales_kit?.b2b_pitch_script}"</p>
+                       </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-10 relative z-10 pt-8">
+                    <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
+                        <h6 className="text-[10px] font-black text-slate-950 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                            <span className="w-6 h-6 bg-slate-950 text-white rounded flex items-center justify-center text-[10px] font-black">3</span>
+                            Digital Badge & RSDs
+                        </h6>
+                        <div className="flex gap-6 items-center mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                           <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_preview?.badge_name} />
+                           <div>
+                              <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Badge Title</div>
+                              <div className="text-base font-black text-slate-900 leading-tight">{course.badge_preview?.badge_name}</div>
+                              <div className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block mt-2 border border-blue-100 uppercase tracking-tighter">Style: {course.badge_preview?.visual_style}</div>
+                           </div>
+                        </div>
+
+                        <div className="mb-8">
+                            <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 font-mono">Rich Skill Descriptors (RSDs)</div>
+                            <div className="space-y-3">
+                                {course.badge_preview?.rich_skill_descriptors?.map((rsd, idx) => (
+                                    <div key={idx} className="flex gap-3 items-start p-3 bg-slate-50/50 rounded-xl border border-slate-100 group relative">
+                                        <div className="w-5 h-5 bg-blue-600 text-white text-[8px] font-black rounded flex items-center justify-center shrink-0">✓</div>
+                                        <div className="text-[10px] font-bold text-slate-700 leading-tight">{rsd}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="p-5 bg-blue-600 rounded-2xl text-white relative overflow-hidden shadow-lg shadow-blue-600/20">
+                           <div className="text-[8px] font-black text-blue-200 uppercase tracking-widest mb-2 italic font-mono">Student Retention Trigger</div>
+                           <div className="text-[11px] font-black leading-tight italic">"{course.badge_preview?.retention_trigger}"</div>
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-[2rem] p-8 relative overflow-hidden">
+                        <h6 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                            <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black">4</span>
+                            Marketing Launch Plan
+                        </h6>
+                        <div className="space-y-6">
+                           <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm relative">
+                              <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-[7px] font-black px-2 py-0.5 rounded italic shadow-md uppercase">Ad Creative</div>
+                              <div className="text-xs font-black text-slate-950 mb-2 leading-tight">"{course.marketing_plan?.ad_creatives?.headline}"</div>
+                              <p className="text-[10px] text-slate-500 mb-4 line-clamp-2 font-medium">"{course.marketing_plan?.ad_creatives?.body_copy}"</p>
+                              <div className="bg-blue-600 text-white text-[9px] font-black py-2 rounded-lg text-center uppercase tracking-widest">{course.marketing_plan?.ad_creatives?.cta_button}</div>
+                           </div>
+                           <button 
+                              onClick={() => setExpandedCourse(null)}
+                              className="w-full text-slate-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest py-4 border-2 border-dashed border-slate-200 rounded-2xl transition-all font-mono"
+                           >
+                              Hide Detailed Blueprint
+                           </button>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {!isUnlocked && (
+          <div className="absolute inset-0 flex items-center justify-center p-8 bg-white/40 backdrop-blur-3xl z-50">
+            <div className="bg-white p-16 rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.3)] border border-slate-100 max-w-xl text-center relative overflow-hidden">
+              <div className="bg-blue-600 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-blue-600/40">
+                <Lock className="w-12 h-12 text-white" />
+              </div>
+              <h5 className="font-black text-4xl text-slate-950 mb-6 tracking-tight italic">Unlock Market-Ready Data</h5>
+              <p className="text-slate-500 text-xl mb-12 leading-relaxed font-medium">
+                Get full curriculum maps, calibrated pricing models, and persona-driven marketing launch plans with ad creative.
+              </p>
+              <form onSubmit={handleUnlock} className="space-y-4">
+                <input
+                  type="email"
+                  placeholder="rto-manager@training.edu.au"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black py-6 rounded-[2rem] transition-all shadow-2xl shadow-slate-950/20 text-xl uppercase tracking-widest"
+                >
+                  Download Sales & Content Pack
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white px-16 py-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-10">
+        <div className="flex flex-col items-start gap-4 text-left">
+          <div className="flex items-center gap-4 text-emerald-500 font-black text-[10px] uppercase tracking-[0.2em] font-mono">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            Pricing Calibration Active (Base Anchor + Market Multiplier)
+          </div>
+          {result?.citations && result.citations.length > 0 && (
+            <div className="text-[9px] text-slate-400 font-bold max-w-xl leading-relaxed">
+              <span className="text-slate-500 font-mono uppercase">Citations:</span> {result.citations.join(' | ')}
+            </div>
+          )}
+        </div>
+        <div className="flex gap-12">
+          <div className="flex flex-col text-left">
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Modeling Basis</span>
+             <span className="text-xs font-black text-slate-900">ABS Labor Market Stats 2024</span>
+          </div>
+          <div className="flex flex-col text-left">
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Forecast Range</span>
+             <span className="text-xs font-black text-slate-900 text-blue-600 italic">2% — 10% Target Capture</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AuditWidget;
