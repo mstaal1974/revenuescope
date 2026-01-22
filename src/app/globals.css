@@ -124,15 +124,22 @@
       linear-gradient(90deg, hsla(var(--border), 0.2) 1px, transparent 1px);
     background-size: 24px 24px;
   }
-  .badge-3d {
-    transform-style: preserve-3d;
-    transform: translateZ(20px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 0 10px hsla(var(--primary), 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  .blueprint-grid-expanded {
+    background-image:
+      linear-gradient(hsla(var(--border), 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--border), 0.3) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-color: hsl(var(--card));
   }
-  .badge-3d:hover {
-    transform: translateZ(20px) translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15), 0 0 20px hsla(var(--primary), 0.3);
+  .dark .blueprint-grid-expanded {
+    background-image:
+      linear-gradient(hsla(var(--border), 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--border), 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-color: hsl(var(--card));
+  }
+  .perspective-1000 {
+    perspective: 1000px;
   }
 }
 

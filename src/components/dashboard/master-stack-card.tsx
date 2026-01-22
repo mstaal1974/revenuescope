@@ -8,21 +8,23 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Award, Package, Percent, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Stack = AuditData["product_ecosystem"]["stackable_product"];
 
 interface MasterStackCardProps {
   stack: Stack;
   view: 'rto' | 'student';
+  className?: string;
 }
 
-export function MasterStackCard({ stack, view }: MasterStackCardProps) {
+export function MasterStackCard({ stack, view, className }: MasterStackCardProps) {
   if (!stack) {
     return null;
   }
   
   return (
-    <Card className="rounded-3xl shadow-2xl bg-card border-2 border-primary/80 relative overflow-hidden">
+    <Card className={cn("rounded-3xl shadow-2xl bg-card border-2 border-primary/80 relative overflow-hidden", className)}>
         <div className="absolute top-2 right-2">
             <div className="flex items-center gap-1 text-xs bg-primary text-primary-foreground font-semibold px-3 py-1 rounded-full">
                 <Star className="h-4 w-4" />
@@ -51,10 +53,10 @@ export function MasterStackCard({ stack, view }: MasterStackCardProps) {
             </div>
              <div className="p-3 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">Badges Issued</p>
-                 <div className="flex justify-center gap-1 mt-1">
+                 <div className="flex justify-center gap-2 mt-1 perspective-1000">
                     {Array.from({ length: stack.badges_issued }).map((_, i) => (
-                        <div key={i} className="badge-3d p-1 rounded-full bg-tier-3-bg">
-                            <Award className="h-4 w-4 text-tier-3-fg" />
+                        <div key={i} className="p-1 rounded-full bg-tier-3-bg transition-transform duration-300 transform-gpu hover:-translate-y-1 hover:rotate-y-12">
+                            <Award className="h-5 w-5 text-tier-3-fg" />
                         </div>
                     ))}
                 </div>

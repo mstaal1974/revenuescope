@@ -41,6 +41,19 @@ export const FullAuditOutputSchema = z.object({
         key_skill: z.string().describe("The primary ESCO skill taught"),
         career_roi: z.string().optional().describe("A short sentence about the career benefit for the student."),
         revenue_potential: z.string().optional().describe("The calculated revenue potential for the RTO."),
+        badge: z.object({
+            title: z.string().describe("The official title displayed on the digital badge."),
+            rich_skill_descriptors: z.array(z.string()).describe("A list of specific, verifiable skills for the badge."),
+        }),
+        sales_kit: z.object({
+            b2b_pitch: z.string().describe("A script for selling this course to a business manager."),
+            target_personas: z.array(z.string()).describe("Specific job titles or roles to target."),
+        }),
+        marketing_launch_unit: z.object({
+            ad_copy: z.string().describe("Short, punchy ad copy for social media."),
+            launch_timeline: z.array(z.string()).describe("A week-by-week launch plan."),
+        }),
+        learning_outcomes: z.array(z.string()).describe("A list of what the student will be able to do after the course."),
     })).length(3),
     stackable_product: z.object({
       bundle_title: z.string().describe("e.g. 'Executive Certificate in Site Safety'"),

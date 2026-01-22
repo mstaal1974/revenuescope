@@ -31,7 +31,7 @@ const prompt = ai.definePrompt({
 1.  **Sector Grouping:** Group the provided RTO scope qualifications by their training package code (e.g., CPC, BSB). Map these to broad industry sectors (e.g., 'CPC' -> "Construction & Infrastructure").
 2.  **Market Data Aggregation (Simulated):** For each sector, simulate a query to the Australian Bureau of Statistics (ABS) to determine Market Health (demand, trend, wage) and Financial Opportunity (revenue gap, student volume).
 3.  **Revenue Calculation:** Use the formula: (Total Employment Volume * Upskilling Rate) * (Avg Course Price $450). Apply a 2% upskilling rate for saturated markets (e.g., Business) and up to 8% for high-demand ones (e.g., Care/Tech).
-4.  **Executive Summary & Actions:** Synthesize findings into a high-level 'executive_summary' and provide tangible 'recommended_actions' for each sector.
+4.  **Executive Summary & Actions:** Synthesize findings into a high-level 'executive_summary' and provide tangible 'recommended_actions' for each sector. These actions should be specific short courses, not full qualifications.
 
 ---
 **PART 2: PRODUCT ECOSYSTEM DESIGN (Micro-Stack Architect Persona)**
@@ -49,10 +49,20 @@ const prompt = ai.definePrompt({
     *   Populate a compelling 'marketing_pitch' and set 'badges_issued'.
 5.  **Student ROI & RTO Revenue:** For each course, add a 'career_roi' field with a short sentence about the career benefit for the student, and a 'revenue_potential' field to estimate the annual revenue for the RTO from this course.
 
+---
+**PART 3: ARTIFACT SYNTHESIS (For each individual course in Part 2)**
+---
+For each of the 3 tiers, you must generate the following sales and marketing artifacts:
+1.  **Digital Badge:** Create a \`badge\` object containing a \`title\` (e.g., "Certified Hazard Analyst") and a list of three specific, verifiable \`rich_skill_descriptors\` for the digital badge.
+2.  **Sales Kit:** Create a \`sales_kit\` object with a compelling B2B \`b2b_pitch\` script for selling the course to a manager, and a list of two \`target_personas\` (specific job titles).
+3.  **Marketing Launch Unit:** Create a \`marketing_launch_unit\` object. Include short, punchy \`ad_copy\` for social media and a 4-week \`launch_timeline\`.
+4.  **Learning Outcomes:** Provide a list of three actionable \`learning_outcomes\` describing what the student will be able to do.
+
+
 **OUTPUT INSTRUCTIONS:**
 *   Strictly adhere to the JSON output schema. All fields are mandatory.
 *   Ensure all fields are fully populated with realistic, commercially-focused content.
-*   The output must be a single JSON object containing both the sector analysis and the product ecosystem.
+*   The output must be a single JSON object containing the sector analysis, the product ecosystem, and all synthesized artifacts.
 
 Begin analysis.`,
 });

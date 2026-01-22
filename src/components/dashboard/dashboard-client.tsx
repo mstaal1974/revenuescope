@@ -20,6 +20,11 @@ interface DashboardClientProps {
 export function DashboardClient({ data }: DashboardClientProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [view, setView] = useState<'rto' | 'student'>('rto');
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const handleExpand = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4 relative">
@@ -75,27 +80,23 @@ export function DashboardClient({ data }: DashboardClientProps) {
                     <p className="text-lg text-muted-foreground">Guide students from Foundation to Strategic Mastery.</p>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-10 items-start">
-                    {/* Left Column: Individual Courses Staircase */}
-                    <div className="space-y-6 relative">
-                        <h4 className="font-bold text-xl text-center lg:text-left">Individual Courses</h4>
-                        {(data.product_ecosystem.individual_courses || []).map((course, index) => (
-                        <div key={index} className="relative">
-                            <IndividualCourseCard course={course} view={view} />
-                            {index < (data.product_ecosystem.individual_courses || []).length - 1 && (
-                            <div className="hidden lg:block absolute top-full left-1/2 -translate-x-1/2 w-px h-6 bg-border" />
-                            )}
-                        </div>
-                        ))}
-                    </div>
-
-                    {/* Right Column: Master Stack */}
-                    <div className="relative">
-                        <div className="hidden lg:flex absolute top-1/2 -left-8 -translate-y-1/2 items-center justify-center bg-background p-2 rounded-full">
-                            <ArrowRight className="h-6 w-6 text-primary" />
-                        </div>
-                        <MasterStackCard stack={data.product_ecosystem.stackable_product} view={view} />
-                    </div>
+                <div className="grid lg:grid-cols-3 gap-8 items-start">
+                    {(data.product_ecosystem.individual_courses || []).map((course, index) => (
+                      <IndividualCourseCard 
+                        key={index}
+                        course={course} 
+                        view={view}
+                        isExpanded={expandedIndex === index}
+                        onExpand={() => handleExpand(index)}
+                      />
+                    ))}
+                    {expandedIndex === null && (
+                      <MasterStackCard 
+                        stack={data.product_ecosystem.stackable_product} 
+                        view={view} 
+                        className="lg:col-span-3"
+                      />
+                    )}
                 </div>
             </div>
         )}
