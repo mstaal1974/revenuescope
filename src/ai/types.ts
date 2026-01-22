@@ -52,7 +52,7 @@ export const FullAuditOutputSchema = z.object({
   sector_breakdown: z.array(SectorBreakdownSchema),
   
   // New Occupation Analysis
-  occupation_analysis: z.array(OccupationAnalysisItemSchema).max(10),
+  occupation_analysis: z.array(OccupationAnalysisItemSchema),
 
   // New Skills Heatmap
   skills_heatmap: z.array(SkillHeatmapItemSchema),
@@ -104,7 +104,7 @@ export const FullAuditOutputSchema = z.object({
           cta_button: z.string(),
         }),
       }),
-  })).length(3),
+  })),
   
   stackable_product: z.object({
     bundle_title: z.string(),
