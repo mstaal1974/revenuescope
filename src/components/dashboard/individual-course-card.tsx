@@ -40,7 +40,7 @@ const BadgePreview = ({ course, view }: { course: Course; view: 'rto' | 'student
                 <div className="flex justify-between items-start">
                     <div>
                         <p className={`font-bold text-xs ${tierInfo.badgeText} opacity-70`}>MICROCREDENTIALS.IO</p>
-                        <p className={`font-bold ${tierInfo.badgeText}`}>{view === 'student' ? course.badge.title : course.course_title}</p>
+                        <p className={`font-bold ${tierInfo.badgeText}`}>{view === 'student' ? course.badge?.title || course.course_title : course.course_title}</p>
                     </div>
                     <Award className={`h-8 w-8 ${tierInfo.badgeText}`} />
                 </div>
@@ -56,11 +56,6 @@ const BadgePreview = ({ course, view }: { course: Course; view: 'rto' | 'student
 export function IndividualCourseCard({ course, view, isExpanded, onExpand, className }: IndividualCourseCardProps) {
     const tierNumber = getTierNumber(course.tier);
     const tierInfo = tierDetails[tierNumber as keyof typeof tierDetails];
-    const tierStyles = {
-        '1': 'border-tier-1-fg/20 bg-tier-1-bg/50 text-tier-1-fg',
-        '2': 'border-tier-2-fg/20 bg-tier-2-bg/50 text-tier-2-fg',
-        '3': 'border-tier-3-fg/20 bg-tier-3-bg/50 text-tier-3-fg',
-    }[tierNumber] || 'border-border bg-card';
     const tierPillStyles = `bg-blue-50 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300`;
 
     if (isExpanded) {
@@ -75,7 +70,7 @@ export function IndividualCourseCard({ course, view, isExpanded, onExpand, class
                     <div className="lg:col-span-3 space-y-6">
                         <div className="flex items-center gap-4">
                             <Badge className={cn(tierPillStyles, "font-code text-xs")}>{tierInfo.name}</Badge>
-                            <h2 className="text-2xl font-bold font-headline">{view === 'student' ? course.badge.title : course.course_title}</h2>
+                            <h2 className="text-2xl font-bold font-headline">{view === 'student' ? course.badge?.title || course.course_title : course.course_title}</h2>
                         </div>
                         <p className="text-muted-foreground">
                             {view === 'rto' 
@@ -98,10 +93,10 @@ export function IndividualCourseCard({ course, view, isExpanded, onExpand, class
                              {view === 'rto' && (
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">TARGET PERSONA</span>
-                                    <span className="font-bold">{course.sales_kit.target_personas.join(', ')}</span>
+                                    <span className="font-bold">{course.sales_kit?.target_personas?.join(', ') || 'N/A'}</span>
                                 </div>
                              )}
-                             {view === 'student' && (
+                             {view === 'student' && course.career_roi && (
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">CAREER ROI</span>
                                     <span className="font-bold">{course.career_roi}</span>
@@ -114,7 +109,7 @@ export function IndividualCourseCard({ course, view, isExpanded, onExpand, class
                          <div>
                             <h4 className="font-bold font-headline mb-2">{view === 'student' ? 'Rich Skill Descriptors' : 'Learning Outcomes'}</h4>
                             <ul className="space-y-2">
-                                {(view === 'student' ? course.badge.rich_skill_descriptors : course.learning_outcomes).map((item, i) => (
+                                {((view === 'student' ? course.badge?.rich_skill_descriptors : course.learning_outcomes) || []).map((item, i) => (
                                     <li key={i} className="flex items-start gap-2 text-sm">
                                         <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                                         <span>{item}</span>
@@ -125,32 +120,36 @@ export function IndividualCourseCard({ course, view, isExpanded, onExpand, class
                     </div>
                     <div className="lg:col-span-2 flex flex-col gap-6">
                         {/* Sales Enablement Kit */}
-                        <div className="bg-slate-950 text-slate-100 rounded-2xl p-4">
-                             <h4 className="font-bold font-headline mb-2 text-slate-300">Sales Enablement Kit</h4>
-                             <p className="text-sm font-medium italic text-slate-400">"{course.sales_kit.b2b_pitch}"</p>
-                        </div>
+                        {course.sales_kit && (
+                            <div className="bg-slate-950 text-slate-100 rounded-2xl p-4">
+                                 <h4 className="font-bold font-headline mb-2 text-slate-300">Sales Enablement Kit</h4>
+                                 <p className="text-sm font-medium italic text-slate-400">"{course.sales_kit.b2b_pitch}"</p>
+                            </div>
+                        )}
                         {/* Marketing Launch Unit */}
-                        <div className="border rounded-2xl p-4 space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h4 className="font-bold font-headline">Marketing Launch Unit</h4>
-                                <Badge variant="outline">AD UNIT</Badge>
+                        {course.marketing_launch_unit && (
+                            <div className="border rounded-2xl p-4 space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="font-bold font-headline">Marketing Launch Unit</h4>
+                                    <Badge variant="outline">AD UNIT</Badge>
+                                </div>
+                                <div className="bg-muted p-4 rounded-lg">
+                                    <p className="text-sm font-medium">{course.marketing_launch_unit.ad_copy}</p>
+                                    <Button size="sm" className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Learn More</Button>
+                                </div>
+                                <div>
+                                     <h5 className="font-semibold text-xs text-muted-foreground mb-2">LAUNCH TIMELINE</h5>
+                                     <ul className="space-y-1">
+                                        {(course.marketing_launch_unit.launch_timeline || []).map((item, i) => (
+                                            <li key={i} className="flex items-center gap-2 text-sm font-code">
+                                                <span className="text-muted-foreground">{i+1}.</span>
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                     </ul>
+                                </div>
                             </div>
-                            <div className="bg-muted p-4 rounded-lg">
-                                <p className="text-sm font-medium">{course.marketing_launch_unit.ad_copy}</p>
-                                <Button size="sm" className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">Learn More</Button>
-                            </div>
-                            <div>
-                                 <h5 className="font-semibold text-xs text-muted-foreground mb-2">LAUNCH TIMELINE</h5>
-                                 <ul className="space-y-1">
-                                    {course.marketing_launch_unit.launch_timeline.map((item, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-sm font-code">
-                                            <span className="text-muted-foreground">{i+1}.</span>
-                                            <span>{item}</span>
-                                        </li>
-                                    ))}
-                                 </ul>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
