@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['"JetBrains Mono"', 'monospace'],
+        headline: ['"JetBrains Mono"', 'monospace'],
         code: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
@@ -64,6 +64,18 @@ export default {
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
+        },
+        'tier-1': {
+          bg: 'hsl(var(--tier-1-bg))',
+          fg: 'hsl(var(--tier-1-fg))',
+        },
+        'tier-2': {
+          bg: 'hsl(var(--tier-2-bg))',
+          fg: 'hsl(var(--tier-2-fg))',
+        },
+        'tier-3': {
+          bg: 'hsl(var(--tier-3-bg))',
+          fg: 'hsl(var(--tier-3-fg))',
         },
       },
       borderRadius: {

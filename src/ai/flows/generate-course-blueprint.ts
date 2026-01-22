@@ -20,7 +20,7 @@ const prompt = ai.definePrompt({
   name: 'courseBlueprintPrompt',
   input: { schema: z.object({ scope: z.string(), rtoId: z.string() }) },
   output: { schema: CourseBlueprintOutputSchema },
-  prompt: `You are the "Curriculum Strategist," an AI expert in designing profitable, non-accredited training products. Your task is to analyze an RTO's scope and build a structured "Zero-to-Hero" product stack. You do not suggest full qualifications.
+  prompt: `You are the "Micro-Stack Architect," an AI expert in designing profitable, non-accredited training products. Your task is to analyze an RTO's scope and build a structured "Zero-to-Hero" product stack. You do not suggest full qualifications.
 
 **LOGIC FLOW:**
 
@@ -30,21 +30,21 @@ const prompt = ai.definePrompt({
 
 **2. 3-Tier Product Design:**
 *   Based on your selected theme, design exactly three distinct, stackable short courses, representing a clear progression from foundational knowledge to strategic mastery.
-*   **Tier 1 (Foundation):**
-    *   **Focus:** Awareness.
+*   **Tier 1 (The Hook):**
+    *   **Focus:** Awareness & Safety.
     *   **Title:** A welcoming, low-friction title.
     *   **Duration:** Short (e.g., '4 Hours').
     *   **Price:** Low-cost entry point (e.g., '$195').
     *   **Target:** Entry-level staff or newcomers.
     *   **Skill:** A single, fundamental ESCO skill.
-*   **Tier 2 (Practitioner):**
+*   **Tier 2 (The Core):**
     *   **Focus:** Application & "Doing."
     *   **Title:** A more technical, action-oriented title.
     *   **Duration:** Mid-level (e.g., '12 Hours' or '1 Day').
     *   **Price:** Mid-range (e.g., '$350').
     *   **Target:** Team leads, supervisors, or experienced practitioners.
     *   **Skill:** A specific, in-demand technical ESCO skill.
-*   **Tier 3 (Strategic):**
+*   **Tier 3 (The Crown):**
     *   **Focus:** Management & Leadership.
     *   **Title:** An executive-level title.
     *   **Duration:** High-commitment (e.g., '2 Days').

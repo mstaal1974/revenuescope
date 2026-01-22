@@ -10,6 +10,8 @@ import { ExecutiveSummary } from "./executive-summary";
 import { SectorCard } from "./sector-card";
 import { Separator } from "../ui/separator";
 import { ArrowRight, Microscope, PackageCheck } from "lucide-react";
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
 
 interface DashboardClientProps {
   data: AuditData;
@@ -17,6 +19,7 @@ interface DashboardClientProps {
 
 export function DashboardClient({ data }: DashboardClientProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [view, setView] = useState<'rto' | 'student'>('rto');
 
   return (
     <div className="container mx-auto py-8 px-4 relative">
@@ -28,6 +31,12 @@ export function DashboardClient({ data }: DashboardClientProps) {
           !isUnlocked ? "blur-lg pointer-events-none" : ""
         }`}
       >
+        <div className="flex justify-end items-center gap-2 mb-8">
+            <Label htmlFor="view-toggle" className={view === 'rto' ? 'font-bold text-primary' : 'text-muted-foreground'}>RTO View</Label>
+            <Switch id="view-toggle" checked={view === 'student'} onCheckedChange={(checked) => setView(checked ? 'student' : 'rto')} />
+            <Label htmlFor="view-toggle" className={view === 'student' ? 'font-bold text-primary' : 'text-muted-foreground'}>Student View</Label>
+        </div>
+
         {/* Part 1: Strategic Growth Director Analysis */}
         <div className="mb-12">
             <div className="flex items-center gap-3 mb-4">
@@ -40,7 +49,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
               {(data.sector_breakdown || []).map((sector) => (
-                <SectorCard key={sector.sector_name} sector={sector} />
+                <SectorCard key={sector.sector_name} sector={sector} view={view}/>
               ))}
             </div>
         </div>
@@ -72,7 +81,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
                         <h4 className="font-bold text-xl text-center lg:text-left">Individual Courses</h4>
                         {(data.product_ecosystem.individual_courses || []).map((course, index) => (
                         <div key={index} className="relative">
-                            <IndividualCourseCard course={course} />
+                            <IndividualCourseCard course={course} view={view} />
                             {index < (data.product_ecosystem.individual_courses || []).length - 1 && (
                             <div className="hidden lg:block absolute top-full left-1/2 -translate-x-1/2 w-px h-6 bg-border" />
                             )}
@@ -85,7 +94,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
                         <div className="hidden lg:flex absolute top-1/2 -left-8 -translate-y-1/2 items-center justify-center bg-background p-2 rounded-full">
                             <ArrowRight className="h-6 w-6 text-primary" />
                         </div>
-                        <MasterStackCard stack={data.product_ecosystem.stackable_product} />
+                        <MasterStackCard stack={data.product_ecosystem.stackable_product} view={view} />
                     </div>
                 </div>
             </div>

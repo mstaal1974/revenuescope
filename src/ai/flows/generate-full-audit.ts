@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
 
 export async function generateFullAudit(
@@ -20,25 +20,37 @@ const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
   input: { schema: z.object({ rtoId: z.string(), scope: z.string() }) },
   output: { schema: FullAuditOutputSchema },
-  prompt: `You are a master "EdTech Strategist" AI. Your task is to perform a two-part analysis for a given RTO. First, you will act as a Strategic Growth Director for a macro analysis. Second, you will act as a Curriculum Strategist for a micro product design.
+  prompt: `You are a master "EdTech Strategist" AI combining two roles: a "Strategic Growth Director" for macro analysis, and a "Micro-Stack Architect" for micro product design.
 
 **RTO ID:** {{{rtoId}}}
 **RTO SCOPE:** {{{scope}}}
 
-**PART 1: SECTOR-LEVEL ANALYSIS (Strategic Growth Director)**
-
+---
+**PART 1: SECTOR-LEVEL ANALYSIS (Strategic Growth Director Persona)**
+---
 1.  **Sector Grouping:** Group the provided RTO scope qualifications by their training package code (e.g., CPC, BSB). Map these to broad industry sectors (e.g., 'CPC' -> "Construction & Infrastructure").
 2.  **Market Data Aggregation (Simulated):** For each sector, simulate a query to the Australian Bureau of Statistics (ABS) to determine Market Health (demand, trend, wage) and Financial Opportunity (revenue gap, student volume).
-3.  **Executive Summary & Actions:** Synthesize findings into a high-level \`executive_summary\` and provide high-level \`recommended_actions\` for each sector.
+3.  **Revenue Calculation:** Use the formula: (Total Employment Volume * Upskilling Rate) * (Avg Course Price $450). Apply a 2% upskilling rate for saturated markets (e.g., Business) and up to 8% for high-demand ones (e.g., Care/Tech).
+4.  **Executive Summary & Actions:** Synthesize findings into a high-level 'executive_summary' and provide tangible 'recommended_actions' for each sector.
 
-**PART 2: PRODUCT ECOSYSTEM DESIGN (Curriculum Strategist)**
-
-1.  **Theme Selection:** Use the \`top_performing_sector\` from Part 1 to choose a single, high-value **"Strategic Theme"** for a product ecosystem.
-2.  **3-Tier Product Design:** Design exactly three distinct, stackable short courses representing a "Zero-to-Hero" progression (Foundation, Practitioner, Strategic).
-3.  **The Stackable Bundle:** Combine the three tiers into a "Master Micro-Credential." Calculate total value, apply a 15% discount for the \`bundle_price\`, and write a marketing pitch.
+---
+**PART 2: PRODUCT ECOSYSTEM DESIGN (Micro-Stack Architect Persona)**
+---
+1.  **Theme Selection:** Use the 'top_performing_sector' from Part 1 to choose a single, high-value **"Strategic Theme"** for a product ecosystem (e.g., "High-Voltage Safety Architecture for Renewable Infrastructure").
+2.  **3-Tier Product Design "Staircase":**
+    *   **Tier 1 (The Hook):** A low-friction, high-volume awareness/safety course. Low price point.
+    *   **Tier 2 (The Core):** A mid-tier course for technical mastery. Mid price point.
+    *   **Tier 3 (The Crown):** A high-margin, strategic leadership course. Premium price point.
+3.  **Pricing Calibration:** Use a 'Base Anchor + Market Multiplier' logic. For example, a technical skill in a high-wage sector gets a 1.3x price multiplier.
+4.  **The "Stack" Bundle:**
+    *   Combine Tiers 1, 2, & 3 into a "Master Micro-Credential."
+    *   Calculate 'total_value' (sum of individual prices).
+    *   Apply a 15% "Bundle Discount" to set the 'bundle_price'.
+    *   Populate a compelling 'marketing_pitch' and set 'badges_issued'.
+5.  **Student ROI & RTO Revenue:** For each course, add a 'career_roi' field with a short sentence about the career benefit for the student, and a 'revenue_potential' field to estimate the annual revenue for the RTO from this course.
 
 **OUTPUT INSTRUCTIONS:**
-*   Strictly adhere to the JSON output schema.
+*   Strictly adhere to the JSON output schema. All fields are mandatory.
 *   Ensure all fields are fully populated with realistic, commercially-focused content.
 *   The output must be a single JSON object containing both the sector analysis and the product ecosystem.
 

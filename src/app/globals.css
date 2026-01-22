@@ -38,10 +38,17 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    --tier-1-bg: 27 87% 96%;
+    --tier-1-fg: 25 95% 53%;
+    --tier-2-bg: 220 13% 96%;
+    --tier-2-fg: 220 13% 40%;
+    --tier-3-bg: 50 95% 96%;
+    --tier-3-fg: 45 90% 50%;
   }
 
   .dark {
-    --background: 220 13% 10%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
     --card: 220 13% 15%;
@@ -73,6 +80,13 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    --tier-1-bg: 27 87% 12%;
+    --tier-1-fg: 25 95% 65%;
+    --tier-2-bg: 220 13% 18%;
+    --tier-2-fg: 215 28% 70%;
+    --tier-3-bg: 50 95% 12%;
+    --tier-3-fg: 45 90% 60%;
   }
 }
 
@@ -81,7 +95,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground blueprint-grid-light dark:blueprint-grid-dark;
   }
 }
 
@@ -95,6 +109,30 @@
   }
   .strategic-theme-glow {
     background-image: radial-gradient(ellipse 30rem 20rem at 50% 0%, hsl(var(--primary) / 0.1), transparent 80%);
+  }
+  .blueprint-grid-light {
+    background-color: hsl(var(--background));
+    background-image:
+      linear-gradient(hsla(var(--border), 0.8) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--border), 0.8) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .blueprint-grid-dark {
+    background-color: hsl(var(--background));
+    background-image:
+      linear-gradient(hsla(var(--border), 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--border), 0.2) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .badge-3d {
+    transform-style: preserve-3d;
+    transform: translateZ(20px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 0 10px hsla(var(--primary), 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .badge-3d:hover {
+    transform: translateZ(20px) translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15), 0 0 20px hsla(var(--primary), 0.3);
   }
 }
 

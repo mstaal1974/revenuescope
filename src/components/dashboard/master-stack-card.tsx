@@ -13,9 +13,10 @@ type Stack = AuditData["product_ecosystem"]["stackable_product"];
 
 interface MasterStackCardProps {
   stack: Stack;
+  view: 'rto' | 'student';
 }
 
-export function MasterStackCard({ stack }: MasterStackCardProps) {
+export function MasterStackCard({ stack, view }: MasterStackCardProps) {
   if (!stack) {
     return null;
   }
@@ -25,7 +26,7 @@ export function MasterStackCard({ stack }: MasterStackCardProps) {
         <div className="absolute top-2 right-2">
             <div className="flex items-center gap-1 text-xs bg-primary text-primary-foreground font-semibold px-3 py-1 rounded-full">
                 <Star className="h-4 w-4" />
-                <span>Recommended</span>
+                <span>{view === 'rto' ? 'Highest Revenue' : 'Best Value'}</span>
             </div>
         </div>
       <CardHeader className="text-center pt-10">
@@ -50,10 +51,13 @@ export function MasterStackCard({ stack }: MasterStackCardProps) {
             </div>
              <div className="p-3 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">Badges Issued</p>
-                <p className="text-lg font-bold flex items-center justify-center gap-1">
-                    <Award className="h-4 w-4" />
-                    {stack.badges_issued}
-                </p>
+                 <div className="flex justify-center gap-1 mt-1">
+                    {Array.from({ length: stack.badges_issued }).map((_, i) => (
+                        <div key={i} className="badge-3d p-1 rounded-full bg-tier-3-bg">
+                            <Award className="h-4 w-4 text-tier-3-fg" />
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
         <Button size="lg" className="w-full h-12 text-base font-bold">

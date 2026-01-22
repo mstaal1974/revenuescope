@@ -13,6 +13,7 @@ type Sector = AuditData["sector_breakdown"][0];
 
 interface SectorCardProps {
   sector: Sector;
+  view: 'rto' | 'student';
 }
 
 const TrendIcon = ({ trend }: { trend: string }) => {
@@ -26,7 +27,7 @@ const TrendIcon = ({ trend }: { trend: string }) => {
     }
 };
 
-export function SectorCard({ sector }: SectorCardProps) {
+export function SectorCard({ sector, view }: SectorCardProps) {
   return (
     <Card className="rounded-2xl shadow-md bg-card/80 backdrop-blur-sm border-border/20 flex flex-col">
       <CardHeader>
@@ -58,20 +59,20 @@ export function SectorCard({ sector }: SectorCardProps) {
 
         {/* Financial Opportunity */}
         <div className="p-3 bg-muted/50 rounded-lg">
-             <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Financial Opportunity</h4>
+             <h4 className="text-sm font-semibold mb-2 text-muted-foreground">{view === 'rto' ? 'Financial Opportunity' : 'Job Opportunity'}</h4>
              <div className="flex justify-around text-center">
                 <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-primary" />
+                    {view === 'rto' ? <DollarSign className="h-5 w-5 text-primary" /> : <TrendingUp className="h-5 w-5 text-primary" />}
                     <div>
                         <p className="font-bold text-lg">{sector.financial_opportunity.annual_revenue_gap}</p>
-                        <p className="text-xs text-muted-foreground">Annual Revenue Gap</p>
+                        <p className="text-xs text-muted-foreground">{view === 'rto' ? 'Annual Revenue Gap' : 'Job Growth'}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
                     <div>
                         <p className="font-bold text-lg">{sector.financial_opportunity.student_volume_potential.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">Student Potential</p>
+                        <p className="text-xs text-muted-foreground">{view === 'rto' ? 'Student Potential' : 'Job Seekers'}</p>
                     </div>
                 </div>
              </div>
@@ -79,7 +80,7 @@ export function SectorCard({ sector }: SectorCardProps) {
 
         {/* Recommended Actions */}
         <div className="space-y-2 mt-auto pt-4">
-             <h4 className="text-sm font-semibold text-muted-foreground">Recommended Actions</h4>
+             <h4 className="text-sm font-semibold text-muted-foreground">{view === 'rto' ? 'Recommended Actions' : 'Top Skills to Learn'}</h4>
              <ul className="space-y-1">
                 {(sector.recommended_actions || []).map((action, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-foreground">

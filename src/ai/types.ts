@@ -33,12 +33,14 @@ export const FullAuditOutputSchema = z.object({
     strategic_theme: z.string().describe("A single, high-value theme, e.g., 'Site Safety Leadership'"),
     market_justification: z.string().describe("A brief summary of why this theme is valuable, e.g., 'Safety roles are growing at 8% YoY'"),
     individual_courses: z.array(z.object({
-        tier: z.string().describe("e.g. 'Level 1: Foundation'"),
+        tier: z.string().describe("e.g. 'Tier 1 (The Hook)'"),
         course_title: z.string(),
         duration: z.string().describe("e.g. '4 Hours'"),
         suggested_price: z.string().describe("e.g. '$195'"),
         target_student: z.string().describe("e.g. 'Entry-level staff'"),
-        key_skill: z.string().describe("The primary ESCO skill taught")
+        key_skill: z.string().describe("The primary ESCO skill taught"),
+        career_roi: z.string().optional().describe("A short sentence about the career benefit for the student."),
+        revenue_potential: z.string().optional().describe("The calculated revenue potential for the RTO."),
     })).length(3),
     stackable_product: z.object({
       bundle_title: z.string().describe("e.g. 'Executive Certificate in Site Safety'"),
@@ -68,12 +70,14 @@ export const CourseBlueprintOutputSchema = z.object({
   market_justification: z.string().describe("A brief summary of why this theme is valuable, e.g., 'Safety roles are growing at 8% YoY'"),
   
   individual_courses: z.array(z.object({
-      tier: z.string().describe("e.g. 'Level 1: Foundation'"),
+      tier: z.string().describe("e.g. 'Tier 1 (The Hook)'"),
       course_title: z.string(),
       duration: z.string().describe("e.g. '4 Hours'"),
       suggested_price: z.string().describe("e.g. '$195'"),
       target_student: z.string().describe("e.g. 'Entry-level staff'"),
-      key_skill: z.string().describe("The primary ESCO skill taught")
+      key_skill: z.string().describe("The primary ESCO skill taught"),
+      career_roi: z.string().optional().describe("A short sentence about the career benefit for the student."),
+      revenue_potential: z.string().optional().describe("The calculated revenue potential for the RTO."),
   })).length(3),
   
   stackable_product: z.object({
