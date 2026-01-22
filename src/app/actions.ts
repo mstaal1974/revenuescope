@@ -6,36 +6,26 @@ import { z } from "zod";
 
 const CourseBlueprintDataSchema = z.object({
   rto_id: z.string(),
-  analysis_summary: z.object({
-    parent_qualification_used: z.string(),
-    market_context: z.string(),
-  }),
-  learning_pathway: z.object({
-    pathway_title: z.string(),
-    total_student_value: z.string(),
-    courses: z.array(z.object({
-        level: z.number(),
-        course_title: z.string(),
-        target_audience: z.string(),
-        duration: z.string(),
-        suggested_price: z.string(),
-        revenue_potential: z.string(),
-        skill_demand_trend: z.object({
-            growth_percentage: z.string(),
-            narrative: z.string(),
-        }),
-        market_competition: z.object({
-            level: z.string(),
-            narrative: z.string(),
-        }),
-        included_skills: z.array(z.object({
-          skill_name: z.string(),
-          esco_uri: z.string(),
-          learning_outcome: z.string(),
-        })),
-        marketing_hook: z.string(),
-      })),
-  }),
+  strategic_theme: z.string(),
+  market_justification: z.string(),
+  
+  individual_courses: z.array(z.object({
+      tier: z.string(),
+      course_title: z.string(),
+      duration: z.string(),
+      suggested_price: z.string(),
+      target_student: z.string(),
+      key_skill: z.string()
+  })).length(3),
+  
+  stackable_product: z.object({
+    bundle_title: z.string(),
+    total_value: z.string(),
+    bundle_price: z.string(),
+    discount_applied: z.string(),
+    marketing_pitch: z.string(),
+    badges_issued: z.number()
+  })
 });
 
 
