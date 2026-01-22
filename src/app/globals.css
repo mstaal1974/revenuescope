@@ -93,6 +93,9 @@
     animation: fade-in-up 0.5s ease-out forwards;
     opacity: 0;
   }
+  .strategic-theme-glow {
+    background-image: radial-gradient(ellipse 30rem 20rem at 50% 0%, hsl(var(--primary) / 0.1), transparent 80%);
+  }
 }
 
 @keyframes blink {

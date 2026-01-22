@@ -9,6 +9,11 @@ const AuditDataSchema = z.object({
   scope: z.string(),
   analysis: z.object({
     revenueOpportunities: z.string(),
+    strategicTheme: z.string(),
+    marketJustification: z.string(),
+    totalAddressableMarket: z.string(),
+    acquisitionModelLowEnd: z.string(),
+    acquisitionModelHighEnd: z.string(),
   }),
 });
 
@@ -31,15 +36,20 @@ export async function runFullAudit(rtoId: string): Promise<{ data?: AuditData; e
       curriculumScope: scopeResult.scope,
     });
 
-    if (!analysisResult || !analysisResult.revenueOpportunities) {
+    if (!analysisResult || !analysisResult.revenueOpportunities || !analysisResult.strategicTheme) {
         return { error: "Could not analyze curriculum for revenue opportunities." };
     }
 
-    const auditData: AuditData = {
+    const auditData = {
       rtoName: scopeResult.name,
       scope: scopeResult.scope,
       analysis: {
-        revenueOpportunities: analysisResult.revenueOpportunities
+        revenueOpportunities: analysisResult.revenueOpportunities,
+        strategicTheme: analysisResult.strategicTheme,
+        marketJustification: analysisResult.marketJustification,
+        totalAddressableMarket: analysisResult.totalAddressableMarket,
+        acquisitionModelLowEnd: analysisResult.acquisitionModelLowEnd,
+        acquisitionModelHighEnd: analysisResult.acquisitionModelHighEnd,
       },
     };
     
