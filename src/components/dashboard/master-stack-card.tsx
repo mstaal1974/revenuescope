@@ -16,6 +16,10 @@ interface MasterStackCardProps {
 }
 
 export function MasterStackCard({ stack }: MasterStackCardProps) {
+  if (!stack) {
+    return null;
+  }
+  
   return (
     <Card className="rounded-3xl shadow-2xl bg-card border-2 border-primary/80 relative overflow-hidden">
         <div className="absolute top-2 right-2">
