@@ -13,7 +13,10 @@ import {
     TrendingUp,
     Target,
     BookOpen,
-    Lightbulb
+    Lightbulb,
+    ShieldCheck,
+    ShieldAlert,
+    ShieldX
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -50,6 +53,58 @@ const SkillDemandVisual = ({ trend }: { trend: Course['skill_demand_trend'] }) =
     );
 };
 
+const MarketCompetitionVisual = ({ competition }: { competition: Course['market_competition'] }) => {
+    if (!competition) return null;
+
+    const level = (competition.level || 'Medium').toLowerCase();
+
+    const competitionMeta = {
+        low: {
+            icon: <ShieldCheck size={24} />,
+            color: "text-green-600 dark:text-green-400",
+            bgColor: "bg-green-100/50 dark:bg-green-900/20",
+            borderColor: "border-green-200 dark:border-green-800/30",
+            title: "Low Competition",
+            titleColor: "text-green-700 dark:text-green-300",
+            textColor: "text-green-600 dark:text-green-500"
+        },
+        medium: {
+            icon: <ShieldAlert size={24} />,
+            color: "text-yellow-600 dark:text-yellow-400",
+            bgColor: "bg-yellow-100/50 dark:bg-yellow-900/20",
+            borderColor: "border-yellow-200 dark:border-yellow-800/30",
+            title: "Medium Competition",
+            titleColor: "text-yellow-700 dark:text-yellow-300",
+            textColor: "text-yellow-600 dark:text-yellow-500"
+        },
+        high: {
+            icon: <ShieldX size={24} />,
+            color: "text-red-600 dark:text-red-400",
+            bgColor: "bg-red-100/50 dark:bg-red-900/20",
+            borderColor: "border-red-200 dark:border-red-800/30",
+            title: "High Competition",
+            titleColor: "text-red-700 dark:text-red-300",
+            textColor: "text-red-600 dark:text-red-500"
+        },
+    }[level];
+
+    if (!competitionMeta) return null;
+
+    return (
+        <div className={`flex items-start gap-3 p-3 rounded-lg border ${competitionMeta.bgColor} ${competitionMeta.borderColor}`}>
+            <div className={competitionMeta.color}>
+                {competitionMeta.icon}
+            </div>
+            <div>
+                <p className={`font-bold ${competitionMeta.titleColor}`}>
+                    {competitionMeta.title}
+                </p>
+                <p className={`text-xs ${competitionMeta.textColor}`}>{competition.narrative}</p>
+            </div>
+        </div>
+    );
+};
+
 
 export function CourseBlueprintCard({ course }: CourseBlueprintCardProps) {
   return (
@@ -65,10 +120,13 @@ export function CourseBlueprintCard({ course }: CourseBlueprintCardProps) {
             <InfoBadge icon={<CircleDollarSign size={20} />} label="Price" value={course.suggested_price} />
             <InfoBadge icon={<Clock size={20} />} label="Duration" value={course.duration} />
             <InfoBadge icon={<TrendingUp size={20} />} label="Revenue" value={course.revenue_potential.split(' ')[0]} />
-            <InfoBadge icon={<Users size={20} />} label="Audience" value={course.target_audience.split(' ')[0]} />
+            <InfoBadge icon={<Users size={20} />} label="Audience" value={course.target_audience} />
         </div>
         
-        {course.skill_demand_trend && <SkillDemandVisual trend={course.skill_demand_trend} />}
+        <div className="grid gap-2">
+            {course.skill_demand_trend && <SkillDemandVisual trend={course.skill_demand_trend} />}
+            {course.market_competition && <MarketCompetitionVisual competition={course.market_competition} />}
+        </div>
         
         <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">

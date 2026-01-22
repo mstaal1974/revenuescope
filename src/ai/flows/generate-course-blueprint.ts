@@ -39,6 +39,10 @@ const CourseBlueprintOutputSchema = z.object({
             growth_percentage: z.string().describe("e.g., '+12%'"),
             narrative: z.string().describe("e.g., 'Outpacing general Construction jobs'"),
         }).describe("The year-on-year demand growth for the skills in this course."),
+        market_competition: z.object({
+            level: z.string().describe("e.g., 'Low', 'Medium', 'High'"),
+            narrative: z.string().describe("e.g., 'Blue Ocean: Very few providers offer this specific title.'"),
+        }).describe("An analysis of the market competition for this course."),
         included_skills: z.array(z.object({
           skill_name: z.string().describe("The specific skill taught, derived from ESCO."),
           esco_uri: z.string().describe("A simulated URI for the skill in the ESCO database."),
@@ -92,12 +96,19 @@ const prompt = ai.definePrompt({
 *   Assign a level (1, 2, 3) to each course, creating a clear progression from foundational to advanced skills.
 *   Calculate a "Total Student Value" by summing the prices of all courses in the pathway. Format it as a string, e.g., "$940".
 
+**7. Competition Analysis (The Blind Spot):**
+*   For each generated course title, simulate a Google search to gauge market saturation.
+*   **Low Saturation:** If you find very few competing course titles, set \`level\` to "Low" and \`narrative\` to "Blue Ocean: Very few providers offer this specific title, representing a strong first-mover advantage."
+*   **Medium Saturation:** If there are some competitors, set \`level\` to "Medium" and \`narrative\` to "Contested: Some providers exist. Success will require strong differentiation and a clear value proposition."
+*   **High Saturation:** If the market is crowded, set \`level\` to "High" and \`narrative\` to "Red Ocean: High competition. Recommend a niche focus (e.g., 'Safety for High-Rise' instead of 'General Safety') to stand out."
+*   Populate the \`market_competition\` object for each course.
+
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
 *   RTO Scope: {{{scope}}}
 
 **OUTPUT INSTRUCTIONS:**
-*   Strictly adhere to the JSON output schema, ensuring the \`learning_pathway\` object is fully populated.
+*   Strictly adhere to the JSON output schema, ensuring the \`learning_pathway\` and \`market_competition\` objects are fully populated.
 *   The \`parent_qualification_used\` must come from the provided scope.
 *   Ensure all fields are populated with realistic, commercially-focused content.
 *   The \`learning_pathway\` should contain 3 distinct courses.
