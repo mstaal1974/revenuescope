@@ -71,13 +71,16 @@ export function TerminalLoader() {
       if (result.error) {
         throw new Error(result.error);
       }
+      if (!result.data) {
+        throw new Error("Audit did not return any data.");
+      }
       
-      const data = encodeURIComponent(JSON.stringify(result.data));
+      sessionStorage.setItem("auditData", JSON.stringify(result.data));
 
       const totalDelay = logs.reduce((acc, log) => acc + log.delay, 0);
 
       setTimeout(() => {
-        router.push(`/dashboard?data=${data}`);
+        router.push(`/dashboard`);
       }, totalDelay + 500);
 
 
