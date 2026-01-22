@@ -14,14 +14,14 @@ const AuditDataSchema = z.object({
 
 export type AuditData = z.infer<typeof AuditDataSchema>;
 
-export async function runFullAudit(rtoName: string): Promise<{ data?: AuditData; error?: string }> {
-  if (!rtoName) {
-    return { error: "RTO name is required." };
+export async function runFullAudit(rtoId: string): Promise<{ data?: AuditData; error?: string }> {
+  if (!rtoId) {
+    return { error: "RTO ID is required." };
   }
 
   try {
     // Step 1: Fetch RTO Scope
-    const scopeResult = await searchForRtoScope({ rtoName });
+    const scopeResult = await searchForRtoScope({ rtoId });
     if (!scopeResult || !scopeResult.scope) {
       return { error: "Could not retrieve RTO scope." };
     }
@@ -36,7 +36,7 @@ export async function runFullAudit(rtoName: string): Promise<{ data?: AuditData;
     }
 
     const auditData: AuditData = {
-      rtoName,
+      rtoName: scopeResult.name,
       scope: scopeResult.scope,
       analysis: {
         revenueOpportunities: analysisResult.revenueOpportunities

@@ -1,6 +1,6 @@
-'use server';
+"use server";
 /**
- * @fileOverview A flow that searches for an RTO scope. It first attempts to fetch the scope from the TGA registry directly.
+ * @fileOverview A flow that searches for an RTO scope by its ID. It attempts to fetch the scope from the TGA registry directly.
  * If that fails, it uses Gemini Search as a fallback.
  *
  * - searchForRtoScope - A function that handles the RTO scope search process.
@@ -8,61 +8,73 @@
  * - SearchForRtoScopeOutput - The return type for the searchForRtoScope function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import axios from 'axios';
-import { parseStringPromise } from 'xml2js';
+import { ai } from "@/ai/genkit";
+import { z } from "zod";
+import axios from "axios";
+import { parseStringPromise } from "xml2js";
 
 const SearchForRtoScopeInputSchema = z.object({
-  rtoName: z.string().describe('The name of the RTO to search for.'),
+  rtoId: z.string().describe("The ID of the RTO to search for."),
 });
-export type SearchForRtoScopeInput = z.infer<typeof SearchForRtoScopeInputSchema>;
+export type SearchForRtoScopeInput = z.infer<
+  typeof SearchForRtoScopeInputSchema
+>;
 
 const SearchForRtoScopeOutputSchema = z.object({
-  scope: z.string().describe('The RTO scope information.'),
+  scope: z.string().describe("The RTO scope information."),
+  name: z.string().describe("The name of the RTO."),
 });
-export type SearchForRtoScopeOutput = z.infer<typeof SearchForRtoScopeOutputSchema>;
+export type SearchForRtoScopeOutput = z.infer<
+  typeof SearchForRtoScopeOutputSchema
+>;
 
-export async function searchForRtoScope(input: SearchForRtoScopeInput): Promise<SearchForRtoScopeOutput> {
+export async function searchForRtoScope(
+  input: SearchForRtoScopeInput
+): Promise<SearchForRtoScopeOutput> {
   return searchForRtoScopeFlow(input);
 }
 
 const rtoScopePrompt = ai.definePrompt({
-  name: 'rtoScopePrompt',
-  input: {schema: SearchForRtoScopeInputSchema},
-  output: {schema: SearchForRtoScopeOutputSchema},
+  name: "rtoScopePrompt",
+  input: { schema: SearchForRtoScopeInputSchema },
+  output: { schema: SearchForRtoScopeOutputSchema },
   prompt: `You are an AI assistant specialized in retrieving RTO scope information.
 
-  The user will provide the name of the RTO, and you should respond with the RTO's scope.
+  The user will provide the ID of the RTO, and you should respond with the RTO's name and scope.
 
-  RTO Name: {{{rtoName}}}
+  RTO ID: {{{rtoId}}}
   `,
 });
 
 const searchForRtoScopeFlow = ai.defineFlow(
   {
-    name: 'searchForRtoScopeFlow',
+    name: "searchForRtoScopeFlow",
     inputSchema: SearchForRtoScopeInputSchema,
     outputSchema: SearchForRtoScopeOutputSchema,
   },
-  async input => {
+  async (input) => {
     try {
       // Attempt to fetch RTO scope from the TGA registry directly
-      const scope = await fetchRtoScopeFromRegistry(input.rtoName);
-      return {scope};
+      const { scope, name } = await fetchRtoScopeFromRegistry(input.rtoId);
+      return { scope, name };
     } catch (error) {
       // If direct registry fetch fails, use Gemini Search as a fallback
-      console.error('Failed to fetch RTO scope from registry:', error);
-      console.log('Using Gemini Search as a fallback.');
-      const {output} = await rtoScopePrompt(input);
-      return {scope: output!.scope};
+      console.error("Failed to fetch RTO scope from registry:", error);
+      console.log("Using Gemini Search as a fallback.");
+      const { output } = await rtoScopePrompt(input);
+      if (!output) {
+        throw new Error("AI fallback failed to produce an output.");
+      }
+      return { scope: output.scope, name: output.name };
     }
   }
 );
 
-async function fetchRtoScopeFromRegistry(rtoName: string): Promise<string> {
-    const soapRequest = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/" xmlns:dat="http://schemas.datacontract.org/2004/07/Deewr.Tga.WebServices.DataContracts">
+async function fetchRtoScopeFromRegistry(
+  rtoId: string
+): Promise<{ scope: string; name: string }> {
+  const soapRequest = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://training.gov.au/services/">
       <soapenv:Header>
         <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
           <wsse:UsernameToken>
@@ -72,56 +84,65 @@ async function fetchRtoScopeFromRegistry(rtoName: string): Promise<string> {
         </wsse:Security>
       </soapenv:Header>
       <soapenv:Body>
-        <ser:SearchByName>
-          <ser:request>
-            <dat:Name>${rtoName}</dat:Name>
-            <dat:IncludeRtoScope>true</dat:IncludeRtoScope>
-          </ser:request>
-        </ser:SearchByName>
+        <ser:Details>
+            <ser:request>
+              <ser:Code>${rtoId}</ser:Code>
+              <ser:IncludeScope>true</ser:IncludeScope>
+            </ser:request>
+        </ser:Details>
       </soapenv:Body>
     </soapenv:Envelope>
   `;
 
   try {
-    const { data: xmlData } = await axios.post(process.env.TGA_ENDPOINT!, soapRequest, {
-      headers: {
-        'Content-Type': 'text/xml;charset=UTF-8',
-        'SOAPAction': 'http://training.gov.au/services/IOrganisationService/SearchByName'
+    const { data: xmlData } = await axios.post(
+      process.env.TGA_ENDPOINT!,
+      soapRequest,
+      {
+        headers: {
+          "Content-Type": "text/xml;charset=UTF-8",
+          SOAPAction: "http://training.gov.au/services/IOrganisationService/Details",
+        },
       }
-    });
+    );
 
     const result = await parseStringPromise(xmlData, {
       explicitArray: false,
-      tagNameProcessors: [name => name.split(':').pop()!],
+      tagNameProcessors: [(name) => name.split(":").pop()!],
       ignoreAttrs: true,
     });
 
-    const searchResult = result.Envelope.Body.SearchByNameResponse.SearchByNameResult;
+    const orgDetails = result.Envelope.Body.DetailsResponse.DetailsResult;
 
-    if (!searchResult || !searchResult.Organisation) {
-      throw new Error('No matching RTO found in registry.');
-    }
-
-    // Assuming the first result is the most relevant one.
-    const org = Array.isArray(searchResult.Organisation) ? searchResult.Organisation[0] : searchResult.Organisation;
-    
-    if (!org.Scope || !org.Scope.ScopeItem) {
-        throw new Error('RTO found, but scope is not available.');
+    if (!orgDetails || !orgDetails.OrganisationName) {
+      throw new Error(`No matching RTO found in registry for ID ${rtoId}.`);
     }
     
-    const items = Array.isArray(org.Scope.ScopeItem)
-      ? org.Scope.ScopeItem
-      : [org.Scope.ScopeItem];
+    const orgName = orgDetails.OrganisationName;
 
-    const scopeList = items.map((item: any) => `${item.Code || item.Identifier} - ${item.Name}`);
-    return `Current scope for ${org.Name}:\n- ${scopeList.join('\n- ')}`;
+    if (!orgDetails.Scope || !orgDetails.Scope.ScopeItem) {
+      return { name: orgName, scope: `RTO '${orgName}' found, but scope is not available.`};
+    }
+
+    const items = Array.isArray(orgDetails.Scope.ScopeItem)
+      ? orgDetails.Scope.ScopeItem
+      : [orgDetails.Scope.ScopeItem];
+
+    const scopeList = items.map(
+      (item: any) => `${item.Code || item.Identifier} - ${item.Name}`
+    );
+    const scope = `Current scope for ${orgName}:\n- ${scopeList.join(
+      "\n- "
+    )}`;
+    
+    return { name: orgName, scope };
 
   } catch (error) {
-    console.error(`Error fetching or parsing RTO scope for ${rtoName}:`, error);
+    console.error(`Error fetching or parsing RTO scope for ${rtoId}:`, error);
     if (axios.isAxiosError(error) && error.response) {
-        console.error("Axios error details:", error.response.data);
+      console.error("Axios error details:", error.response.data);
     }
     // Re-throwing the error will cause the flow to fall back to the AI prompt.
-    throw new Error(`Failed to fetch RTO scope from registry for ${rtoName}.`);
+    throw new Error(`Failed to fetch RTO scope from registry for ${rtoId}.`);
   }
 }

@@ -10,8 +10,8 @@ import { runFullAudit } from "@/app/actions";
 
 const logs = [
   { text: "Initializing audit sequence...", delay: 100 },
-  { text: "Establishing secure connection...", delay: 200 },
-  { text: "Searching TGA registry for RTO scope...", delay: 500 },
+  { text: "Establishing secure connection to TGA...", delay: 200 },
+  { text: "Fetching RTO scope from registry by ID...", delay: 500 },
   { text: "Successfully retrieved scope from TGA registry.", delay: 800 },
   { text: "Curriculum scope identified. Beginning analysis.", delay: 200 },
   { text: "Activating Revenue Opportunity Model...", delay: 500 },
@@ -23,7 +23,7 @@ const logs = [
 ];
 
 export function TerminalLoader() {
-  const [rtoName, setRtoName] = useState("");
+  const [rtoId, setRtoId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const router = useRouter();
@@ -56,10 +56,10 @@ export function TerminalLoader() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rtoName.trim()) {
+    if (!rtoId.trim()) {
       toast({
         title: "Input Required",
-        description: "Please enter an RTO name to begin the audit.",
+        description: "Please enter an RTO ID to begin the audit.",
         variant: "destructive",
       });
       return;
@@ -67,7 +67,7 @@ export function TerminalLoader() {
     setIsLoading(true);
     
     try {
-      const result = await runFullAudit(rtoName.trim());
+      const result = await runFullAudit(rtoId.trim());
       if (result.error) {
         throw new Error(result.error);
       }
@@ -124,7 +124,7 @@ export function TerminalLoader() {
               <div>
                 <h3 className="text-lg font-bold">Start Your Revenue Audit</h3>
                 <p className="text-sm text-gray-400">
-                  Enter the name of your Registered Training Organisation to begin analysis.
+                  Enter the ID of your Registered Training Organisation to begin analysis.
                 </p>
               </div>
             </div>
@@ -132,9 +132,9 @@ export function TerminalLoader() {
               <span className="text-primary text-lg font-bold">&gt;</span>
               <Input
                 type="text"
-                value={rtoName}
-                onChange={(e) => setRtoName(e.target.value)}
-                placeholder="e.g., 'Example Training Institute'"
+                value={rtoId}
+                onChange={(e) => setRtoId(e.target.value)}
+                placeholder="e.g., '90003'"
                 className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-500 text-base"
                 disabled={isLoading}
                 autoFocus
