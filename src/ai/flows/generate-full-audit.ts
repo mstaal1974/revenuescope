@@ -9,6 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
+import { searchForRtoScope } from './search-for-rto-scope';
 
 export async function generateFullAudit(
   input: FullAuditInput
@@ -21,6 +22,14 @@ const prompt = ai.definePrompt({
   input: { schema: z.object({ rtoId: z.string(), scope: z.string() }) },
   output: { schema: FullAuditOutputSchema },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a two-part strategic audit for RTOs.
+
+**Core Logic: The Validated Data Chain**
+You MUST follow this precise data validation chain to ensure the strategic advice is grounded in verifiable data sources:
+1.  **Qualification (from TGA RTO Scope)** -> **ANZSCO Occupation Code** (Australian and New Zealand Standard Classification of Occupations)
+2.  **ANZSCO Code** -> **ISCO-08 Bridge** (International Standard Classification of Occupations) -> **ESCO Occupation & Skills API** (European Skills, Competences, Qualifications and Occupations) for granular skills (e.g., 'manage construction budget').
+3.  **ANZSCO Code** -> **ABS SDMX Query** (Australian Bureau of Statistics) for macro data like 'Total Employment Volume' and 'Average Wage'.
+
+This data chain is non-negotiable. It bridges Australian compliance (TGA/ANZSCO) with global skill standards (ESCO) and local market reality (ABS). All analysis must stem from this validated pathway.
 
 **Part 1: High-Level Sector Analysis (The Macro View)**
 - Your first task is to act as a **Strategic Growth Director**.
@@ -53,28 +62,6 @@ const prompt = ai.definePrompt({
 Begin analysis.`,
 });
 
-const searchForRtoScopeFlow = ai.defineFlow(
-    {
-      name: "searchForRtoScopeFlow",
-      inputSchema: z.object({ rtoId: z.string() }),
-      outputSchema: z.object({ scope: z.string(), name: z.string() }),
-    },
-    async ({ rtoId }) => {
-      // In a real scenario, this would fetch from TGA. For now, we simulate.
-      // This simulation provides a diverse scope to allow for a rich analysis.
-      const simulatedScopes: Record<string, {name: string, scope: string[]}> = {
-          "90003": { name: "Builder's College Australia", scope: ["CPC50220", "CPC40120", "BSB50420", "BSB30120", "ICT50220", "CHC33015"] },
-          "default": { name: "General Training Institute", scope: ["BSB50420", "BSB30120", "ICT50220", "HLT54115", "SIT50416"] }
-      };
-      const rtoData = simulatedScopes[rtoId] || simulatedScopes["default"];
-      return {
-          name: rtoData.name,
-          scope: `Current scope for ${rtoData.name}:\n- ${rtoData.scope.join("\n- ")}`
-      };
-    }
-);
-
-
 const generateFullAuditFlow = ai.defineFlow(
   {
     name: 'generateFullAuditFlow',
@@ -82,11 +69,12 @@ const generateFullAuditFlow = ai.defineFlow(
     outputSchema: FullAuditOutputSchema,
   },
   async (input) => {
-    // First, get the RTO's scope.
-    const { scope } = await searchForRtoScopeFlow({ rtoId: input.rtoId });
+    // First, get the RTO's scope using the real flow.
+    const { scope, name } = await searchForRtoScope({ rtoId: input.rtoId });
+    const scopeString = `Current scope for ${name}:\n- ${scope.map(item => `${item.Code} ${item.Name}`).join("\n- ")}`;
 
     // Then, run the main audit prompt.
-    const { output } = await prompt({ scope, rtoId: input.rtoId });
+    const { output } = await prompt({ scope: scopeString, rtoId: input.rtoId });
     if (!output) {
       throw new Error("AI failed to generate a full audit.");
     }
