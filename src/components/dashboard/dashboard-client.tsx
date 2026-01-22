@@ -41,7 +41,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
             </h2>
             <Separator className="mb-6" />
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {data.sector_breakdown.map((sector) => (
+              {(data.sector_breakdown || []).map((sector) => (
                 <SectorCard key={sector.sector_name} sector={sector} />
               ))}
             </div>
