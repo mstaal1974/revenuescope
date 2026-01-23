@@ -87,10 +87,12 @@ const AuditWidget: React.FC = () => {
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
     
     try {
-      addLog('[1/5] FETCHING SCOPE FROM DATABASE...', 'info');
+      addLog(`[1/6] QUERYING DATABASE FOR RTO CODE: "${rtoCode}"...`, 'info');
       const qualificationsRef = collection(firestore, "qualifications");
       const q = query(qualificationsRef, where("rtoCode", "==", rtoCode));
       const querySnapshot = await getDocs(q);
+
+      addLog(`[2/6] SUCCESS: FOUND ${querySnapshot.size} QUALIFICATIONS.`, 'success');
 
       if (querySnapshot.empty) {
           throw new Error(`RTO ID "${rtoCode}" is invalid or not found in the scope database.`);
@@ -98,6 +100,7 @@ const AuditWidget: React.FC = () => {
 
       let rtoName = "";
       const scopeItems: string[] = [];
+      addLog('[3/6] PARSING QUALIFICATION DATA...', 'info');
       querySnapshot.forEach((doc) => {
           const data = doc.data();
           if (!rtoName && data.rtoLegalName) {
@@ -116,13 +119,11 @@ const AuditWidget: React.FC = () => {
       
       const data = await performFullAudit(auditInput);
 
-      addLog('[2/5] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
+      addLog('[4/6] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
       await delay(150);
-      addLog('[3/5] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
+      addLog('[5/6] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
       await delay(150);
-      addLog('[4/5] VALIDATING DATA INTEGRITY PROTOCOLS...', 'info');
-      await delay(150);
-      addLog('[5/5] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
+      addLog('[6/6] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
       await delay(100);
       
       setResult(data);
@@ -535,5 +536,7 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
 
     
