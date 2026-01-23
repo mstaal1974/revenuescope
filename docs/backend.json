@@ -7,7 +7,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the record."
+          "description": "Unique identifier for the record, composed of rtoCode_qualificationCode."
         },
         "rtoCode": {
           "type": "string",
@@ -39,8 +39,35 @@
             "TAS": { "type": "boolean" },
             "NT": { "type": "boolean" },
             "WA": { "type": "boolean" },
-            "ACT": { "type": "boolean" }
+            "ACT": { "type": "boolean" },
+            "Overseas": { "type": "boolean" }
           }
+        },
+        "implicitScope": {
+            "type": "boolean",
+            "description": "Indicates if the scope is implicit."
+        },
+        "nrtType": {
+            "type": "string",
+            "description": "The type of the National Training register item."
+        },
+        "scopeEndDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The end date of the scope."
+        },
+        "scopeExtent": {
+            "type": "string",
+            "description": "The extent of the scope."
+        },
+        "scopeStartDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The start date of the scope."
+        },
+        "scopeType": {
+            "type": "string",
+            "description": "The type of the scope."
         }
       },
       "required": ["id", "rtoCode", "code", "title"]
