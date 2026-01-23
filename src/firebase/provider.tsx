@@ -7,6 +7,11 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 import { firebaseConfig } from "./config";
 import { FirebaseErrorListener } from "@/components/FirebaseErrorListener";
 
+// Initialize Firebase at the module level. This ensures it's done once.
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const firestore = getFirestore(app);
+
 interface FirebaseContextType {
   firebaseApp: FirebaseApp;
   auth: Auth;
@@ -17,21 +22,11 @@ const FirebaseContext = createContext<FirebaseContextType | undefined>(
   undefined
 );
 
-export const initializeFirebase = () => {
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
-  return { firebaseApp: app, auth, firestore };
-};
-
 export const FirebaseProvider: React.FC<{
   children: React.ReactNode;
-  firebaseApp: FirebaseApp;
-  auth: Auth;
-  firestore: Firestore;
-}> = ({ children, firebaseApp, auth, firestore }) => {
+}> = ({ children }) => {
   return (
-    <FirebaseContext.Provider value={{ firebaseApp, auth, firestore }}>
+    <FirebaseContext.Provider value={{ firebaseApp: app, auth, firestore }}>
       {children}
       {process.env.NODE_ENV === "development" && <FirebaseErrorListener />}
     </FirebaseContext.Provider>

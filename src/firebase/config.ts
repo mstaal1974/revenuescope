@@ -1,10 +1,10 @@
-// IMPORTANT: Replace the placeholder values with your actual Firebase project configuration.
-// You can find this configuration in the Firebase console for your web app.
+// Your web app's Firebase configuration.
+// This is used to initialize the Firebase app.
 export const firebaseConfig = {
-  apiKey: "AIzaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:0000000000000000000000",
+  apiKey: "AIzaSyBQntOYepvLVplqVVoVnzq4j7CRYK3qDlo",
+  authDomain: "studio-6042316553-65e28.firebaseapp.com",
+  projectId: "studio-6042316553-65e28",
+  storageBucket: "studio-6042316553-65e28.appspot.com",
+  messagingSenderId: "851458267599",
+  appId: "1:851458267599:web:4822e78bd7f9f498ca1aba",
 };
