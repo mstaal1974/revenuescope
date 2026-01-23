@@ -23,7 +23,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
             <div className="bg-emerald-500/20 text-emerald-400 text-xs font-black px-5 py-2 rounded-full uppercase tracking-[0.3em] border border-emerald-500/30 inline-flex items-center gap-3 shadow-lg shadow-emerald-500/10">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
-              Verified 2%-10% Revenue Audit
+              Verified 1%-8% Revenue Audit
             </div>
             <button 
               onClick={() => setMonitoring(!monitoring)}
@@ -110,7 +110,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
           </div>
           <div className="flex flex-col text-left">
              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Forecast Range</span>
-             <span className="text-xs font-black text-slate-900 text-blue-600 italic">2% — 10% Target Capture</span>
+             <span className="text-xs font-black text-slate-900 text-blue-600 italic">1% — 8% Target Capture</span>
           </div>
         </div>
       </div>

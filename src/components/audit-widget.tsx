@@ -526,7 +526,7 @@ const AuditWidget: React.FC = () => {
             </div>
             <div className="flex flex-col text-left">
                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Forecast Range</span>
-               <span className="text-xs font-black text-slate-900 text-blue-600 italic">2% — 10% Target Capture</span>
+               <span className="text-xs font-black text-slate-900 text-blue-600 italic">1% — 8% Target Capture</span>
             </div>
           </div>
         </div>
@@ -540,4 +540,5 @@ export default AuditWidget;
     
 
     
+
 

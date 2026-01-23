@@ -41,7 +41,7 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
 - Your second task is to act as a **Strategic Growth Director**.
 - **Sector Grouping:** Group qualifications from the provided scope by Training Package (e.g., CPC -> Construction, BSB -> Business).
 - **ABS Data Aggregation:** For each sector, use the ANZSCO codes you've already mapped to aggregate ABS Labour Force data to determine: Total Employment Volume, Average Wage, and Growth Trend. Mark as "Growing" if any occupation in the group has >5% growth.
-- **Revenue Calculation:** Calculate the \`sector_revenue_gap\` using the formula: (Total Employment Volume * 0.05 upskilling rate) * (Avg Course Price $450). Use a 2% rate for saturated sectors (Business) and 8% for high-demand sectors (Care/Tech).
+- **Revenue Calculation:** Calculate the \`sector_revenue_gap\` using the formula: (Total Employment Volume * upskilling rate) * (Avg Course Price $450). Use a 1% upskilling rate for saturated sectors (e.g., Business) and an 8% rate for high-demand sectors (e.g., Care, Tech). For all other sectors, use a default rate of 5%.
 - **Executive Summary:** Synthesize your findings into an \`executive_summary\` with \`total_revenue_opportunity\`, \`top_performing_sector\`, and \`strategic_advice\`.
 - **Sector Breakdown:** Populate the \`sector_breakdown\` array with detailed analysis for each identified sector.
 
