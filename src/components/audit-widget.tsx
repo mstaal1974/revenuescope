@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -9,8 +10,7 @@ import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { Textarea } from './ui/textarea';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
-import { useFirestore } from '@/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 
 
 type AuditResult = FullAuditOutput;
@@ -61,7 +61,6 @@ const AuditWidget: React.FC = () => {
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const firestore = useFirestore();
 
 
   const addLog = (message: string, status: AuditLog['status'] = 'info') => {
@@ -76,8 +75,8 @@ const AuditWidget: React.FC = () => {
 
   const handleAudit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!rtoCode || !firestore) {
-        addLog('RTO Code is required and Firestore must be available.', 'error');
+    if (!rtoCode) {
+        addLog('RTO Code is required.', 'error');
         return;
     }
 
@@ -88,7 +87,8 @@ const AuditWidget: React.FC = () => {
     
     try {
       addLog(`[1/6] QUERYING DATABASE FOR RTO CODE: "${rtoCode}"...`, 'info');
-      const qualificationsRef = collection(firestore, "qualifications");
+      const db = getFirestore();
+      const qualificationsRef = collection(db, "qualifications");
       const q = query(qualificationsRef, where("rtoCode", "==", rtoCode));
       const querySnapshot = await getDocs(q);
 
