@@ -89,13 +89,13 @@ const AuditWidget: React.FC = () => {
       addLog(`[1/6] QUERYING DATABASE FOR RTO CODE: "${rtoCode}"...`, 'info');
       const db = getFirestore();
       const qualificationsRef = collection(db, "qualifications");
-      const q = query(qualificationsRef, where("rtoCode", "==", rtoCode));
+      const q = query(qualificationsRef, where("rtoCode", "==", rtoCode), where("usageRecommendation", "==", "Current"));
       const querySnapshot = await getDocs(q);
 
-      addLog(`[2/6] SUCCESS: FOUND ${querySnapshot.size} QUALIFICATIONS.`, 'success');
+      addLog(`[2/6] SUCCESS: FOUND ${querySnapshot.size} CURRENT QUALIFICATIONS.`, 'success');
 
       if (querySnapshot.empty) {
-          throw new Error(`RTO ID "${rtoCode}" is invalid or not found in the scope database.`);
+          throw new Error(`RTO ID "${rtoCode}" is invalid or has no 'Current' qualifications in the scope database.`);
       }
 
       let rtoName = "";
@@ -540,3 +540,4 @@ export default AuditWidget;
     
 
     
+
