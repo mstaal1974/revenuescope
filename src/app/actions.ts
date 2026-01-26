@@ -10,7 +10,7 @@ export async function performFullAudit(
 ): Promise<AuditData> {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error(
-      "AI account configuration is missing. Please create a file named `.env.local` in the root of your project and add the line: `GEMINI_API_KEY=your_api_key_here`"
+      "AI account configuration is missing. Please create a file named `.env` in the root of your project and add the line: `GEMINI_API_KEY=your_api_key_here`"
     );
   }
 
