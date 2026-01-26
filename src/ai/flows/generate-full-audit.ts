@@ -28,12 +28,8 @@ const generateFullAuditFlow = ai.defineFlow(
   async (input): Promise<FullAuditOutput> => {
     
     const rtoName = input.rtoName || `RTO ${input.rtoId}`;
-
-    if (!input.manualScopeDataset) {
-        throw new Error("Scope data is required to run an audit. Please provide a manual dataset.");
-    }
     
-    const scopeLines = input.manualScopeDataset.split('\n');
+    const scopeLines = (input.manualScopeDataset || '').split('\n');
 
     const scope = scopeLines.map(line => {
         const parts = line.split(',').map(s => s.trim());
