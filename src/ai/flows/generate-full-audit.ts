@@ -87,9 +87,8 @@ const generateFullAuditFlow = ai.defineFlow(
   {
     name: 'generateFullAuditFlow',
     inputSchema: FullAuditInputSchema,
-    outputSchema: FullAuditOutputSchema,
   },
-  async (input) => {
+  async (input): Promise<FullAuditOutput> => {
     const rtoName = input.rtoName || `RTO ${input.rtoId}`;
 
     if (!input.manualScopeDataset) {
