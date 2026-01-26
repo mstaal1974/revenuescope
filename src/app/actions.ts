@@ -1,7 +1,7 @@
 "use server";
 
 import { generateFullAudit } from "@/ai/flows/generate-full-audit";
-import { FullAuditOutputSchema, type FullAuditOutput, type FullAuditInput } from "@/ai/types";
+import { type FullAuditOutput, type FullAuditInput } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
 
@@ -16,16 +16,9 @@ export async function performFullAudit(
   }
 
   try {
+    // Validation is now handled inside the Genkit flow
     const result = await generateFullAudit(input);
-
-    const parsedData = FullAuditOutputSchema.safeParse(result);
-
-    if (!parsedData.success) {
-      console.error("Data validation failed:", parsedData.error);
-      throw new Error("Failed to process blueprint data.");
-    }
-
-    return parsedData.data;
+    return result;
   } catch (e) {
     console.error("Full audit failed:", e);
     const message =
