@@ -9,6 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
+import { googleSearch } from '@genkit-ai/google-genai/tools';
 
 export async function generateFullAudit(
   input: FullAuditInput
@@ -20,6 +21,7 @@ const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
   input: { schema: z.object({ rtoId: z.string(), scope: z.string() }) },
   output: { schema: FullAuditOutputSchema },
+  tools: [googleSearch],
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a four-part strategic audit for RTOs, starting with live, verified data from Australian government sources.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from or be specific to the Australian market. Use the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
