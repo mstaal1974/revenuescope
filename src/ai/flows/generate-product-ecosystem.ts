@@ -7,10 +7,10 @@ import { ai } from '@/ai/genkit';
 import { 
     ProductEcosystemInputSchema,
     ProductEcosystemOutputSchema,
-    ProductEcosystemForAISchema,
     type ProductEcosystemInput, 
     type ProductEcosystemOutput 
 } from '@/ai/types';
+import { extractJson } from '../utils/json';
 
 export async function generateProductEcosystem(
   input: ProductEcosystemInput
@@ -22,7 +22,6 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
   name: 'productEcosystemPrompt',
   input: { schema: ProductEcosystemInputSchema },
-  output: { schema: ProductEcosystemForAISchema },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to design a detailed product ecosystem for an RTO.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -36,12 +35,11 @@ const prompt = ai.definePrompt({
     - \`conservative_capture\`: (string)
     - \`ambitious_capture\`: (string)
     - \`acquisition_rationale\`: (string)
-- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses in the \`individual_courses\` array. For each course, provide all fields. For the \`content_blueprint\` and \`marketing_plan\` fields, you MUST provide a valid, minified JSON string.
+- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses in the \`individual_courses\` array. For each course, provide all fields as a nested JSON object. **The \`content_blueprint\` and \`marketing_plan\` fields MUST be valid JSON objects, NOT strings.**
 - **The Stackable Bundle:** Combine the three tiers into a \`stackable_product\` bundle object with a 15% discount, populating all fields including \`bundle_title\`, \`total_value\`, \`bundle_price\`, \`discount_applied\`, \`marketing_pitch\`, and \`badges_issued\` (number).
+- **Citations:** Provide simulated \`citations\` based on your training data.
 
-**Final Output:**
-- Populate ALL fields in the combined JSON output schema. All fields are mandatory.
-- Provide simulated \`citations\` based on your training data.
+**Final Output Instructions: You MUST respond with ONLY the raw, fully-nested JSON object as a text string. Do not wrap it in markdown backticks or any other explanatory text.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
@@ -60,35 +58,26 @@ const generateProductEcosystemFlow = ai.defineFlow(
   {
     name: 'generateProductEcosystemFlow',
     inputSchema: ProductEcosystemInputSchema,
-    outputSchema: ProductEcosystemOutputSchema,
   },
   async (input): Promise<ProductEcosystemOutput> => {
-    const { output } = await prompt(input);
+    const response = await prompt(input);
+    const rawJsonText = response.text;
 
-    if (!output) {
-      throw new Error("AI failed to generate a product ecosystem (empty structured response).");
-    }
-    
-    // Parse the stringified JSON fields
+    let parsedJson: unknown;
     try {
-        for (const course of output.individual_courses) {
-            if (typeof course.content_blueprint === 'string') {
-                (course as any).content_blueprint = JSON.parse(course.content_blueprint);
-            }
-            if (typeof course.marketing_plan === 'string') {
-                (course as any).marketing_plan = JSON.parse(course.marketing_plan);
-            }
-        }
+      parsedJson = extractJson(rawJsonText);
     } catch (e) {
-        console.error("Failed to parse JSON string from AI output in product ecosystem:", e);
-        throw new Error("AI returned malformed JSON for a nested field in product ecosystem.");
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error(`generate-product-ecosystem: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
+      throw new Error(`AI returned malformed JSON for Product Ecosystem. Raw text: "${rawJsonText}"`);
     }
     
-    const validation = ProductEcosystemOutputSchema.safeParse(output);
+    const validation = ProductEcosystemOutputSchema.safeParse(parsedJson);
+
     if (!validation.success) {
-      console.error("Product ecosystem output failed Zod validation after parsing:", validation.error.flatten());
-      console.error("Invalid data received from AI after parsing:", output);
-      throw new Error("The AI's product ecosystem response did not match the required data structure after parsing.");
+      const validationErrors = JSON.stringify(validation.error.flatten());
+      console.error("generate-product-ecosystem: AI response failed Zod validation:", validationErrors);
+      throw new Error(`The AI's response for the Product Ecosystem did not match the required data structure. Validation issues: ${validationErrors}`);
     }
 
     return validation.data;

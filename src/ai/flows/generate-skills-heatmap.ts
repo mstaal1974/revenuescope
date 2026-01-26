@@ -5,6 +5,7 @@
 
 import { ai } from '@/ai/genkit';
 import { FullAuditInputSchema, SkillsHeatmapOutputSchema, type FullAuditInput, type SkillsHeatmapOutput } from '@/ai/types';
+import { extractJson } from '../utils/json';
 
 export async function generateSkillsHeatmap(
   input: FullAuditInput
@@ -16,7 +17,6 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { schema: SkillsHeatmapOutputSchema },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -31,6 +31,8 @@ const prompt = ai.definePrompt({
 - **Demand Analysis:** For each extracted skill, use your knowledge of Australian labor market data sources (e.g., Seek.com.au, Jora, ABS data) to determine its current market demand within Australia. Classify the demand as 'High', 'Medium', or 'Low'.
 - **Heatmap Population:** Populate the \`skills_heatmap\` array with this data, containing objects with \`skill_name\` (string) and \`demand_level\` (string).
 
+**Final Output Instructions: You MUST respond with ONLY the raw JSON object as a text string. Do not wrap it in markdown backticks or any other explanatory text.**
+
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
 *   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
@@ -42,13 +44,28 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
   {
     name: 'generateSkillsHeatmapFlow',
     inputSchema: FullAuditInputSchema,
-    outputSchema: SkillsHeatmapOutputSchema,
   },
   async (input): Promise<SkillsHeatmapOutput> => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error("AI failed to generate skills heatmap.");
+    const response = await prompt(input);
+    const rawJsonText = response.text;
+    
+    let parsedJson: unknown;
+    try {
+      parsedJson = extractJson(rawJsonText);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error(`generate-skills-heatmap: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
+      throw new Error(`AI returned malformed JSON for Skills Heatmap. Raw text: "${rawJsonText}"`);
     }
-    return output;
+
+    const validation = SkillsHeatmapOutputSchema.safeParse(parsedJson);
+
+    if (!validation.success) {
+      const validationErrors = JSON.stringify(validation.error.flatten());
+      console.error("generate-skills-heatmap: AI response failed Zod validation:", validationErrors);
+      throw new Error(`The AI's response for the Skills Heatmap did not match the required data structure. Validation issues: ${validationErrors}`);
+    }
+
+    return validation.data;
   }
 );

@@ -5,6 +5,7 @@
 
 import { ai } from '@/ai/genkit';
 import { FullAuditInputSchema, Stage1OutputSchema, type FullAuditInput, type Stage1Output } from '@/ai/types';
+import { extractJson } from '../utils/json';
 
 export async function generateStage1Analysis(
   input: FullAuditInput
@@ -16,7 +17,6 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { schema: Stage1OutputSchema },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -56,6 +56,8 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
     - \`labour_market_size\`: (string) Your knowledge of ABS data for the precise 'Total Employment Volume'.
     - \`growth_rate\`: (string) The projected growth rate formatted as a percentage string (e.g., '+8.2%').
 
+**Final Output Instructions: You MUST respond with ONLY the raw JSON object as a text string. Do not wrap it in markdown backticks or any other explanatory text.**
+
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
 *   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
@@ -67,13 +69,28 @@ const generateStage1AnalysisFlow = ai.defineFlow(
   {
     name: 'generateStage1AnalysisFlow',
     inputSchema: FullAuditInputSchema,
-    outputSchema: Stage1OutputSchema,
   },
   async (input): Promise<Stage1Output> => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error("AI failed to generate stage 1 analysis.");
+    const response = await prompt(input);
+    const rawJsonText = response.text;
+    
+    let parsedJson: unknown;
+    try {
+      parsedJson = extractJson(rawJsonText);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error(`generate-stage1-analysis: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
+      throw new Error(`AI returned malformed JSON for Stage 1 analysis. Raw text: "${rawJsonText}"`);
     }
-    return output;
+    
+    const validation = Stage1OutputSchema.safeParse(parsedJson);
+
+    if (!validation.success) {
+      const validationErrors = JSON.stringify(validation.error.flatten());
+      console.error("generate-stage1-analysis: AI response failed Zod validation:", validationErrors);
+      throw new Error(`The AI's response for Stage 1 analysis did not match the required data structure. Validation issues: ${validationErrors}`);
+    }
+
+    return validation.data;
   }
 );
