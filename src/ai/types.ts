@@ -44,31 +44,22 @@ const OccupationAnalysisItemSchema = z.object({
   growth_rate: z.string(),
 });
 
-
-export const FullAuditOutputSchema = z.object({
+// This is the schema to request from the AI to avoid nesting depth limits.
+// Complex objects are requested as stringified JSON.
+export const FullAuditOutputForAISchema = z.object({
   rto_id: z.string(),
-
-  // From Strategic Growth Director
   executive_summary: ExecutiveSummarySchema,
   sector_breakdown: z.array(SectorBreakdownSchema),
-  
-  // New Occupation Analysis
   occupation_analysis: z.array(OccupationAnalysisItemSchema),
-
-  // New Skills Heatmap
   skills_heatmap: z.array(SkillHeatmapItemSchema),
-  
-  // From Micro-Stack Architect
   strategic_theme: z.string(),
   market_justification: z.string(),
-  
   revenue_opportunity: z.object({
     total_market_size: z.string(),
     conservative_capture: z.string(),
     ambitious_capture: z.string(),
     acquisition_rationale: z.string(),
   }),
-
   individual_courses: z.array(z.object({
       tier: z.string(),
       course_title: z.string(),
@@ -76,7 +67,53 @@ export const FullAuditOutputSchema = z.object({
       suggested_price: z.string(),
       pricing_tier: z.string(),
       target_student: z.string(),
-      
+      content_blueprint: z.string().describe('A minified JSON string representing the content blueprint. It must contain `learning_outcomes` (array of strings) and `modules` (array of objects with `title`, `topic`, `activity`).'),
+      sales_kit: z.object({
+        ideal_buyer_persona: z.string(),
+        b2b_pitch_script: z.string(),
+      }),
+      badge_preview: z.object({
+        badge_name: z.string(),
+        visual_style: z.string(),
+        rich_skill_descriptors: z.array(z.string()),
+        retention_trigger: z.string(),
+      }),
+      marketing_plan: z.string().describe('A minified JSON string representing the marketing plan. It must contain an `ad_creatives` object with `headline`, `body_copy`, and `cta_button`.'),
+  })),
+  stackable_product: z.object({
+    bundle_title: z.string(),
+    total_value: z.string(),
+    bundle_price: z.string(),
+    discount_applied: z.string(),
+    marketing_pitch: z.string(),
+    badges_issued: z.number()
+  }),
+  citations: z.array(z.string()),
+});
+
+
+// This is the final, fully-parsed schema that the application uses internally.
+export const FullAuditOutputSchema = z.object({
+  rto_id: z.string(),
+  executive_summary: ExecutiveSummarySchema,
+  sector_breakdown: z.array(SectorBreakdownSchema),
+  occupation_analysis: z.array(OccupationAnalysisItemSchema),
+  skills_heatmap: z.array(SkillHeatmapItemSchema),
+  strategic_theme: z.string(),
+  market_justification: z.string(),
+  revenue_opportunity: z.object({
+    total_market_size: z.string(),
+    conservative_capture: z.string(),
+    ambitious_capture: z.string(),
+    acquisition_rationale: z.string(),
+  }),
+  individual_courses: z.array(z.object({
+      tier: z.string(),
+      course_title: z.string(),
+      duration: z.string(),
+      suggested_price: z.string(),
+      pricing_tier: z.string(),
+      target_student: z.string(),
       content_blueprint: z.object({
         learning_outcomes: z.array(z.string()),
         modules: z.array(z.object({
@@ -85,19 +122,16 @@ export const FullAuditOutputSchema = z.object({
           activity: z.string(),
         })),
       }),
-      
       sales_kit: z.object({
         ideal_buyer_persona: z.string(),
         b2b_pitch_script: z.string(),
       }),
-
       badge_preview: z.object({
         badge_name: z.string(),
         visual_style: z.string(),
         rich_skill_descriptors: z.array(z.string()),
         retention_trigger: z.string(),
       }),
-
       marketing_plan: z.object({
         ad_creatives: z.object({
           headline: z.string(),
@@ -106,7 +140,6 @@ export const FullAuditOutputSchema = z.object({
         }),
       }),
   })),
-  
   stackable_product: z.object({
     bundle_title: z.string(),
     total_value: z.string(),

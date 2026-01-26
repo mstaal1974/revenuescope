@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
+import { FullAuditInputSchema, FullAuditOutputSchema, FullAuditOutputForAISchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
 
 export async function generateFullAudit(
   input: FullAuditInput
@@ -19,7 +19,7 @@ export async function generateFullAudit(
 const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { schema: FullAuditOutputSchema },
+  output: { schema: FullAuditOutputForAISchema },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a four-part strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -72,7 +72,7 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
     - \`conservative_capture\`: (string)
     - \`ambitious_capture\`: (string)
     - \`acquisition_rationale\`: (string)
-- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses in the \`individual_courses\` array. Each object must conform to the full, detailed schema, including \`tier\`, \`course_title\`, \`duration\`, \`suggested_price\`, \`pricing_tier\`, \`target_student\`, \`content_blueprint\`, \`sales_kit\`, \`badge_preview\`, and \`marketing_plan\`.
+- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses in the \`individual_courses\` array. For each course, provide all fields. For the \`content_blueprint\` and \`marketing_plan\` fields, you MUST provide a valid, minified JSON string.
 - **The Stackable Bundle:** Combine the three tiers into a \`stackable_product\` bundle object with a 15% discount, populating all fields including \`bundle_title\`, \`total_value\`, \`bundle_price\`, \`discount_applied\`, \`marketing_pitch\`, and \`badges_issued\` (number).
 
 **Final Output:**
@@ -122,13 +122,29 @@ ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO 
       throw new Error("AI failed to generate a full audit (empty structured response).");
     }
     
-    output.rto_id = input.rtoId;
+    // Manually set rto_id as it's not part of the AI's direct output schema
+    (output as any).rto_id = input.rtoId;
 
+    // Parse the stringified JSON fields
+    try {
+        for (const course of output.individual_courses) {
+            if (typeof course.content_blueprint === 'string') {
+                (course as any).content_blueprint = JSON.parse(course.content_blueprint);
+            }
+            if (typeof course.marketing_plan === 'string') {
+                (course as any).marketing_plan = JSON.parse(course.marketing_plan);
+            }
+        }
+    } catch (e) {
+        console.error("Failed to parse JSON string from AI output:", e);
+        throw new Error("AI returned malformed JSON for a nested field. Could not parse the audit.");
+    }
+    
     // We can still do a final validation, which is good practice.
     const validation = FullAuditOutputSchema.safeParse(output);
     if (!validation.success) {
-      console.error("AI output failed Zod validation:", validation.error.flatten());
-      console.error("Invalid data received from AI:", output);
+      console.error("AI output failed Zod validation after parsing:", validation.error.flatten());
+      console.error("Invalid data received from AI after parsing:", output);
       throw new Error("The AI's response did not match the required data structure after parsing.");
     }
 
