@@ -7,7 +7,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
 
 export async function generateFullAudit(
@@ -18,7 +17,11 @@ export async function generateFullAudit(
 
 const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
-  input: { schema: z.object({ rtoId: z.string(), scope: z.string() }) },
+  input: { schema: FullAuditInputSchema },
+  output: { schema: FullAuditOutputSchema },
+  config: {
+    responseMimeType: "application/json"
+  },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a four-part strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -66,11 +69,10 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
 **Final Output:**
 - Populate ALL fields in the combined JSON output schema. All fields are mandatory.
 - Provide simulated \`citations\` based on your training data.
-- **Final Output Format: Your entire response MUST be a single, valid JSON object enclosed in a markdown code block (\`\`\`json ... \`\`\`). Do not include any text or explanations outside of this code block.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
-*   RTO Scope & ANZSCO Data: {{{scope}}}
+*   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
 
 Begin analysis.`,
 });
@@ -102,36 +104,23 @@ RTO Name: ${rtoName} (${input.rtoId})
 Verified Scope of Registration & ANZSCO Mappings:
 ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO Match: ${item.Anzsco || 'Not Found'}`).join("\n")}
 `;
+    
+    const modifiedInput = { ...input, manualScopeDataset: scopeString };
 
-    const { text } = await prompt({ scope: scopeString, rtoId: input.rtoId });
-    const responseText = text;
+    const response = await prompt(modifiedInput);
+    const output = response.output();
 
-    if (!responseText) {
+    if (!output) {
       throw new Error("AI failed to generate a full audit (empty response).");
     }
-
-    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
-    if (!jsonMatch || !jsonMatch[1]) {
-      console.error("AI response did not contain a valid JSON code block. Raw response:", responseText);
-      throw new Error("AI response was not in the expected format. The response did not contain a valid JSON code block.");
-    }
-
-    let parsedJson;
-    try {
-      parsedJson = JSON.parse(jsonMatch[1]);
-    } catch (e) {
-      console.error("Failed to parse JSON from AI response. Raw content:", jsonMatch[1]);
-      const errorMessage = e instanceof Error ? e.message : "Unknown parsing error";
-      throw new Error(`AI returned malformed JSON: ${errorMessage}`);
-    }
     
-    parsedJson.rto_id = input.rtoId;
+    output.rto_id = input.rtoId;
 
-    // Validate the parsed data against the Zod schema before returning
-    const validation = FullAuditOutputSchema.safeParse(parsedJson);
+    // The output should already be validated by the prompt, but we can do it again for safety.
+    const validation = FullAuditOutputSchema.safeParse(output);
     if (!validation.success) {
       console.error("AI output failed Zod validation:", validation.error.flatten());
-       console.error("Invalid data received from AI:", parsedJson);
+      console.error("Invalid data received from AI:", output);
       throw new Error("The AI's response did not match the required data structure after parsing.");
     }
 
