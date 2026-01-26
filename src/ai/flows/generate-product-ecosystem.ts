@@ -10,7 +10,6 @@ import {
     type ProductEcosystemInput, 
     type ProductEcosystemOutput 
 } from '@/ai/types';
-import { extractJson } from '../utils/json';
 
 export async function generateProductEcosystem(
   input: ProductEcosystemInput
@@ -23,6 +22,9 @@ const prompt = ai.definePrompt({
   name: 'productEcosystemPrompt',
   input: { schema: ProductEcosystemInputSchema },
   model: 'googleai/gemini-1.5-flash-latest',
+  config: {
+    response_mime_type: 'application/json',
+  },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to design a detailed product ecosystem for an RTO.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -40,7 +42,7 @@ const prompt = ai.definePrompt({
 - **The Stackable Bundle:** Combine the three tiers into a \`stackable_product\` bundle object with a 15% discount, populating all fields including \`bundle_title\`, \`total_value\`, \`bundle_price\`, \`discount_applied\`, \`marketing_pitch\`, and \`badges_issued\` (number).
 - **Citations:** Provide simulated \`citations\` based on your training data.
 
-**Final Output Instructions: You MUST respond with ONLY the raw, fully-nested JSON object as a text string. Do not wrap it in markdown backticks or any other explanatory text.**
+**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
@@ -72,7 +74,7 @@ const generateProductEcosystemFlow = ai.defineFlow(
 
     let parsedJson: unknown;
     try {
-      parsedJson = extractJson(rawJsonText);
+      parsedJson = JSON.parse(rawJsonText);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error(`generate-product-ecosystem: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);

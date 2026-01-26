@@ -5,7 +5,6 @@
 
 import { ai } from '@/ai/genkit';
 import { FullAuditInputSchema, Stage1OutputSchema, type FullAuditInput, type Stage1Output } from '@/ai/types';
-import { extractJson } from '../utils/json';
 
 export async function generateStage1Analysis(
   input: FullAuditInput
@@ -17,6 +16,9 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
+  config: {
+    response_mime_type: 'application/json',
+  },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -56,7 +58,7 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
     - \`labour_market_size\`: (string) Your knowledge of ABS data for the precise 'Total Employment Volume'.
     - \`growth_rate\`: (string) The projected growth rate formatted as a percentage string (e.g., '+8.2%').
 
-**Final Output Instructions: You MUST respond with ONLY the raw JSON object as a text string. Do not wrap it in markdown backticks or any other explanatory text.**
+**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
@@ -82,7 +84,7 @@ const generateStage1AnalysisFlow = ai.defineFlow(
     
     let parsedJson: unknown;
     try {
-      parsedJson = extractJson(rawJsonText);
+      parsedJson = JSON.parse(rawJsonText);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error(`generate-stage1-analysis: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);

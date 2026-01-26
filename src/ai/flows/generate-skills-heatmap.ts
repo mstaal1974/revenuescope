@@ -5,7 +5,6 @@
 
 import { ai } from '@/ai/genkit';
 import { FullAuditInputSchema, SkillsHeatmapOutputSchema, type FullAuditInput, type SkillsHeatmapOutput } from '@/ai/types';
-import { extractJson } from '../utils/json';
 
 export async function generateSkillsHeatmap(
   input: FullAuditInput
@@ -18,6 +17,9 @@ const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
   model: 'googleai/gemini-1.5-flash-latest',
+  config: {
+    response_mime_type: 'application/json',
+  },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
@@ -32,7 +34,7 @@ const prompt = ai.definePrompt({
 - **Demand Analysis:** For each extracted skill, use your knowledge of Australian labor market data sources (e.g., Seek.com.au, Jora, ABS data) to determine its current market demand within Australia. Classify the demand as 'High', 'Medium', or 'Low'.
 - **Heatmap Population:** Populate the \`skills_heatmap\` array with this data, containing objects with \`skill_name\` (string) and \`demand_level\` (string).
 
-**Final Output Instructions: You MUST respond with ONLY the raw JSON object as a text string. Do not wrap it in markdown backticks or any other explanatory text.**
+**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
@@ -58,7 +60,7 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
     
     let parsedJson: unknown;
     try {
-      parsedJson = extractJson(rawJsonText);
+      parsedJson = JSON.parse(rawJsonText);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error(`generate-skills-heatmap: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
