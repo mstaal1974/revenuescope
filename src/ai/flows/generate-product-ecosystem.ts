@@ -22,6 +22,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
   name: 'productEcosystemPrompt',
   input: { schema: ProductEcosystemInputSchema },
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to design a detailed product ecosystem for an RTO.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
