@@ -63,6 +63,12 @@ const generateProductEcosystemFlow = ai.defineFlow(
     const response = await prompt(input);
     const rawJsonText = response.text;
 
+    if (!rawJsonText || typeof rawJsonText !== 'string') {
+      throw new Error(
+        `generate-product-ecosystem: AI returned no text content. Full response: ${JSON.stringify(response)}`
+      );
+    }
+
     let parsedJson: unknown;
     try {
       parsedJson = extractJson(rawJsonText);

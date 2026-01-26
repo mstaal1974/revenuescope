@@ -48,6 +48,12 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
   async (input): Promise<SkillsHeatmapOutput> => {
     const response = await prompt(input);
     const rawJsonText = response.text;
+
+    if (!rawJsonText || typeof rawJsonText !== 'string') {
+      throw new Error(
+        `generate-skills-heatmap: AI returned no text content. Full response: ${JSON.stringify(response)}`
+      );
+    }
     
     let parsedJson: unknown;
     try {

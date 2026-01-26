@@ -73,6 +73,12 @@ const generateStage1AnalysisFlow = ai.defineFlow(
   async (input): Promise<Stage1Output> => {
     const response = await prompt(input);
     const rawJsonText = response.text;
+
+    if (!rawJsonText || typeof rawJsonText !== 'string') {
+      throw new Error(
+        `generate-stage1-analysis: AI returned no text content. Full response: ${JSON.stringify(response)}`
+      );
+    }
     
     let parsedJson: unknown;
     try {
