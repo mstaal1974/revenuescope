@@ -1,10 +1,9 @@
 'use server';
 /**
- * @fileOverview This file defines the master Genkit flow for generating a full strategic audit for an RTO.
+ * @fileOverview This file defines the master function for generating a full strategic audit for an RTO.
  * It orchestrates multiple sub-flows to generate the analysis in stages.
  */
 
-import { ai } from '@/ai/genkit';
 import { FullAuditInputSchema, FullAuditOutputSchema, type FullAuditInput, type FullAuditOutput } from '@/ai/types';
 import { generateStage1Analysis } from './generate-stage1-analysis';
 import { generateSkillsHeatmap } from './generate-skills-heatmap';
@@ -14,18 +13,6 @@ import { generateProductEcosystem } from './generate-product-ecosystem';
 export async function generateFullAudit(
   input: FullAuditInput
 ): Promise<FullAuditOutput> {
-  const result = await generateFullAuditFlow(input);
-  return result;
-}
-
-
-const generateFullAuditFlow = ai.defineFlow(
-  {
-    name: 'generateFullAuditFlow',
-    inputSchema: FullAuditInputSchema,
-    outputSchema: FullAuditOutputSchema,
-  },
-  async (input): Promise<FullAuditOutput> => {
     
     const rtoName = input.rtoName || `RTO ${input.rtoId}`;
     
@@ -46,11 +33,14 @@ ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO 
     
     const flowInput = { ...input, manualScopeDataset: scopeString };
 
-    // Run Stage 1 and Stage 2 in parallel
-    const [stage1Result, skillsHeatmapResult] = await Promise.all([
-      generateStage1Analysis(flowInput),
-      generateSkillsHeatmap(flowInput),
-    ]);
+    // Run stages sequentially to avoid server overload
+    console.log("Starting Stage 1: Sector & Occupation Analysis");
+    const stage1Result = await generateStage1Analysis(flowInput);
+    console.log("Completed Stage 1");
+
+    console.log("Starting Stage 2: Skills Heatmap");
+    const skillsHeatmapResult = await generateSkillsHeatmap(flowInput);
+    console.log("Completed Stage 2");
 
     // Prepare input for Stage 3
     const productEcosystemInput = {
@@ -58,9 +48,10 @@ ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO 
       top_performing_sector: stage1Result.executive_summary.top_performing_sector,
       skills_heatmap: skillsHeatmapResult.skills_heatmap,
     };
-
-    // Run Stage 3
+    
+    console.log("Starting Stage 3: Product Ecosystem");
     const productEcosystemResult = await generateProductEcosystem(productEcosystemInput);
+    console.log("Completed Stage 3");
 
     // Merge results
     const fullAudit = {
@@ -79,5 +70,4 @@ ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO 
     }
 
     return validation.data;
-  }
-);
+}
