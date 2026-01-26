@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * @fileOverview A utility for extracting a JSON object from a string.
  */
