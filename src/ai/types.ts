@@ -70,8 +70,8 @@ export const ProductEcosystemInputSchema = FullAuditInputSchema.extend({
 export type ProductEcosystemInput = z.infer<typeof ProductEcosystemInputSchema>;
 
 
-// For AI request - nested objects are stringified JSON
-export const ProductEcosystemForAISchema = z.object({
+// Final parsed schema for Stage 3
+export const ProductEcosystemOutputSchema = z.object({
   strategic_theme: z.string(),
   market_justification: z.string(),
   revenue_opportunity: z.object({
@@ -81,40 +81,6 @@ export const ProductEcosystemForAISchema = z.object({
     acquisition_rationale: z.string(),
   }),
   individual_courses: z.array(z.object({
-      tier: z.string(),
-      course_title: z.string(),
-      duration: z.string(),
-      suggested_price: z.string(),
-      pricing_tier: z.string(),
-      target_student: z.string(),
-      content_blueprint: z.string().describe('A minified JSON string representing the content blueprint. It must contain `learning_outcomes` (array of strings) and `modules` (array of objects with `title`, `topic`, `activity`).'),
-      sales_kit: z.object({
-        ideal_buyer_persona: z.string(),
-        b2b_pitch_script: z.string(),
-      }),
-      badge_preview: z.object({
-        badge_name: z.string(),
-        visual_style: z.string(),
-        rich_skill_descriptors: z.array(z.string()),
-        retention_trigger: z.string(),
-      }),
-      marketing_plan: z.string().describe('A minified JSON string representing the marketing plan. It must contain an `ad_creatives` object with `headline`, `body_copy`, and `cta_button`.'),
-  })),
-  stackable_product: z.object({
-    bundle_title: z.string(),
-    total_value: z.string(),
-    bundle_price: z.string(),
-    discount_applied: z.string(),
-    marketing_pitch: z.string(),
-    badges_issued: z.number()
-  }),
-  citations: z.array(z.string()),
-});
-
-
-// Final parsed schema for Stage 3
-export const ProductEcosystemOutputSchema = ProductEcosystemForAISchema.extend({
-    individual_courses: z.array(z.object({
       tier: z.string(),
       course_title: z.string(),
       duration: z.string(),
@@ -147,6 +113,15 @@ export const ProductEcosystemOutputSchema = ProductEcosystemForAISchema.extend({
         }),
       }),
   })),
+  stackable_product: z.object({
+    bundle_title: z.string(),
+    total_value: z.string(),
+    bundle_price: z.string(),
+    discount_applied: z.string(),
+    marketing_pitch: z.string(),
+    badges_issued: z.number()
+  }),
+  citations: z.array(z.string()),
 });
 export type ProductEcosystemOutput = z.infer<typeof ProductEcosystemOutputSchema>;
 
