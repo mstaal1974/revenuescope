@@ -19,10 +19,8 @@ export async function generateFullAudit(
 const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
   input: { schema: z.object({ rtoId: z.string(), scope: z.string() }) },
-  // Output schema is removed. We will parse JSON manually.
-  prompt: `**CRITICAL OUTPUT INSTRUCTION: Your entire response MUST be a single, valid JSON object that conforms to the schema described below. Do not include any text, conversation, or explanation before or after the JSON object. The JSON object must be enclosed in a \`\`\`json markdown block.**
-
-You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a four-part strategic audit for RTOs, starting with live, verified data from Australian government sources.
+  output: { schema: FullAuditOutputSchema },
+  prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a four-part strategic audit for RTOs, starting with live, verified data from Australian government sources.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from or be specific to the Australian market. Use the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
 
@@ -105,33 +103,15 @@ Verified Scope of Registration & ANZSCO Mappings:
 ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO Match: ${item.Anzsco || 'Not Found'}`).join("\n")}
 `;
 
-    const { output: rawOutput } = await prompt({ scope: scopeString, rtoId: input.rtoId });
-    if (!rawOutput) {
+    const { output } = await prompt({ scope: scopeString, rtoId: input.rtoId });
+    if (!output) {
       throw new Error("AI failed to generate a full audit (empty response).");
     }
-
-    // Find the JSON block from the markdown response
-    const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
-    const match = rawOutput.match(jsonRegex);
-
-    if (!match || !match[1]) {
-      console.error("Failed to find JSON block in AI response:", rawOutput);
-      throw new Error("AI returned an invalid response format. The response should be a JSON block inside ```json.");
-    }
-
-    let parsedOutput;
-    try {
-      parsedOutput = JSON.parse(match[1]);
-    } catch (e: any) {
-      console.error("Failed to parse JSON from AI response:", e.message);
-      console.error("Raw content:", match[1]);
-      throw new Error(`AI returned invalid JSON: ${e.message}`);
-    }
     
-    parsedOutput.rto_id = input.rtoId;
+    output.rto_id = input.rtoId;
 
     // Validate the parsed data against the Zod schema before returning
-    const validation = FullAuditOutputSchema.safeParse(parsedOutput);
+    const validation = FullAuditOutputSchema.safeParse(output);
     if (!validation.success) {
       console.error("AI output failed validation:", validation.error.flatten());
       throw new Error("The AI's response did not match the required data structure.");

@@ -22,7 +22,6 @@ export async function performFullAudit(
   }
 
   try {
-    // Validation is now handled inside the Genkit flow
     const result = await generateFullAudit(input);
     return result;
   } catch (e) {
