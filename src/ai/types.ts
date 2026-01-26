@@ -32,11 +32,6 @@ const SectorBreakdownSchema = z.object({
   recommended_actions: z.array(z.string())
 });
 
-const SkillHeatmapItemSchema = z.object({
-  skill_name: z.string(),
-  demand_level: z.string(),
-});
-
 const OccupationAnalysisItemSchema = z.object({
   occupation_name: z.string(),
   demand_level: z.string(),
@@ -44,14 +39,39 @@ const OccupationAnalysisItemSchema = z.object({
   growth_rate: z.string(),
 });
 
-// This is the schema to request from the AI to avoid nesting depth limits.
-// Complex objects are requested as stringified JSON.
-export const FullAuditOutputForAISchema = z.object({
-  rto_id: z.string(),
+const SkillHeatmapItemSchema = z.object({
+  skill_name: z.string(),
+  demand_level: z.string(),
+});
+
+
+// STAGE 1: Sector & Occupation Analysis
+export const Stage1OutputSchema = z.object({
   executive_summary: ExecutiveSummarySchema,
   sector_breakdown: z.array(SectorBreakdownSchema),
   occupation_analysis: z.array(OccupationAnalysisItemSchema),
+});
+export type Stage1Output = z.infer<typeof Stage1OutputSchema>;
+
+
+// STAGE 2: Skills Heatmap
+export const SkillsHeatmapOutputSchema = z.object({
   skills_heatmap: z.array(SkillHeatmapItemSchema),
+});
+export type SkillsHeatmapOutput = z.infer<typeof SkillsHeatmapOutputSchema>;
+
+
+// STAGE 3: Product Ecosystem
+// Input for Stage 3 needs outputs from Stage 1 & 2
+export const ProductEcosystemInputSchema = FullAuditInputSchema.extend({
+    top_performing_sector: z.string(),
+    skills_heatmap: z.array(SkillHeatmapItemSchema),
+});
+export type ProductEcosystemInput = z.infer<typeof ProductEcosystemInputSchema>;
+
+
+// For AI request - nested objects are stringified JSON
+export const ProductEcosystemForAISchema = z.object({
   strategic_theme: z.string(),
   market_justification: z.string(),
   revenue_opportunity: z.object({
@@ -92,22 +112,9 @@ export const FullAuditOutputForAISchema = z.object({
 });
 
 
-// This is the final, fully-parsed schema that the application uses internally.
-export const FullAuditOutputSchema = z.object({
-  rto_id: z.string(),
-  executive_summary: ExecutiveSummarySchema,
-  sector_breakdown: z.array(SectorBreakdownSchema),
-  occupation_analysis: z.array(OccupationAnalysisItemSchema),
-  skills_heatmap: z.array(SkillHeatmapItemSchema),
-  strategic_theme: z.string(),
-  market_justification: z.string(),
-  revenue_opportunity: z.object({
-    total_market_size: z.string(),
-    conservative_capture: z.string(),
-    ambitious_capture: z.string(),
-    acquisition_rationale: z.string(),
-  }),
-  individual_courses: z.array(z.object({
+// Final parsed schema for Stage 3
+export const ProductEcosystemOutputSchema = ProductEcosystemForAISchema.extend({
+    individual_courses: z.array(z.object({
       tier: z.string(),
       course_title: z.string(),
       duration: z.string(),
@@ -140,14 +147,13 @@ export const FullAuditOutputSchema = z.object({
         }),
       }),
   })),
-  stackable_product: z.object({
-    bundle_title: z.string(),
-    total_value: z.string(),
-    bundle_price: z.string(),
-    discount_applied: z.string(),
-    marketing_pitch: z.string(),
-    badges_issued: z.number()
-  }),
-  citations: z.array(z.string()),
+});
+export type ProductEcosystemOutput = z.infer<typeof ProductEcosystemOutputSchema>;
+
+
+// This is the final, fully-parsed schema that the application uses internally.
+// It's a merge of all the stage outputs.
+export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(ProductEcosystemOutputSchema).extend({
+    rto_id: z.string()
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
