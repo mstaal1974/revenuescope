@@ -116,8 +116,7 @@ ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO 
     
     const modifiedInput = { ...input, manualScopeDataset: scopeString };
 
-    const response = await prompt(modifiedInput);
-    const output = response.output();
+    const { output } = await prompt(modifiedInput);
 
     if (!output) {
       throw new Error("AI failed to generate a full audit (empty structured response).");
