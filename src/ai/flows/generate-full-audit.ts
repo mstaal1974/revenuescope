@@ -18,13 +18,19 @@ export async function generateFullAudit(
 const prompt = ai.definePrompt({
   name: 'fullAuditPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { schema: FullAuditOutputSchema },
-  config: {
-    responseMimeType: "application/json"
-  },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a four-part strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
+
+**Crucial Output Format: You MUST wrap your entire response in a single JSON markdown block. Do not include any text outside of this block.
+Example:
+\`\`\`json
+{
+  "rto_id": "...",
+  "executive_summary": { ... },
+  ... all other fields ...
+}
+\`\`\`**
 
 **Core Logic: The Validated Data Chain**
 This data chain is non-negotiable. It is the mandatory pathway for your analysis, bridging Australian compliance data (ANZSCO) with global skill standards (ESCO) and local market reality (ABS). All strategic advice must stem from this validated process.
@@ -108,19 +114,40 @@ ${scope.map(item => `  - Qualification: ${item.Code} ${item.Name}\n    - ANZSCO 
     const modifiedInput = { ...input, manualScopeDataset: scopeString };
 
     const response = await prompt(modifiedInput);
-    const output = response.output();
+    const rawOutput = response.text();
 
-    if (!output) {
-      throw new Error("AI failed to generate a full audit (empty response).");
+    if (!rawOutput) {
+      throw new Error("AI failed to generate a full audit (empty text response).");
+    }
+
+    // Extract JSON from markdown block
+    const jsonRegex = /```json\n([\s\S]*?)\n```/;
+    const match = rawOutput.match(jsonRegex);
+
+    if (!match || !match[1]) {
+      console.error("AI did not return a valid JSON markdown block. Raw output:", rawOutput);
+      throw new Error("The AI's response was not in the expected JSON format.");
+    }
+
+    const jsonString = match[1];
+    let parsedOutput: any;
+
+    try {
+      parsedOutput = JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error("Failed to parse JSON from AI response. Raw string:", jsonString);
+      if (parseError instanceof Error) {
+        throw new Error(`The AI returned malformed JSON: ${parseError.message}`);
+      }
+      throw new Error("The AI returned malformed JSON.");
     }
     
-    output.rto_id = input.rtoId;
+    parsedOutput.rto_id = input.rtoId;
 
-    // The output should already be validated by the prompt, but we can do it again for safety.
-    const validation = FullAuditOutputSchema.safeParse(output);
+    const validation = FullAuditOutputSchema.safeParse(parsedOutput);
     if (!validation.success) {
       console.error("AI output failed Zod validation:", validation.error.flatten());
-      console.error("Invalid data received from AI:", output);
+      console.error("Invalid data received from AI:", parsedOutput);
       throw new Error("The AI's response did not match the required data structure after parsing.");
     }
 
