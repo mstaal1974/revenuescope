@@ -86,7 +86,7 @@ const AuditWidget: React.FC = () => {
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
     
     try {
-      addLog(`[1/6] QUERYING DATABASE FOR RTO CODE: "${rtoCode}"...`, 'info');
+      addLog(`[1/6] QUERYING FIRESTORE DATABASE FOR RTO CODE: "${rtoCode}"...`, 'info');
       const db = getFirestore();
       const qualificationsRef = collection(db, "qualifications");
       const q = query(qualificationsRef, where("rtoCode", "==", rtoCode), where("usageRecommendation", "==", "Current"));
@@ -100,7 +100,7 @@ const AuditWidget: React.FC = () => {
 
       let rtoName = "";
       const scopeItems: string[] = [];
-      addLog('[3/6] PARSING QUALIFICATION DATA...', 'info');
+      addLog('[3/6] PARSING QUALIFICATION DATA FROM DATABASE...', 'info');
       querySnapshot.forEach((doc) => {
           const data = doc.data();
           if (!rtoName && data.rtoLegalName) {
@@ -117,17 +117,15 @@ const AuditWidget: React.FC = () => {
           manualScopeDataset: manualScopeDataset 
       };
       
+      addLog('[4/6] SENDING SCOPE TO AI FOR ANALYSIS (THIS MAY TAKE UP TO A MINUTE)...', 'info');
       const data = await performFullAudit(auditInput);
-
-      addLog('[4/6] FETCHING VERIFIED LABOR MARKET DATA...', 'info');
-      await delay(150);
-      addLog('[5/6] APPLYING 3-STEP ANCHOR+MULTIPLIER PRICING...', 'warning');
-      await delay(150);
-      addLog('[6/6] GENERATING SALES & CURRICULUM BLUEPRINTS...', 'success');
-      await delay(100);
+      addLog('[5/6] AI ANALYSIS COMPLETE. GENERATING REPORT...', 'success');
       
       setResult(data);
+      localStorage.setItem("auditData", JSON.stringify(data));
       setState(AuditState.RESULTS);
+      addLog('[6/6] AUDIT COMPLETE.', 'success');
+
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -540,5 +538,6 @@ export default AuditWidget;
     
 
     
+
 
 
