@@ -16,10 +16,8 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
+  output: { schema: Stage1OutputSchema },
   model: 'googleai/gemini-2.5-flash',
-  config: {
-    responseMimeType: 'application/json',
-  },
   prompt: `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau ofStatistics (ABS) as the primary source for quantitative data.**
@@ -147,40 +145,13 @@ const generateStage1AnalysisFlow = ai.defineFlow(
   {
     name: 'generateStage1AnalysisFlow',
     inputSchema: FullAuditInputSchema,
+    outputSchema: Stage1OutputSchema,
   },
-  async (input): Promise<Stage1Output> => {
-    const response = await prompt(input);
-    const rawJsonText = response.text;
-
-    if (!rawJsonText || typeof rawJsonText !== 'string') {
-      throw new Error(
-        `generate-stage1-analysis: AI returned no text content. Full response: ${JSON.stringify(response)}`
-      );
+  async (input) => {
+    const { output } = await prompt(input);
+    if (!output) {
+      throw new Error('AI returned no valid output for Stage 1 analysis.');
     }
-
-    const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-        throw new Error(`AI returned no valid JSON for Stage 1 analysis. Raw text: "${rawJsonText}"`);
-    }
-    const cleanedJsonText = jsonMatch[0];
-    
-    let parsedJson: unknown;
-    try {
-      parsedJson = JSON.parse(cleanedJsonText);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      console.error(`generate-stage1-analysis: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
-      throw new Error(`AI returned malformed JSON for Stage 1 analysis. Raw text: "${rawJsonText}"`);
-    }
-    
-    const validation = Stage1OutputSchema.safeParse(parsedJson);
-
-    if (!validation.success) {
-      const validationErrors = JSON.stringify(validation.error.flatten());
-      console.error("generate-stage1-analysis: AI response failed Zod validation:", validationErrors);
-      throw new Error(`The AI's response for Stage 1 analysis did not match the required data structure. Validation issues: ${validationErrors}`);
-    }
-
-    return validation.data;
+    return output;
   }
 );

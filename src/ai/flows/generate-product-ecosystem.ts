@@ -21,15 +21,11 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
   name: 'productEcosystemPrompt',
   input: { schema: ProductEcosystemInputSchema },
+  output: { schema: ProductEcosystemOutputSchema },
   model: 'googleai/gemini-2.5-flash',
-  config: {
-    responseMimeType: 'application/json',
-  },
   prompt: `You are "Strategic Growth Director v5.0," an AI designed to generate a detailed product ecosystem for an RTO. You MUST output a single, valid JSON object and nothing else.
 
 **THE LOGIC (THE REVENUE STAIRCASE):**
-You will design a sequence of courses, each corresponding to a specific pricing tier designed to guide a student from initial engagement to a high-value purchase.
-
 1.  **TIER 1 (The Hook):** Price: $19 - $99. Goal: Break-even acquisition. Product: Short, low-risk, online-only (e.g., Awareness, Theory).
 2.  **TIER 2 (The Core):** Price: $99 - $250. Goal: Profit. Product: The standard license or skill set (e.g., Forklift, Excel Skills).
 3.  **TIER 3 (The Authority):** Price: $250+ Goal: Margin & Prestige. Product: The full qualification or advanced boot camp.
@@ -106,40 +102,13 @@ const generateProductEcosystemFlow = ai.defineFlow(
   {
     name: 'generateProductEcosystemFlow',
     inputSchema: ProductEcosystemInputSchema,
+    outputSchema: ProductEcosystemOutputSchema,
   },
-  async (input): Promise<ProductEcosystemOutput> => {
-    const response = await prompt(input);
-    const rawJsonText = response.text;
-
-    if (!rawJsonText || typeof rawJsonText !== 'string') {
-      throw new Error(
-        `generate-product-ecosystem: AI returned no text content. Full response: ${JSON.stringify(response)}`
-      );
+  async (input) => {
+    const { output } = await prompt(input);
+    if (!output) {
+      throw new Error('AI returned no valid output for Product Ecosystem.');
     }
-    
-    const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error(`AI returned no valid JSON for Product Ecosystem. Raw text: "${rawJsonText}"`);
-    }
-    const cleanedJsonText = jsonMatch[0];
-
-    let parsedJson: unknown;
-    try {
-      parsedJson = JSON.parse(cleanedJsonText);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      console.error(`generate-product-ecosystem: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
-      throw new Error(`AI returned malformed JSON for Product Ecosystem. Raw text: "${rawJsonText}"`);
-    }
-    
-    const validation = ProductEcosystemOutputSchema.safeParse(parsedJson);
-
-    if (!validation.success) {
-      const validationErrors = JSON.stringify(validation.error.flatten());
-      console.error("generate-product-ecosystem: AI response failed Zod validation:", validationErrors);
-      throw new Error(`The AI's response for the Product Ecosystem did not match the required data structure. Validation issues: ${validationErrors}`);
-    }
-
-    return validation.data;
+    return output;
   }
 );
