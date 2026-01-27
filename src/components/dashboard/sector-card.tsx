@@ -13,6 +13,8 @@ type Sector = FullAuditOutput["sector_breakdown"][0];
 
 interface SectorCardProps {
   sector: Sector;
+  isLocked?: boolean;
+  relativeOpportunity?: number;
 }
 
 const TrendIcon = ({ trend }: { trend: string }) => {
@@ -26,7 +28,7 @@ const TrendIcon = ({ trend }: { trend: string }) => {
     }
 };
 
-export function SectorCard({ sector }: SectorCardProps) {
+export function SectorCard({ sector, isLocked, relativeOpportunity }: SectorCardProps) {
   return (
     <Card className="rounded-[1.5rem] shadow-sm bg-white border border-slate-200 flex flex-col transition-all hover:shadow-xl hover:border-blue-200">
       <CardHeader>
@@ -57,22 +59,31 @@ export function SectorCard({ sector }: SectorCardProps) {
 
         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
              <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Realistic Financial Opportunity</h4>
-             <div className="flex justify-around text-center">
-                <div className="flex items-center gap-3">
-                    <DollarSign className="h-6 w-6 text-blue-500" />
-                    <div>
-                        <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.realistic_annual_revenue}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Realistic Revenue</p>
+             {isLocked ? (
+                <div className="space-y-2 py-3">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider text-center">Relative Opportunity</p>
+                    <div className="w-full bg-slate-200 rounded-full h-4 border border-slate-300/50 shadow-inner">
+                        <div className="bg-blue-500 h-full rounded-full" style={{ width: `${relativeOpportunity}%` }}></div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Users className="h-6 w-6 text-blue-500" />
-                    <div>
-                        <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.final_learner_estimate.toLocaleString()}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Est. Learners</p>
+             ) : (
+                <div className="flex justify-around text-center">
+                    <div className="flex items-center gap-3">
+                        <DollarSign className="h-6 w-6 text-blue-500" />
+                        <div>
+                            <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.realistic_annual_revenue}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Realistic Revenue</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Users className="h-6 w-6 text-blue-500" />
+                        <div>
+                            <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.final_learner_estimate.toLocaleString()}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Est. Learners</p>
+                        </div>
                     </div>
                 </div>
-             </div>
+             )}
         </div>
 
         <div className="space-y-3 mt-auto pt-4">

@@ -11,6 +11,7 @@ import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { Textarea } from './ui/textarea';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { Button } from './ui/button';
 
 
 type AuditResult = FullAuditOutput;
@@ -56,7 +57,6 @@ const AuditWidget: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
@@ -167,7 +167,7 @@ const AuditWidget: React.FC = () => {
   };
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && phone) setIsUnlocked(true);
+    if (email) setIsUnlocked(true);
   };
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -264,6 +264,9 @@ const AuditWidget: React.FC = () => {
       )
   }
 
+  const revenues = result.sector_breakdown.map(s => parseFloat(s.financial_opportunity.realistic_annual_revenue.replace(/[^0-9.-]+/g, '')));
+  const maxRevenue = Math.max(...revenues);
+
   return (
     <div className="animate-in fade-in zoom-in-95 duration-1000 max-w-7xl mx-auto">
       {/* 1. EXECUTIVE SUMMARY */}
@@ -274,7 +277,7 @@ const AuditWidget: React.FC = () => {
             Executive Summary
           </div>
           <h3 className="text-4xl lg:text-6xl font-black mb-10 tracking-tighter text-white leading-tight">
-            {formatValue(result.executive_summary.total_revenue_opportunity)} Total Opportunity
+            {!isUnlocked ? 'Significant Growth Potential Identified' : formatValue(result.executive_summary.total_revenue_opportunity)}
           </h3>
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
@@ -295,7 +298,11 @@ const AuditWidget: React.FC = () => {
           <h4 className="font-black text-3xl text-slate-950 tracking-tight mb-2">Sector-by-Sector Analysis</h4>
           <p className="text-slate-500 mb-12">Opportunities ranked by market demand and revenue potential.</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {result.sector_breakdown.map((sector, i) => <SectorCard key={i} sector={sector} />)}
+            {result.sector_breakdown.map((sector, i) => {
+              const revenue = revenues[i];
+              const relativeOpportunity = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0;
+              return <SectorCard key={i} sector={sector} isLocked={!isUnlocked} relativeOpportunity={relativeOpportunity} />
+            })}
           </div>
         </div>
       )}
@@ -485,15 +492,15 @@ const AuditWidget: React.FC = () => {
 
           {!isUnlocked && (
             <div className="absolute inset-0 flex items-center justify-center p-8 bg-white/40 backdrop-blur-3xl z-50">
-              <div className="bg-white p-16 rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.3)] border border-slate-100 max-w-xl text-center relative overflow-hidden">
+              <div className="bg-white p-10 md:p-16 rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.3)] border border-slate-100 max-w-2xl text-center relative overflow-hidden">
                 <div className="bg-blue-600 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-blue-600/40">
                   <Lock className="w-12 h-12 text-white" />
                 </div>
-                <h5 className="font-black text-4xl text-slate-950 mb-6 tracking-tight italic">Unlock Market-Ready Data</h5>
+                <h5 className="font-black text-4xl text-slate-950 mb-6 tracking-tight italic">Unlock Full Report</h5>
                 <p className="text-slate-500 text-xl mb-12 leading-relaxed font-medium">
-                  Get full curriculum maps, calibrated pricing models, and persona-driven marketing launch plans with ad creative.
+                  Get full financial models, course skeletons, and marketing plans by unlocking your report.
                 </p>
-                <form onSubmit={handleUnlock} className="space-y-4">
+                <form onSubmit={handleUnlock} className="space-y-4 max-w-md mx-auto">
                   <input
                     type="email"
                     placeholder="rto-manager@training.edu.au"
@@ -502,21 +509,17 @@ const AuditWidget: React.FC = () => {
                     className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
                     required
                   />
-                  <input
-                    type="tel"
-                    placeholder="Your Phone Number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
-                    required
-                  />
                   <button
                     type="submit"
                     className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black py-6 rounded-[2rem] transition-all shadow-2xl shadow-slate-950/20 text-xl uppercase tracking-widest"
                   >
-                    Download Sales & Content Pack
+                    Unlock Full Financial Modelling
                   </button>
                 </form>
+                 <div className="mt-8 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                    <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">Download Board-Ready PDF</Button>
+                    <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">Book a Strategy Call</Button>
+                </div>
               </div>
             </div>
           )}
@@ -555,6 +558,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
