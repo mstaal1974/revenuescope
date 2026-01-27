@@ -3,7 +3,7 @@
  * @fileOverview This file defines the second stage of the audit, generating a skills heatmap.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, defaultModel } from '@/ai/genkit';
 import { FullAuditInputSchema, SkillsHeatmapOutputSchema, type FullAuditInput, type SkillsHeatmapOutput } from '@/ai/types';
 
 export async function generateSkillsHeatmap(

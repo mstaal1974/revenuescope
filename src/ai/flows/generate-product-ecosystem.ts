@@ -3,7 +3,7 @@
  * @fileOverview This file defines the third stage of the audit, designing a detailed product ecosystem.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, defaultModel } from '@/ai/genkit';
 import { 
     ProductEcosystemInputSchema,
     ProductEcosystemOutputSchema,
