@@ -16,6 +16,7 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
+  model: 'googleai/gemini-2.5-flash',
   config: {
     response_mime_type: 'application/json',
   },

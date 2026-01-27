@@ -3,7 +3,7 @@
  * @fileOverview This file defines the third stage of the audit, designing a detailed product ecosystem.
  */
 
-import { ai, defaultModel } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { 
     ProductEcosystemInputSchema,
     ProductEcosystemOutputSchema,
@@ -21,7 +21,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
   name: 'productEcosystemPrompt',
   input: { schema: ProductEcosystemInputSchema },
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   config: {
     response_mime_type: 'application/json',
   },

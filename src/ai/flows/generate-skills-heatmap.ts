@@ -3,7 +3,7 @@
  * @fileOverview This file defines the second stage of the audit, generating a skills heatmap.
  */
 
-import { ai, defaultModel } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { FullAuditInputSchema, SkillsHeatmapOutputSchema, type FullAuditInput, type SkillsHeatmapOutput } from '@/ai/types';
 
 export async function generateSkillsHeatmap(
@@ -16,7 +16,7 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   config: {
     response_mime_type: 'application/json',
   },
