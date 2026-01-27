@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { runAuditAction } from '@/app/actions';
+import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, } from '@/ai/types';
 import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
@@ -76,61 +76,82 @@ const AuditWidget: React.FC = () => {
   const handleAudit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!rtoCode) {
-        addLog('RTO Code is required.', 'error');
-        return;
+      addLog('RTO Code is required.', 'error');
+      return;
     }
 
     setState(AuditState.PROCESSING);
     setLogs([]);
-    
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
-    
+
     try {
-      addLog(`[1/6] QUERYING FIRESTORE DATABASE FOR RTO CODE: "${rtoCode}"...`, 'info');
+      // PHASE 1: Get Scope from Firestore
+      addLog(`[1/8] QUERYING FIRESTORE FOR RTO CODE: "${rtoCode}"...`, 'info');
       const db = getFirestore();
       const qualificationsRef = collection(db, "qualifications");
       const q = query(qualificationsRef, where("rtoCode", "==", rtoCode), where("usageRecommendation", "==", "Current"));
       const querySnapshot = await getDocs(q);
 
-      addLog(`[2/6] SUCCESS: FOUND ${querySnapshot.size} CURRENT QUALIFICATIONS.`, 'success');
-
       if (querySnapshot.empty) {
-          throw new Error(`RTO ID "${rtoCode}" is invalid or has no 'Current' qualifications in the scope database.`);
+        throw new Error(`RTO ID "${rtoCode}" is invalid or has no 'Current' qualifications in the database.`);
       }
+      addLog(`[2/8] SUCCESS: FOUND ${querySnapshot.size} CURRENT QUALIFICATIONS.`, 'success');
 
       let rtoName = "";
       const scopeItems: string[] = [];
-      addLog('[3/6] PARSING QUALIFICATION DATA FROM DATABASE...', 'info');
+      addLog('[3/8] PARSING QUALIFICATION DATA FROM DATABASE...', 'info');
       querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (!rtoName && data.rtoLegalName) {
-              rtoName = data.rtoLegalName;
-          }
-          // Format for manualScopeDataset: Code,Name,Anzsco (Anzsco is blank, will be enriched in flow)
-          scopeItems.push(`${data.code || ''},${data.title || ''},`);
+        const data = doc.data();
+        if (!rtoName && data.rtoLegalName) rtoName = data.rtoLegalName;
+        scopeItems.push(`${data.code || ''},${data.title || ''},`);
       });
       const manualScopeDataset = scopeItems.join('\n');
       
-      const auditInput: FullAuditInput = { 
-          rtoId: rtoCode, 
-          rtoName: rtoName,
-          manualScopeDataset: manualScopeDataset 
+      const baseAuditInput: FullAuditInput = { 
+        rtoId: rtoCode, 
+        rtoName: rtoName,
+        manualScopeDataset: manualScopeDataset 
       };
-      
-      addLog('[4/6] SENDING SCOPE TO AI FOR ANALYSIS (THIS MAY TAKE UP TO A MINUTE)...', 'info');
-      const response = await runAuditAction(auditInput);
-      
-      if (!response.ok) {
-        throw new Error(response.error);
-      }
 
-      const data = response.result;
-      addLog('[5/6] AI ANALYSIS COMPLETE. GENERATING REPORT...', 'success');
-      
-      setResult(data);
-      localStorage.setItem("auditData", JSON.stringify(data));
+      // PHASE 2: Run Stage 1 AI Analysis
+      addLog('[4/8] AI STAGE 1/3: EXECUTING SECTOR & OCCUPATION ANALYSIS...', 'info');
+      const stage1Response = await runStage1Action(baseAuditInput);
+      if (!stage1Response.ok) throw new Error(`AI Stage 1 Failed: ${stage1Response.error}`);
+      const stage1Result = stage1Response.result;
+      addLog('[5/8] AI STAGE 1/3: ANALYSIS COMPLETE.', 'success');
+
+      // PHASE 3: Run Stage 2 AI Analysis
+      addLog('[6/8] AI STAGE 2/3: GENERATING SKILLS DEMAND HEATMAP...', 'info');
+      const stage2Response = await runStage2Action(baseAuditInput);
+      if (!stage2Response.ok) throw new Error(`AI Stage 2 Failed: ${stage2Response.error}`);
+      const stage2Result = stage2Response.result;
+      addLog('[7/8] AI STAGE 2/3: HEATMAP COMPLETE.', 'success');
+
+      // PHASE 4: Run Stage 3 AI Analysis
+      const stage3Input = {
+        ...baseAuditInput,
+        top_performing_sector: stage1Result.executive_summary.top_performing_sector,
+        skills_heatmap: stage2Result.skills_heatmap,
+      };
+      addLog('[8/8] AI STAGE 3/3: ARCHITECTING PRODUCT ECOSYSTEM...', 'info');
+      const stage3Response = await runStage3Action(stage3Input);
+      if (!stage3Response.ok) throw new Error(`AI Stage 3 Failed: ${stage3Response.error}`);
+      const stage3Result = stage3Response.result;
+
+      addLog('ALL AI STAGES COMPLETE. MERGING RESULTS...', 'success');
+
+      // PHASE 5: Merge and Finalize
+      const fullAuditResult: AuditResult = {
+        rto_id: baseAuditInput.rtoId,
+        ...stage1Result,
+        ...stage2Result,
+        ...stage3Result,
+      };
+
+      setResult(fullAuditResult);
+      localStorage.setItem("auditData", JSON.stringify(fullAuditResult));
       setState(AuditState.RESULTS);
-      addLog('[6/6] AUDIT COMPLETE.', 'success');
+      addLog('AUDIT COMPLETE. REPORT GENERATED.', 'success');
 
     } catch (err) {
       console.error(err);
@@ -140,7 +161,6 @@ const AuditWidget: React.FC = () => {
       setState(AuditState.ERROR);
     }
   };
-
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
     if (email && phone) setIsUnlocked(true);
@@ -544,6 +564,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
