@@ -21,7 +21,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
   name: 'productEcosystemPrompt',
   input: { schema: ProductEcosystemInputSchema },
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   config: {
     responseMimeType: 'application/json',
   },
