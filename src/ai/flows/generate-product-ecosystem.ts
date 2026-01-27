@@ -117,7 +117,11 @@ const generateProductEcosystemFlow = ai.defineFlow(
       );
     }
     
-    const cleanedJsonText = rawJsonText.replace(/^```json\s*/, '').replace(/```$/, '');
+    const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error(`AI returned no valid JSON for Product Ecosystem. Raw text: "${rawJsonText}"`);
+    }
+    const cleanedJsonText = jsonMatch[0];
 
     let parsedJson: unknown;
     try {

@@ -83,7 +83,11 @@ const generateStage1AnalysisFlow = ai.defineFlow(
       );
     }
 
-    const cleanedJsonText = rawJsonText.replace(/^```json\s*/, '').replace(/```$/, '');
+    const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+        throw new Error(`AI returned no valid JSON for Stage 1 analysis. Raw text: "${rawJsonText}"`);
+    }
+    const cleanedJsonText = jsonMatch[0];
     
     let parsedJson: unknown;
     try {

@@ -18,7 +18,7 @@ const prompt = ai.definePrompt({
   input: { schema: FullAuditInputSchema },
   model: 'googleai/gemini-2.5-flash',
   config: {
-    response_mime_type: 'application/json',
+    responseMimeType: 'application/json',
   },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
@@ -58,7 +58,11 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
       );
     }
     
-    const cleanedJsonText = rawJsonText.replace(/^```json\s*/, '').replace(/```$/, '');
+    const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error(`AI returned no valid JSON for Skills Heatmap. Raw text: "${rawJsonText}"`);
+    }
+    const cleanedJsonText = jsonMatch[0];
     
     let parsedJson: unknown;
     try {
