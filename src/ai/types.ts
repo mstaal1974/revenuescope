@@ -17,6 +17,18 @@ const ExecutiveSummarySchema = z.object({
   strategic_advice: z.string()
 });
 
+const FinancialOpportunitySchema = z.object({
+  serviceable_learners_estimate: z.number(),
+  competition_intensity: z.object({
+    label: z.string(),
+    index: z.number(),
+  }),
+  provider_capacity_cap: z.number(),
+  final_learner_estimate: z.number(),
+  realistic_annual_revenue: z.string(),
+  assumptions: z.array(z.string()),
+});
+
 const SectorBreakdownSchema = z.object({
   sector_name: z.string(),
   qualification_count: z.number(),
@@ -25,10 +37,7 @@ const SectorBreakdownSchema = z.object({
     trend_direction: z.string(),
     avg_industry_wage: z.string()
   }),
-  financial_opportunity: z.object({
-    annual_revenue_gap: z.string(),
-    student_volume_potential: z.number()
-  }),
+  financial_opportunity: FinancialOpportunitySchema,
   recommended_actions: z.array(z.string())
 });
 

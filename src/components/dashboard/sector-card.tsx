@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Users, CheckCircle, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { DollarSign, TrendingUp, Users, CheckCircle, ArrowUp, ArrowDown, Minus, Info } from "lucide-react";
 
 type Sector = FullAuditOutput["sector_breakdown"][0];
 
@@ -56,32 +56,32 @@ export function SectorCard({ sector }: SectorCardProps) {
         </div>
 
         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Financial Opportunity</h4>
+             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Realistic Financial Opportunity</h4>
              <div className="flex justify-around text-center">
                 <div className="flex items-center gap-3">
                     <DollarSign className="h-6 w-6 text-blue-500" />
                     <div>
-                        <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.annual_revenue_gap}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Annual Revenue Gap</p>
+                        <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.realistic_annual_revenue}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Realistic Revenue</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <Users className="h-6 w-6 text-blue-500" />
                     <div>
-                        <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.student_volume_potential.toLocaleString()}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Student Potential</p>
+                        <p className="font-black text-lg text-slate-900">{sector.financial_opportunity.final_learner_estimate.toLocaleString()}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Est. Learners</p>
                     </div>
                 </div>
              </div>
         </div>
 
         <div className="space-y-3 mt-auto pt-4">
-             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recommended Actions</h4>
+             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Model Assumptions</h4>
              <ul className="space-y-2">
-                {(sector.recommended_actions || []).map((action, index) => (
+                {(sector.financial_opportunity.assumptions || []).map((action, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-slate-700 font-medium">
-                        <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                        <span>{action}</span>
+                        <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                        <span className="italic">{action}</span>
                     </li>
                 ))}
              </ul>
