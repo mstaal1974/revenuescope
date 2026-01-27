@@ -5,7 +5,7 @@ export function Logo() {
     <div className="flex items-center gap-2">
       <Target className="size-8 text-primary" />
       <span className="text-xl font-bold tracking-tight text-foreground font-headline">
-        RevenueScope AI
+        ScopeStack AI
       </span>
     </div>
   );

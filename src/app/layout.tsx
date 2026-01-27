@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { FirebaseProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'RevenueScope AI',
+  title: 'ScopeStack AI',
   description: "Analyze your RTO's curriculum scope and identify revenue opportunities.",
 };
 
