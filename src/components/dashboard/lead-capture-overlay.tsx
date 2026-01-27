@@ -46,6 +46,8 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            title="Please enter a valid email address."
             required
           />
           <input
@@ -54,6 +56,8 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+            pattern="[\d\s\+\(\)-]{8,}"
+            title="Please enter a valid phone number."
             required
           />
           <button
