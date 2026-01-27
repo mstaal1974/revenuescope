@@ -57,7 +57,7 @@ Cap learner volumes based on realistic SME delivery constraints (staffing, asses
 \`Final Learners = MIN(Effective Learners, Provider Capacity Cap)\`
 
 **STEP 4 — Calculate Realistic Annual Revenue:**
-\`Realistic Annual Revenue = Final Learners × Average Course Yield\` (Assume an average yield of $450 AUD per course if not otherwise specified).
+\`Realistic Annual Revenue = Final Learners × Average Course Yield\` (Assume an average yield of $150 AUD per course if not otherwise specified).
 
 
 **Task: High-Level Sector & Occupation Analysis**
@@ -101,7 +101,7 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
         "provider_capacity_cap": 2000,
         "final_learner_estimate": 2000,
         "realistic_annual_revenue": "$900,000 AUD",
-        "assumptions": ["Low reach due to market saturation.", "Assumes $450 average course yield."]
+        "assumptions": ["Low reach due to market saturation.", "Assumes $150 average course yield."]
       },
       "recommended_actions": ["Develop niche micro-credentials for specific software skills."]
     }
