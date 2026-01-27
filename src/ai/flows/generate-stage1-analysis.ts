@@ -18,7 +18,7 @@ const prompt = ai.definePrompt({
   input: { schema: FullAuditInputSchema },
   model: 'googleai/gemini-2.5-flash',
   config: {
-    response_mime_type: 'application/json',
+    responseMimeType: 'application/json',
   },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
@@ -45,8 +45,8 @@ This data chain is non-negotiable. It is the mandatory pathway for your analysis
         - \`trend_direction\`: (string) 'Growing', 'Stable', or 'Declining'.
         - \`avg_industry_wage\`: (string) Formatted as a currency string (e.g., "$95,000 AUD").
     - \`financial_opportunity\`: (object) with:
-        - \`annual_revenue_gap\`: (string) A formatted currency string, calculated using the formula: (Total Employment Volume for sector * upskilling rate) * (Avg Course Price $450). Use a 1% upskilling rate for saturated sectors (e.g., Business) and an 8% rate for high-demand sectors (e.g., Care, Tech). For all other sectors, use a default rate of 5%.
-        - \`student_volume_potential\`: (number) The estimated number of potential students.
+        - \`annual_revenue_gap\`: (string) A formatted currency string representing a range from 1% to 8% market capture. Calculate this range using the formula: \`(Total Employment Volume for sector * upskilling rate) * (Avg Course Price $450)\`, where the low end uses a 1% upskilling rate and the high end uses an 8% rate. Format the output as a string range, e.g., "$500K - $4M AUD".
+        - \`student_volume_potential\`: (number) The estimated number of potential students, calculated using an average upskilling rate of 5% of the Total Employment Volume for the sector.
     - \`recommended_actions\`: (array of strings) Provide a list of actionable recommendations.
 
 **Part 2: Top Occupations Analysis (The Granular View)**
