@@ -10,7 +10,7 @@ export function Header() {
           <Logo />
         </Link>
         <Button asChild>
-          <Link href="/">Get Started</Link>
+          <a href="/">Get Started</a>
         </Button>
       </div>
     </header>
