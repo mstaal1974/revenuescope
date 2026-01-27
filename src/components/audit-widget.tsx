@@ -56,7 +56,9 @@ const AuditWidget: React.FC = () => {
   const [state, setState] = useState<AuditState>(AuditState.IDLE);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [result, setResult] = useState<AuditResult | null>(null);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
@@ -167,7 +169,10 @@ const AuditWidget: React.FC = () => {
   };
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) setIsUnlocked(true);
+    if (email && name && phone) {
+      console.log('Lead Captured:', { name, email, phone });
+      setIsUnlocked(true);
+    }
   };
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -502,10 +507,26 @@ const AuditWidget: React.FC = () => {
                 </p>
                 <form onSubmit={handleUnlock} className="space-y-4 max-w-md mx-auto">
                   <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+                    required
+                  />
+                  <input
                     type="email"
                     placeholder="rto-manager@training.edu.au"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+                    required
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Your Phone Number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
                     required
                   />
@@ -558,6 +579,7 @@ export default AuditWidget;
     
 
     
+
 
 
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -8,13 +9,14 @@ interface LeadCaptureOverlayProps {
 }
 
 export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && phone) {
-      console.log("Email captured:", email, "Phone:", phone);
+    if (name && email && phone) {
+      console.log("Lead Captured:", { name, email, phone });
       onUnlock();
     }
   };
@@ -30,6 +32,14 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
           Get full curriculum maps, calibrated pricing models, and persona-driven marketing launch plans with ad creative.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-black text-xl text-center transition-all"
+            required
+          />
           <input
             type="email"
             placeholder="rto-manager@training.edu.au"
