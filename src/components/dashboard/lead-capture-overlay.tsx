@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeadCaptureOverlayProps {
   onUnlock: () => void;
@@ -14,12 +16,31 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name && email && phone) {
-      console.log("Lead Captured:", { name, email, phone });
-      onUnlock();
+      try {
+        const db = getFirestore();
+        await addDoc(collection(db, "leads"), {
+          name,
+          email,
+          phone,
+          createdAt: serverTimestamp(),
+        });
+        toast({
+          title: "Information Submitted",
+          description: "Thank you! The full report is now unlocked.",
+        });
+        onUnlock();
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Submission Failed",
+          description: "There was a problem submitting your information. Please try again.",
+        });
+      }
     }
   };
 

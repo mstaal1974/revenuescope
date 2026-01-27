@@ -10,9 +10,10 @@ import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { Textarea } from './ui/textarea';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 
 type AuditResult = FullAuditOutput;
@@ -64,6 +65,7 @@ const AuditWidget: React.FC = () => {
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
 
   const addLog = (message: string, status: AuditLog['status'] = 'info') => {
@@ -194,11 +196,29 @@ const AuditWidget: React.FC = () => {
       setState(AuditState.ERROR);
     }
   };
-  const handleUnlock = (e: React.FormEvent) => {
+  const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && name && phone) {
-      console.log('Lead Captured:', { name, email, phone });
-      setIsUnlocked(true);
+      try {
+        const db = getFirestore();
+        await addDoc(collection(db, "leads"), {
+          name,
+          email,
+          phone,
+          createdAt: serverTimestamp(),
+        });
+        toast({
+          title: "Information Submitted",
+          description: "Thank you! The full report is now unlocked.",
+        });
+        setIsUnlocked(true);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Submission Failed",
+          description: "There was a problem submitting your information. Please try again.",
+        });
+      }
     }
   };
 
@@ -612,6 +632,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
