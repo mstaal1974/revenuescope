@@ -12,6 +12,7 @@ import { Textarea } from './ui/textarea';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { Button } from './ui/button';
+import Link from 'next/link';
 
 
 type AuditResult = FullAuditOutput;
@@ -544,7 +545,9 @@ const AuditWidget: React.FC = () => {
                 </form>
                  <div className="mt-8 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                     <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">Download Board-Ready PDF</Button>
-                    <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">Book a Strategy Call</Button>
+                    <Button asChild variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">
+                      <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
+                    </Button>
                 </div>
               </div>
             </div>
@@ -584,6 +587,7 @@ export default AuditWidget;
     
 
     
+
 
 
 

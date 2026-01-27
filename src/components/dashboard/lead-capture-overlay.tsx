@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface LeadCaptureOverlayProps {
   onUnlock: () => void;
@@ -31,7 +33,7 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
         <p className="text-slate-500 text-xl mb-12 leading-relaxed font-medium">
           Get full curriculum maps, calibrated pricing models, and persona-driven marketing launch plans with ad creative.
         </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
           <input
             type="text"
             placeholder="Your Name"
@@ -67,6 +69,12 @@ export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
             Download Sales & Content Pack
           </button>
         </form>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">Download Board-Ready PDF</Button>
+            <Button asChild variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">
+              <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
+            </Button>
+        </div>
       </div>
     </div>
   );
