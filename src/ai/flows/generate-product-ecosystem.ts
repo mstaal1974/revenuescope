@@ -27,30 +27,12 @@ const prompt = ai.definePrompt({
   },
   prompt: `You are "Strategic Growth Director v5.0," an AI designed to generate a detailed product ecosystem for an RTO. You MUST output a single, valid JSON object and nothing else.
 
-**CRITICAL INSTRUCTIONS: Adhere to the specified data types and structures with extreme precision. Failure to do so will result in system failure.**
-
-1.  **FLATTENED COURSE STRUCTURE:** For each course in the \`individual_courses\` array, you MUST provide the following fields directly. **DO NOT** create nested objects like \`content_blueprint\` or \`marketing_plan\`.
-    *   \`learning_outcomes\`: An array of strings.
-    *   \`module_outline_markdown\`: A single markdown string detailing the course modules.
-    *   \`b2b_pitch_script\`: A string.
-    *   \`badge_name\`: A string.
-    *   \`badge_skills\`: An array of strings (previously called rich_skill_descriptors).
-    *   \`ad_headline\`: A string.
-    *   \`ad_body_copy\`: A string.
-    *   \`ad_cta_button\`: A string.
-
-2.  **CURRENCY FORMAT:** All monetary values (\`total_market_size\`, \`conservative_capture\`, \`suggested_price\`, \`total_value\`, \`bundle_price\`) **MUST** be formatted as **strings** with a currency symbol (e.g., "$12,500 AUD"). They **MUST NOT** be numbers. The \`badges_issued\` field in the bundle, however, should be a number.
-
-3.  **CITATIONS FORMAT:** The \`citations\` field **MUST** be an array of simple **strings**. Example: \`["ABS Labour Force Survey", "Seek.com.au Market Insights"]\`.
-
 **TASK: Detailed Product Ecosystem Design**
 -   **Theme & Justification:** Generate a \`strategic_theme\` and \`market_justification\` (strings).
--   **Revenue Opportunity:** Populate the \`revenue_opportunity\` object, following the currency string format.
--   **Course Stack:** Design at least one, and preferably three, stackable courses in the \`individual_courses\` array. For each course, you MUST provide every field specified in the flattened schema (Rule #1).
--   **Bundle:** Create the \`stackable_product\` bundle, ensuring prices are currency strings and \`badges_issued\` is a number.
--   **Citations:** Provide \`citations\` as an array of strings (Rule #3).
-
-**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**
+-   **Revenue Opportunity:** Populate the \`revenue_opportunity\` object.
+-   **Course Stack:** Design at least one, and preferably three, stackable courses in the \`individual_courses\` array.
+-   **Bundle:** Create the \`stackable_product\` bundle.
+-   **Citations:** Provide \`citations\` as an array of URL strings.
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
@@ -61,6 +43,54 @@ const prompt = ai.definePrompt({
     - Skill: {{this.skill_name}}, Demand: {{this.demand_level}}
     {{/each}}
 
+**OUTPUT RULES:**
+- Return ONLY valid JSON.
+- Do not wrap in \`\`\` fences.
+- Output must start with { and end with }.
+- \`individual_courses\` MUST be an array of objects (not strings).
+- \`module_outline_markdown\` MUST be a string.
+- \`badges_issued\` MUST be a number.
+- All monetary values (\`total_market_size\`, \`conservative_capture\`, \`suggested_price\`, \`total_value\`, \`bundle_price\`) **MUST** be formatted as **strings** with a currency symbol (e.g., "$12,500 AUD").
+- \`citations\` MUST be an array of URL strings.
+
+**EXAMPLE SHAPE (abbreviated):**
+{
+  "strategic_theme":"...",
+  "market_justification":"...",
+  "revenue_opportunity":{
+    "total_market_size":"...",
+    "conservative_capture":"...",
+    "ambitious_capture":"...",
+    "acquisition_rationale":"..."
+  },
+  "individual_courses":[
+    {
+      "tier":"Foundation",
+      "course_title":"...",
+      "duration":"...",
+      "suggested_price":"...",
+      "pricing_tier":"...",
+      "target_student":"...",
+      "learning_outcomes":["..."],
+      "module_outline_markdown":"## Module 1\\n- Topic A\\n",
+      "b2b_pitch_script":"...",
+      "badge_name":"...",
+      "badge_skills":["..."],
+      "ad_headline":"...",
+      "ad_body_copy":"...",
+      "ad_cta_button":"..."
+    }
+  ],
+  "stackable_product":{
+    "bundle_title":"...",
+    "total_value":"...",
+    "bundle_price":"...",
+    "discount_applied":"...",
+    "marketing_pitch":"...",
+    "badges_issued":5
+  },
+  "citations":["https://..."]
+}
 
 Begin analysis.`,
 });
