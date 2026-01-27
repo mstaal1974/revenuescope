@@ -62,39 +62,16 @@ Cap learner volumes based on realistic SME delivery constraints (staffing, asses
 
 **Task: High-Level Sector & Occupation Analysis**
 
-**Part 1: High-Level Sector Analysis (The Macro View)**
-- Your first task is to act as a **Strategic Growth Director**.
-- **Sector Grouping:** Group qualifications from the provided scope by Training Package (e.g., CPC -> Construction, BSB -> Business).
-- **Executive Summary:** First, synthesize your overall findings into an \`executive_summary\` object.
-- **Sector Breakdown Population:** For each sector, populate the \`sector_breakdown\` array. Each object in the array MUST contain:
-    - \`sector_name\`: (string) The name of the sector (e.g., "Construction").
-    - \`qualification_count\`: (number) The count of qualifications in that sector from the input.
-    - \`market_health\`: (object) with demand, trend, and average wage.
-    - **\`financial_opportunity\`**: You MUST populate this object by executing the **MANDATORY 4-STEP REVENUE MODEL**. Your output for this field MUST strictly conform to the following JSON structure:
-        \`\`\`json
-        {
-          "serviceable_learners_estimate": 1000,
-          "competition_intensity": {
-            "label": "High",
-            "index": 0.2
-          },
-          "provider_capacity_cap": 250,
-          "final_learner_estimate": 200,
-          "realistic_annual_revenue": "$90,000 AUD",
-          "assumptions": [
-            "Assumes a 5% VET relevance and 10% provider reach due to sector generalisation.",
-            "Provider capacity capped at 250 learners annually based on typical SME staffing.",
-            "Very High competition in the Business sector drastically reduces achievable market capture."
-          ]
-        }
-        \`\`\`
-    - \`recommended_actions\`: (array of strings) Provide a list of actionable recommendations.
+Your overall task is to act as a **Strategic Growth Director** and **Labour Market Data Scientist** to generate a single JSON object containing three top-level keys: \`executive_summary\`, \`sector_breakdown\`, and \`occupation_analysis\`.
 
-**Part 2: Top Occupations Analysis (The Granular View)**
-- Now, act as a **Labour Market Data Scientist**.
-- Focus on the sector identified as 'top_performing_sector' in the Executive Summary.
-- Identify the top 10 most relevant occupations from the ANZSCO codes provided in the input.
-- For each occupation, populate the \`occupation_analysis\` array with name, demand, market size, and growth rate.
+1.  **\`executive_summary\` (Object):** Synthesize your overall findings into this object.
+    *   \`total_revenue_opportunity\`: A string summarizing the total potential range.
+    *   \`top_performing_sector\`: A string identifying the best sector.
+    *   \`strategic_advice\`: A string with your main recommendation.
+
+2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\` for each sector.
+
+3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
 
 **Final Output Instructions: You MUST respond with a valid JSON object. Do not wrap it in markdown backticks or any other explanatory text.**
 
