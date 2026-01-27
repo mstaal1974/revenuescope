@@ -58,9 +58,11 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
       );
     }
     
+    const cleanedJsonText = rawJsonText.replace(/^```json\s*/, '').replace(/```$/, '');
+    
     let parsedJson: unknown;
     try {
-      parsedJson = JSON.parse(rawJsonText);
+      parsedJson = JSON.parse(cleanedJsonText);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error(`generate-skills-heatmap: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);

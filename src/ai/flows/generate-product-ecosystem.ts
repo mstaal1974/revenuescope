@@ -71,10 +71,12 @@ const generateProductEcosystemFlow = ai.defineFlow(
         `generate-product-ecosystem: AI returned no text content. Full response: ${JSON.stringify(response)}`
       );
     }
+    
+    const cleanedJsonText = rawJsonText.replace(/^```json\s*/, '').replace(/```$/, '');
 
     let parsedJson: unknown;
     try {
-      parsedJson = JSON.parse(rawJsonText);
+      parsedJson = JSON.parse(cleanedJsonText);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error(`generate-product-ecosystem: Failed to parse JSON from AI response. Error: ${errorMessage}. Raw text: "${rawJsonText}"`);
