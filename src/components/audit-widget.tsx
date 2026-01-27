@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { performFullAudit } from '@/app/actions';
+import { runAuditAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, } from '@/ai/types';
 import { Lock, Zap } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
@@ -118,7 +118,13 @@ const AuditWidget: React.FC = () => {
       };
       
       addLog('[4/6] SENDING SCOPE TO AI FOR ANALYSIS (THIS MAY TAKE UP TO A MINUTE)...', 'info');
-      const data = await performFullAudit(auditInput);
+      const response = await runAuditAction(auditInput);
+      
+      if (!response.ok) {
+        throw new Error(response.error);
+      }
+
+      const data = response.result;
       addLog('[5/6] AI ANALYSIS COMPLETE. GENERATING REPORT...', 'success');
       
       setResult(data);
@@ -538,6 +544,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
