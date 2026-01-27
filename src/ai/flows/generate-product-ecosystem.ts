@@ -27,24 +27,27 @@ const prompt = ai.definePrompt({
   },
   prompt: `You are "Strategic Growth Director v5.0," an AI designed to generate a detailed product ecosystem for an RTO. You MUST output a single, valid JSON object and nothing else.
 
-**CRITICAL INSTRUCTION: Adhere to the specified data types and structures with extreme precision. Failure to do so will result in system failure.**
+**CRITICAL INSTRUCTIONS: Adhere to the specified data types and structures with extreme precision. Failure to do so will result in system failure.**
 
-1.  **CURRENCY FORMAT:** All fields that represent a monetary value (e.g., \`total_market_size\`, \`conservative_capture\`, \`suggested_price\`, \`total_value\`, \`bundle_price\`) **MUST** be formatted as **strings**, including a currency symbol (e.g., "$12,500 AUD"). They **MUST NOT** be numbers.
+1.  **FLATTENED COURSE STRUCTURE:** For each course in the \`individual_courses\` array, you MUST provide the following fields directly. **DO NOT** create nested objects like \`content_blueprint\` or \`marketing_plan\`.
+    *   \`learning_outcomes\`: An array of strings.
+    *   \`module_outline_markdown\`: A single markdown string detailing the course modules.
+    *   \`b2b_pitch_script\`: A string.
+    *   \`badge_name\`: A string.
+    *   \`badge_skills\`: An array of strings (previously called rich_skill_descriptors).
+    *   \`ad_headline\`: A string.
+    *   \`ad_body_copy\`: A string.
+    *   \`ad_cta_button\`: A string.
 
-2.  **NESTED OBJECTS:** The \`individual_courses\` array MUST contain exactly three objects. Within each course object, the following fields are themselves **nested JSON objects** and must be fully populated:
-    *   \`content_blueprint\`: Must be a JSON object with \`learning_outcomes\` (array of strings) and \`modules\` (array of objects).
-    *   \`sales_kit\`: Must be a JSON object with \`ideal_buyer_persona\` and \`b2b_pitch_script\` (both strings).
-    *   \`badge_preview\`: Must be a JSON object with all its string and array-of-string fields.
-    *   \`marketing_plan\`: Must be a JSON object containing the \`ad_creatives\` nested object.
+2.  **CURRENCY FORMAT:** All monetary values (\`total_market_size\`, \`conservative_capture\`, \`suggested_price\`, \`total_value\`, \`bundle_price\`) **MUST** be formatted as **strings** with a currency symbol (e.g., "$12,500 AUD"). They **MUST NOT** be numbers. The \`badges_issued\` field in the bundle, however, should be a number.
 
-3.  **CITATIONS FORMAT:** The \`citations\` field **MUST** be an array of simple **strings**. Example: \`["ABS Labour Force Survey", "Seek.com.au Market Insights"]\`. It **MUST NOT** be an array of objects.
+3.  **CITATIONS FORMAT:** The \`citations\` field **MUST** be an array of simple **strings**. Example: \`["ABS Labour Force Survey", "Seek.com.au Market Insights"]\`.
 
 **TASK: Detailed Product Ecosystem Design**
--   **Theme:** Generate a \`strategic_theme\` (string) based on the \`top_performing_sector\`.
--   **Justification:** Populate \`market_justification\` (string).
--   **Revenue Opportunity:** Populate the \`revenue_opportunity\` object, strictly following the currency string format rule.
--   **Course Stack:** Design three stackable courses in the \`individual_courses\` array. For each course, you MUST provide every field specified in the schema, paying meticulous attention to the nested object rule (Rule #2).
--   **Bundle:** Create the \`stackable_product\` bundle, ensuring \`total_value\` and \`bundle_price\` are currency strings.
+-   **Theme & Justification:** Generate a \`strategic_theme\` and \`market_justification\` (strings).
+-   **Revenue Opportunity:** Populate the \`revenue_opportunity\` object, following the currency string format.
+-   **Course Stack:** Design at least one, and preferably three, stackable courses in the \`individual_courses\` array. For each course, you MUST provide every field specified in the flattened schema (Rule #1).
+-   **Bundle:** Create the \`stackable_product\` bundle, ensuring prices are currency strings and \`badges_issued\` is a number.
 -   **Citations:** Provide \`citations\` as an array of strings (Rule #3).
 
 **Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**

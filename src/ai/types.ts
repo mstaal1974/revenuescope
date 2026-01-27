@@ -74,54 +74,46 @@ export type ProductEcosystemInput = z.infer<typeof ProductEcosystemInputSchema>;
 export const ProductEcosystemOutputSchema = z.object({
   strategic_theme: z.string(),
   market_justification: z.string(),
+
   revenue_opportunity: z.object({
     total_market_size: z.string(),
     conservative_capture: z.string(),
     ambitious_capture: z.string(),
     acquisition_rationale: z.string(),
   }),
+
   individual_courses: z.array(z.object({
-      tier: z.string(),
-      course_title: z.string(),
-      duration: z.string(),
-      suggested_price: z.string(),
-      pricing_tier: z.string(),
-      target_student: z.string(),
-      content_blueprint: z.object({
-        learning_outcomes: z.array(z.string()),
-        modules: z.array(z.object({
-          title: z.string(),
-          topic: z.string(),
-          activity: z.string(),
-        })),
-      }),
-      sales_kit: z.object({
-        ideal_buyer_persona: z.string(),
-        b2b_pitch_script: z.string(),
-      }),
-      badge_preview: z.object({
-        badge_name: z.string(),
-        visual_style: z.string(),
-        rich_skill_descriptors: z.array(z.string()),
-        retention_trigger: z.string(),
-      }),
-      marketing_plan: z.object({
-        ad_creatives: z.object({
-          headline: z.string(),
-          body_copy: z.string(),
-          cta_button: z.string(),
-        }),
-      }),
-  })),
+    tier: z.string(),
+    course_title: z.string(),
+    duration: z.string(),
+    suggested_price: z.string(),
+    pricing_tier: z.string(),
+    target_student: z.string(),
+
+    // flattened outputs (easy for model to match)
+    learning_outcomes: z.array(z.string()).default([]),
+    module_outline_markdown: z.string().default(""),
+
+    b2b_pitch_script: z.string().default(""),
+
+    badge_name: z.string().default(""),
+    badge_skills: z.array(z.string()).default([]),
+
+    ad_headline: z.string().default(""),
+    ad_body_copy: z.string().default(""),
+    ad_cta_button: z.string().default(""),
+  })).min(1),
+
   stackable_product: z.object({
     bundle_title: z.string(),
     total_value: z.string(),
     bundle_price: z.string(),
     discount_applied: z.string(),
     marketing_pitch: z.string(),
-    badges_issued: z.number()
+    badges_issued: z.coerce.number(),
   }),
-  citations: z.array(z.string()),
+
+  citations: z.array(z.string()).default([]),
 });
 export type ProductEcosystemOutput = z.infer<typeof ProductEcosystemOutputSchema>;
 

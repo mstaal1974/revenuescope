@@ -29,7 +29,7 @@ type AuditLog = {
   timestamp: Date;
 };
 
-const BadgePreview: React.FC<{ title: string; tier: string; badgeName?: string; style?: string }> = ({ title, tier, badgeName }) => {
+const BadgePreview: React.FC<{ title: string; tier: string; badgeName?: string; }> = ({ title, tier, badgeName }) => {
   const isGold = tier.toLowerCase().includes('strategic') || tier.toLowerCase().includes('3');
   const isSilver = tier.toLowerCase().includes('practitioner') || tier.toLowerCase().includes('2');
 
@@ -365,13 +365,13 @@ const AuditWidget: React.FC = () => {
                       </div>
                     </div>
                     <h5 className="text-2xl font-black text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">
-                      {viewMode === 'student' ? (course.badge_preview?.badge_name || course.course_title) : course.course_title}
+                      {viewMode === 'student' ? (course.badge_name || course.course_title) : course.course_title}
                     </h5>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
                       {viewMode === 'student' ? 'EARN DIGITAL CREDENTIAL' : `${course.duration} CONTACT HOURS`}
                     </p>
                   </div>
-                  <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_preview?.badge_name} />
+                  <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_name} />
                 </div>
 
                 {expandedCourse !== i && (
@@ -380,14 +380,14 @@ const AuditWidget: React.FC = () => {
                         {viewMode === 'rto' ? 'Primary Sales Target' : 'Career Impact / RSD'}
                      </div>
                      <div className="text-sm font-bold text-slate-900 leading-relaxed italic">
-                        {viewMode === 'rto' ? course.target_student : `"${course.badge_preview?.rich_skill_descriptors?.[0]}"`}
+                        {viewMode === 'rto' ? course.target_student : `"${course.badge_skills?.[0]}"`}
                      </div>
                   </div>
                 )}
 
                 {expandedCourse !== i ? (
                   <>
-                    <p className="text-sm font-medium text-slate-500 mb-8 line-clamp-2 italic text-left">"{course.content_blueprint?.learning_outcomes?.[0]}..."</p>
+                    <p className="text-sm font-medium text-slate-500 mb-8 line-clamp-2 italic text-left">"{course.learning_outcomes?.[0]}..."</p>
                     <button 
                       onClick={() => setExpandedCourse(i)}
                       className="mt-auto w-full bg-slate-50 hover:bg-slate-100 text-slate-950 font-black py-4 rounded-2xl border border-slate-200 transition-all text-xs uppercase tracking-widest active:scale-95"
@@ -403,16 +403,9 @@ const AuditWidget: React.FC = () => {
                           <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black shadow-lg">1</span>
                           80% Ready Skeleton
                         </h6>
-                        <div className="space-y-6 relative">
-                           <div className="absolute left-3 top-6 bottom-6 w-px border-l border-dashed border-slate-300 -z-10"></div>
-                          {course.content_blueprint?.modules?.map((m, j) => (
-                            <div key={j} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm ml-4 relative">
-                              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-600 rounded-full"></div>
-                              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Module {j + 1}: {m.title}</div>
-                              <div className="text-sm font-black text-slate-900 mb-2">{m.topic}</div>
-                              <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block border border-blue-100">Activity: {m.activity}</div>
-                            </div>
-                          ))}
+                        <div className="space-y-6 relative bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Module Outline</h4>
+                           <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans">{course.module_outline_markdown}</pre>
                         </div>
                       </div>
                       
@@ -422,12 +415,12 @@ const AuditWidget: React.FC = () => {
                             B2B Sales Enablement
                          </h6>
                          <div className="mb-8">
-                            <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Ideal Corporate Persona</div>
-                            <div className="text-sm font-black text-white">{course.sales_kit?.ideal_buyer_persona}</div>
+                            <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Target Student Persona</div>
+                            <div className="text-sm font-black text-white">{course.target_student}</div>
                          </div>
                          <div>
                             <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Pre-Written Sales Script</div>
-                            <p className="text-xs leading-relaxed text-slate-300 font-medium italic">"{course.sales_kit?.b2b_pitch_script}"</p>
+                            <p className="text-xs leading-relaxed text-slate-300 font-medium italic">"{course.b2b_pitch_script}"</p>
                          </div>
                       </div>
                     </div>
@@ -439,29 +432,23 @@ const AuditWidget: React.FC = () => {
                               Digital Badge & RSDs
                           </h6>
                           <div className="flex gap-6 items-center mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                             <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_preview?.badge_name} />
+                             <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_name} />
                              <div>
                                 <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Badge Title</div>
-                                <div className="text-base font-black text-slate-900 leading-tight">{course.badge_preview?.badge_name}</div>
-                                <div className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block mt-2 border border-blue-100 uppercase tracking-tighter">Style: {course.badge_preview?.visual_style}</div>
+                                <div className="text-base font-black text-slate-900 leading-tight">{course.badge_name}</div>
                              </div>
                           </div>
 
                           <div className="mb-8">
-                              <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 font-mono">Rich Skill Descriptors (RSDs)</div>
+                              <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 font-mono">Badge Skills</div>
                               <div className="space-y-3">
-                                  {course.badge_preview?.rich_skill_descriptors?.map((rsd, idx) => (
+                                  {(course.badge_skills || []).map((rsd, idx) => (
                                       <div key={idx} className="flex gap-3 items-start p-3 bg-slate-50/50 rounded-xl border border-slate-100 group relative">
                                           <div className="w-5 h-5 bg-blue-600 text-white text-[8px] font-black rounded flex items-center justify-center shrink-0">✓</div>
                                           <div className="text-[10px] font-bold text-slate-700 leading-tight">{rsd}</div>
                                       </div>
                                   ))}
                               </div>
-                          </div>
-
-                          <div className="p-5 bg-blue-600 rounded-2xl text-white relative overflow-hidden shadow-lg shadow-blue-600/20">
-                             <div className="text-[8px] font-black text-blue-200 uppercase tracking-widest mb-2 italic font-mono">Student Retention Trigger</div>
-                             <div className="text-[11px] font-black leading-tight italic">"{course.badge_preview?.retention_trigger}"</div>
                           </div>
                       </div>
 
@@ -473,9 +460,9 @@ const AuditWidget: React.FC = () => {
                           <div className="space-y-6">
                              <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm relative">
                                 <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-[7px] font-black px-2 py-0.5 rounded italic shadow-md uppercase">Ad Creative</div>
-                                <div className="text-xs font-black text-slate-950 mb-2 leading-tight">"{course.marketing_plan?.ad_creatives?.headline}"</div>
-                                <p className="text-[10px] text-slate-500 mb-4 line-clamp-2 font-medium">"{course.marketing_plan?.ad_creatives?.body_copy}"</p>
-                                <div className="bg-blue-600 text-white text-[9px] font-black py-2 rounded-lg text-center uppercase tracking-widest">{course.marketing_plan?.ad_creatives?.cta_button}</div>
+                                <div className="text-xs font-black text-slate-950 mb-2 leading-tight">"{course.ad_headline}"</div>
+                                <p className="text-[10px] text-slate-500 mb-4 line-clamp-2 font-medium">"{course.ad_body_copy}"</p>
+                                <div className="bg-blue-600 text-white text-[9px] font-black py-2 rounded-lg text-center uppercase tracking-widest">{course.ad_cta_button}</div>
                              </div>
                              <button 
                                 onClick={() => setExpandedCourse(null)}
@@ -564,6 +551,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
