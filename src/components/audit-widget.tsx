@@ -100,11 +100,36 @@ const AuditWidget: React.FC = () => {
       }
       addLog(`[2/8] SUCCESS: FOUND ${querySnapshot.size} CURRENT QUALIFICATIONS.`, 'success');
 
+      // New logic to filter to top 5 sectors
+      addLog('[3/8] ANALYSING SCOPE FOR SECTOR DISTRIBUTION...', 'info');
+      const allQualifications = querySnapshot.docs.map(doc => doc.data());
+      
+      const sectorCounts: { [key: string]: number } = {};
+      allQualifications.forEach(qual => {
+          // Training packages are usually the first 3 letters of the qual code.
+          const sectorCode = qual.code?.substring(0, 3);
+          if (sectorCode) {
+              sectorCounts[sectorCode] = (sectorCounts[sectorCode] || 0) + 1;
+          }
+      });
+
+      const sortedSectors = Object.keys(sectorCounts).sort((a, b) => sectorCounts[b] - sectorCounts[a]);
+      
+      let filteredQualifications = allQualifications;
+
+      if (sortedSectors.length > 5) {
+          const top5Sectors = sortedSectors.slice(0, 5);
+          filteredQualifications = allQualifications.filter(qual => {
+              const sectorCode = qual.code?.substring(0, 3);
+              return sectorCode && top5Sectors.includes(sectorCode);
+          });
+          addLog(`FOUND ${sortedSectors.length} SECTORS. LIMITING ANALYSIS TO TOP 5 (${filteredQualifications.length} QUALIFICATIONS) FOR EFFICIENCY.`, 'warning');
+      }
+      
       let rtoName = "";
       const scopeItems: string[] = [];
-      addLog('[3/8] PARSING QUALIFICATION DATA FROM DATABASE...', 'info');
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      
+      filteredQualifications.forEach((data) => {
         if (!rtoName && data.rtoLegalName) rtoName = data.rtoLegalName;
         scopeItems.push(`${data.code || ''},${data.title || ''},`);
       });
@@ -117,7 +142,7 @@ const AuditWidget: React.FC = () => {
       };
 
       // PHASE 2: Run Stage 1 AI Analysis
-      addLog('[4/8] AI STAGE 1/3: EXECUTING SECTOR & OCCUPATION ANALYSIS...', 'info');
+      addLog(`[4/8] AI STAGE 1/3: EXECUTING SECTOR & OCCUPATION ANALYSIS...`, 'info');
       const stage1Response = await runStage1Action(baseAuditInput);
       if (!stage1Response.ok) throw new Error(`AI Stage 1 Failed: ${stage1Response.error}`);
       const stage1Result = stage1Response.result;
@@ -587,6 +612,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
