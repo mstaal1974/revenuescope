@@ -140,6 +140,7 @@ const AuditWidget: React.FC = () => {
       if (!stage3Response.ok) {
         addLog(`AI Stage 3 Failed: ${stage3Response.error}`, "error");
         console.error("Stage 3 response:", stage3Response);
+        setState(AuditState.ERROR);
         return;
       }
       const stage3Result = stage3Response.result;
@@ -583,6 +584,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
