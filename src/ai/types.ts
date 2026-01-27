@@ -140,6 +140,13 @@ export const MicrocredentialInputSchema = z.object({
 });
 export type MicrocredentialInput = z.infer<typeof MicrocredentialInputSchema>;
 
+const AIOpportunitySchema = z.object({
+  product_title: z.string(),
+  target_tool: z.string(),
+  pain_point_solved: z.string(),
+  marketing_hook: z.string(),
+});
+
 export const MicrocredentialOutputSchema = z.object({
   microcredential_product: z.object({
     market_title: z.string(),
@@ -153,5 +160,6 @@ export const MicrocredentialOutputSchema = z.object({
       value_prop: z.string(),
     }),
   }),
+  ai_opportunity: AIOpportunitySchema,
 });
 export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;
