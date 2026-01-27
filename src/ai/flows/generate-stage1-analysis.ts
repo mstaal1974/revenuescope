@@ -10,9 +10,6 @@ export async function generateStage1Analysis(
   input: FullAuditInput
 ): Promise<Stage1Output> {
   const result = await generateStage1AnalysisFlow(input);
-  if (!result) {
-      throw new Error("AI returned no valid output for Stage 1 analysis.");
-  }
   return result;
 }
 
@@ -72,7 +69,7 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     *   \`top_performing_sector\`: A string identifying the best sector.
     *   \`strategic_advice\`: A string with your main recommendation.
 
-2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\` for each sector. The properties for market health and competition intensity must be flattened.
+2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\` for each sector. The properties for market health and competition intensity must be flattened. For each sector, also generate a list of 2-3 innovative, AI-related micro-credential course titles that could be developed. These should be stored in a \`suggested_ai_courses\` array.
 
 3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
 
@@ -106,7 +103,8 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
         "realistic_annual_revenue": "$900,000 AUD",
         "assumptions": ["Low reach due to market saturation.", "Assumes $150 average course yield."]
       },
-      "recommended_actions": ["Develop niche micro-credentials for specific software skills."]
+      "recommended_actions": ["Develop niche micro-credentials for specific software skills."],
+      "suggested_ai_courses": ["AI for Business Process Automation", "Generative AI for Marketing Content"]
     },
     {
       "sector_name": "Laboratory Operations",
@@ -123,7 +121,8 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
         "realistic_annual_revenue": "$225,000 AUD",
         "assumptions": ["High relevance due to specialist skills.", "Assumes $150 average course yield."]
       },
-      "recommended_actions": ["Target biotech and food testing industries."]
+      "recommended_actions": ["Target biotech and food testing industries."],
+      "suggested_ai_courses": ["AI in Clinical Pathology Analysis", "Machine Learning for Lab Automation"]
     }
   ],
   "occupation_analysis": [

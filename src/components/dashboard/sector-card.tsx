@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Users, CheckCircle, ArrowUp, ArrowDown, Minus, Info } from "lucide-react";
+import { DollarSign, TrendingUp, Users, CheckCircle, ArrowUp, ArrowDown, Minus, Info, BrainCircuit } from "lucide-react";
 
 type Sector = FullAuditOutput["sector_breakdown"][0];
 
@@ -86,16 +86,46 @@ export function SectorCard({ sector, isLocked, relativeOpportunity }: SectorCard
              )}
         </div>
 
-        <div className="space-y-3 mt-auto pt-4">
-             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Model Assumptions</h4>
-             <ul className="space-y-2">
-                {(sector.financial_opportunity.assumptions || []).map((action, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm text-slate-700 font-medium">
-                        <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
-                        <span className="italic">{action}</span>
-                    </li>
-                ))}
-             </ul>
+        <div className="mt-auto pt-4 space-y-4">
+            <div className="space-y-3">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Model Assumptions</h4>
+                <ul className="space-y-2">
+                    {(sector.financial_opportunity.assumptions || []).map((action, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm text-slate-700 font-medium">
+                            <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                            <span className="italic">{action}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {sector.recommended_actions && sector.recommended_actions.length > 0 && (
+                <div className="space-y-3">
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recommended Actions</h4>
+                    <ul className="space-y-2">
+                        {sector.recommended_actions.map((action, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm text-slate-700 font-medium">
+                            <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                            <span>{action}</span>
+                        </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {sector.suggested_ai_courses && sector.suggested_ai_courses.length > 0 && (
+                <div className="space-y-3">
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Suggested AI Courses</h4>
+                    <ul className="space-y-2">
+                        {sector.suggested_ai_courses.map((course, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm text-slate-700 font-medium">
+                            <BrainCircuit className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                            <span>{course}</span>
+                        </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
 
       </CardContent>
