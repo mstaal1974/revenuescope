@@ -23,7 +23,7 @@ const prompt = ai.definePrompt({
   input: { schema: ProductEcosystemInputSchema },
   model: 'googleai/gemini-2.5-flash',
   config: {
-    response_mime_type: 'application/json',
+    responseMimeType: 'application/json',
   },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to design a detailed product ecosystem for an RTO.
 
