@@ -3,6 +3,7 @@
 import { generateStage1Analysis } from "@/ai/flows/generate-stage1-analysis";
 import { generateSkillsHeatmap } from "@/ai/flows/generate-skills-heatmap";
 import { generateProductEcosystem } from "@/ai/flows/generate-product-ecosystem";
+import { generateMicrocredential } from "@/ai/flows/generate-microcredential";
 
 import { 
   type FullAuditInput, 
@@ -10,7 +11,9 @@ import {
   type SkillsHeatmapOutput,
   type ProductEcosystemInput,
   type ProductEcosystemOutput,
-  type FullAuditOutput
+  type FullAuditOutput,
+  type MicrocredentialInput,
+  type MicrocredentialOutput
 } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
@@ -26,6 +29,10 @@ export type Stage2ActionResult =
 
 export type Stage3ActionResult = 
   | { ok: true; result: ProductEcosystemOutput }
+  | { ok: false; error: string };
+
+export type MicrocredentialActionResult =
+  | { ok: true; result: MicrocredentialOutput }
   | { ok: false; error: string };
 
 
@@ -87,6 +94,24 @@ export async function runStage3Action(
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage3Action failed:", e);
+    return { ok: false, error: message };
+  }
+}
+
+// MICRO-CREDENTIAL ACTION
+export async function runMicrocredentialAction(
+  input: MicrocredentialInput
+): Promise<MicrocredentialActionResult> {
+  try {
+    checkApiKey();
+    if (!input.unit_code || !input.qualification_code) {
+      throw new Error("Unit and Qualification codes are required.");
+    }
+    const result = await generateMicrocredential(input);
+    return { ok: true, result };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("runMicrocredentialAction failed:", e);
     return { ok: false, error: message };
   }
 }

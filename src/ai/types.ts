@@ -130,3 +130,28 @@ export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutpu
     rto_id: z.string()
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
+
+// From generate-microcredential.ts
+export const MicrocredentialInputSchema = z.object({
+  qualification_code: z.string(),
+  qualification_title: z.string(),
+  unit_code: z.string(),
+  unit_title: z.string(),
+});
+export type MicrocredentialInput = z.infer<typeof MicrocredentialInputSchema>;
+
+export const MicrocredentialOutputSchema = z.object({
+  microcredential_product: z.object({
+    market_title: z.string(),
+    target_occupation: z.string(),
+    skill_focus: z.string(),
+    format: z.string(),
+    duration: z.string(),
+    pathway_mapping: z.object({
+      leads_to_unit: z.string(),
+      leads_to_qual: z.string(),
+      value_prop: z.string(),
+    }),
+  }),
+});
+export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;

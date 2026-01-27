@@ -4,3 +4,4 @@ import '@/ai/genkit';
 import '@/ai/flows/generate-stage1-analysis';
 import '@/ai/flows/generate-skills-heatmap';
 import '@/ai/flows/generate-product-ecosystem';
+import '@/ai/flows/generate-microcredential';
