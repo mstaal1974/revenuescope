@@ -77,6 +77,7 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
 - Return ONLY valid JSON.
 - Do not wrap in \`\`\` fences.
 - Output must start with { and end with }.
+- The \`sector_breakdown\` key MUST contain an array of objects. Each object in the array MUST have a \`sector_name\` property.
 - The \`occupation_analysis\` key MUST contain an array of objects.
 
 **EXAMPLE SHAPE (abbreviated):**
@@ -104,6 +105,24 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
         "assumptions": ["Low reach due to market saturation.", "Assumes $150 average course yield."]
       },
       "recommended_actions": ["Develop niche micro-credentials for specific software skills."]
+    },
+    {
+      "sector_name": "Laboratory Operations",
+      "qualification_count": 3,
+      "market_health": {
+        "demand_level": "Medium",
+        "trend_direction": "Growing",
+        "avg_industry_wage": "$75,000 AUD"
+      },
+      "financial_opportunity": {
+        "serviceable_learners_estimate": 5000,
+        "competition_intensity": { "label": "Low", "index": 0.6 },
+        "provider_capacity_cap": 500,
+        "final_learner_estimate": 500,
+        "realistic_annual_revenue": "$225,000 AUD",
+        "assumptions": ["High relevance due to specialist skills.", "Assumes $150 average course yield."]
+      },
+      "recommended_actions": ["Target biotech and food testing industries."]
     }
   ],
   "occupation_analysis": [
