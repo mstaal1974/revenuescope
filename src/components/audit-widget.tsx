@@ -135,7 +135,11 @@ const AuditWidget: React.FC = () => {
       };
       addLog('[8/8] AI STAGE 3/3: ARCHITECTING PRODUCT ECOSYSTEM...', 'info');
       const stage3Response = await runStage3Action(stage3Input);
-      if (!stage3Response.ok) throw new Error(`AI Stage 3 Failed: ${stage3Response.error}`);
+      if (!stage3Response.ok) {
+        addLog(`AI Stage 3 Failed: ${stage3Response.error}`, "error");
+        console.error("Stage 3 response:", stage3Response);
+        return;
+      }
       const stage3Result = stage3Response.result;
 
       addLog('ALL AI STAGES COMPLETE. MERGING RESULTS...', 'success');
@@ -551,6 +555,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
