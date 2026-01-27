@@ -23,24 +23,25 @@ const prompt = ai.definePrompt({
   input: { schema: ProductEcosystemInputSchema },
   model: 'googleai/gemini-2.5-flash',
   config: {
-    response_mime_type: 'application/json',
+    responseMimeType: 'application/json',
   },
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to design a detailed product ecosystem for an RTO.
 
 **Crucial Constraint: All labor market data, including employment volumes, wages, trends, and skill demand, MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
 
+**Strict Data Formatting Rules: Adhere to these types precisely.**
+*   **All currency values** (e.g., \`total_market_size\`, \`conservative_capture\`, \`suggested_price\`, \`total_value\`, \`bundle_price\`) **MUST** be formatted as strings, including a currency symbol if applicable (e.g., "$12,500 AUD"). They must **NOT** be numbers.
+*   The \`individual_courses\` field **MUST** be an array containing exactly three JSON objects, with all nested fields fully populated as per the schema.
+*   The \`citations\` field **MUST** be an array of simple strings. Each string should be a single citation source. Do **NOT** use an array of objects.
+
 **Task: Detailed Product Ecosystem Design (The Micro View)**
 - Based on the \`top_performing_sector\` and the provided list of skills, you will act as a **Micro-Stack Architect**.
 - **Theme Selection:** The \`strategic_theme\` (string) will be based on the top sector where high-demand skills are present (e.g., if Construction is the top sector, the theme could be "Construction Site Safety Leadership").
 - **Justification:** Populate the \`market_justification\` (string) field.
-- **Revenue Opportunity:** Populate the \`revenue_opportunity\` object with:
-    - \`total_market_size\`: (string)
-    - \`conservative_capture\`: (string)
-    - \`ambitious_capture\`: (string)
-    - \`acquisition_rationale\`: (string)
-- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses in the \`individual_courses\` array. For each course, provide all fields as a nested JSON object. **The \`content_blueprint\` and \`marketing_plan\` fields MUST be valid JSON objects, NOT strings.**
-- **The Stackable Bundle:** Combine the three tiers into a \`stackable_product\` bundle object with a 15% discount, populating all fields including \`bundle_title\`, \`total_value\`, \`bundle_price\`, \`discount_applied\`, \`marketing_pitch\`, and \`badges_issued\` (number).
-- **Citations:** Provide simulated \`citations\` based on your training data.
+- **Revenue Opportunity:** Populate the \`revenue_opportunity\` object. Ensure all currency fields are strings.
+- **3-Tier Design:** Design a "Zero-to-Hero" stack of three distinct, stackable short courses in the \`individual_courses\` array. For each course, provide all fields as a nested JSON object. Ensure the \`suggested_price\` is a string. The \`content_blueprint\` and \`marketing_plan\` fields are themselves nested JSON objects.
+- **The Stackable Bundle:** Combine the three tiers into a \`stackable_product\` bundle object with a 15% discount. For the \`total_value\` and \`bundle_price\` fields, ensure they are formatted currency strings as per the rules above.
+- **Citations:** Provide simulated \`citations\` as an array of simple strings based on your training data.
 
 **Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**
 
