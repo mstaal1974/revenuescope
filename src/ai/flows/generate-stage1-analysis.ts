@@ -9,11 +9,11 @@ import { FullAuditInputSchema, Stage1OutputSchema, type FullAuditInput, type Sta
 export async function generateStage1Analysis(
   input: FullAuditInput
 ): Promise<Stage1Output> {
-  const { output } = await generateStage1AnalysisFlow(input);
-  if (!output) {
+  const result = await generateStage1AnalysisFlow(input);
+  if (!result) {
       throw new Error("AI returned no valid output for Stage 1 analysis.");
   }
-  return output;
+  return result;
 }
 
 const generateStage1AnalysisFlow = ai.defineFlow(
@@ -152,6 +152,10 @@ Begin analysis.`;
       },
     });
 
-    return { output };
+    if (!output) {
+      throw new Error("AI generation for Stage 1 returned no output.");
+    }
+
+    return output;
   }
 );
