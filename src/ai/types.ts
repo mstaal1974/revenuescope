@@ -19,10 +19,8 @@ const ExecutiveSummarySchema = z.object({
 
 const FinancialOpportunitySchema = z.object({
   serviceable_learners_estimate: z.number(),
-  competition_intensity: z.object({
-    label: z.string(),
-    index: z.number(),
-  }),
+  competition_intensity_label: z.string(),
+  competition_intensity_index: z.number(),
   provider_capacity_cap: z.number(),
   final_learner_estimate: z.number(),
   realistic_annual_revenue: z.string(),
@@ -32,11 +30,9 @@ const FinancialOpportunitySchema = z.object({
 const SectorBreakdownSchema = z.object({
   sector_name: z.string(),
   qualification_count: z.number(),
-  market_health: z.object({
-    demand_level: z.string(),
-    trend_direction: z.string(),
-    avg_industry_wage: z.string()
-  }),
+  market_health_demand_level: z.string(),
+  market_health_trend_direction: z.string(),
+  market_health_avg_industry_wage: z.string(),
   financial_opportunity: FinancialOpportunitySchema,
   recommended_actions: z.array(z.string())
 });

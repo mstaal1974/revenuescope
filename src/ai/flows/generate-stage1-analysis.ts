@@ -9,16 +9,21 @@ import { FullAuditInputSchema, Stage1OutputSchema, type FullAuditInput, type Sta
 export async function generateStage1Analysis(
   input: FullAuditInput
 ): Promise<Stage1Output> {
-  const result = await generateStage1AnalysisFlow(input);
-  return result;
+  const { output } = await generateStage1AnalysisFlow(input);
+  if (!output) {
+      throw new Error("AI returned no valid output for Stage 1 analysis.");
+  }
+  return output;
 }
 
-const prompt = ai.definePrompt({
-  name: 'stage1AnalysisPrompt',
-  input: { schema: FullAuditInputSchema },
-  output: { schema: Stage1OutputSchema },
-  model: 'googleai/gemini-2.5-flash',
-  prompt: `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
+const generateStage1AnalysisFlow = ai.defineFlow(
+  {
+    name: 'generateStage1AnalysisFlow',
+    inputSchema: FullAuditInputSchema,
+    outputSchema: Stage1OutputSchema,
+  },
+  async (input) => {
+    const prompt = `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau ofStatistics (ABS) as the primary source for quantitative data.**
 
@@ -67,7 +72,7 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     *   \`top_performing_sector\`: A string identifying the best sector.
     *   \`strategic_advice\`: A string with your main recommendation.
 
-2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\` for each sector.
+2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\` for each sector. The properties for market health and competition intensity must be flattened.
 
 3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
 
@@ -89,14 +94,13 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     {
       "sector_name": "Business",
       "qualification_count": 5,
-      "market_health": {
-        "demand_level": "High",
-        "trend_direction": "Growing",
-        "avg_industry_wage": "$95,000 AUD"
-      },
+      "market_health_demand_level": "High",
+      "market_health_trend_direction": "Growing",
+      "market_health_avg_industry_wage": "$95,000 AUD",
       "financial_opportunity": {
         "serviceable_learners_estimate": 25000,
-        "competition_intensity": { "label": "Very High", "index": 0.1 },
+        "competition_intensity_label": "Very High",
+        "competition_intensity_index": 0.1,
         "provider_capacity_cap": 2000,
         "final_learner_estimate": 2000,
         "realistic_annual_revenue": "$900,000 AUD",
@@ -107,14 +111,13 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     {
       "sector_name": "Laboratory Operations",
       "qualification_count": 3,
-      "market_health": {
-        "demand_level": "Medium",
-        "trend_direction": "Growing",
-        "avg_industry_wage": "$75,000 AUD"
-      },
+      "market_health_demand_level": "Medium",
+      "market_health_trend_direction": "Growing",
+      "market_health_avg_industry_wage": "$75,000 AUD",
       "financial_opportunity": {
         "serviceable_learners_estimate": 5000,
-        "competition_intensity": { "label": "Low", "index": 0.6 },
+        "competition_intensity_label": "Low",
+        "competition_intensity_index": 0.6,
         "provider_capacity_cap": 500,
         "final_learner_estimate": 500,
         "realistic_annual_revenue": "$225,000 AUD",
@@ -135,23 +138,20 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
 
 
 **INPUT DATA:**
-*   RTO ID: {{{rtoId}}}
-*   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
+*   RTO ID: ${input.rtoId}
+*   RTO Scope & ANZSCO Data: ${input.manualScopeDataset}
 
-Begin analysis.`,
-});
+Begin analysis.`;
 
-const generateStage1AnalysisFlow = ai.defineFlow(
-  {
-    name: 'generateStage1AnalysisFlow',
-    inputSchema: FullAuditInputSchema,
-    outputSchema: Stage1OutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('AI returned no valid output for Stage 1 analysis.');
-    }
-    return output;
+    const { output } = await ai.generate({
+      model: 'googleai/gemini-2.5-flash',
+      prompt: prompt,
+      output: {
+        format: 'json',
+        schema: Stage1OutputSchema
+      },
+    });
+
+    return { output };
   }
 );

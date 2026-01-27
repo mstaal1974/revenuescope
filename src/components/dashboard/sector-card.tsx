@@ -43,15 +43,15 @@ export function SectorCard({ sector, isLocked, relativeOpportunity }: SectorCard
             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Market Health</h4>
             <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                    <p className="font-black text-slate-900">{sector.market_health.demand_level}</p>
+                    <p className="font-black text-slate-900">{sector.market_health_demand_level}</p>
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Demand</p>
                 </div>
                 <div className="flex items-center justify-center gap-1">
-                    <TrendIcon trend={sector.market_health.trend_direction} />
-                    <p className="font-black text-slate-900">{sector.market_health.trend_direction}</p>
+                    <TrendIcon trend={sector.market_health_trend_direction} />
+                    <p className="font-black text-slate-900">{sector.market_health_trend_direction}</p>
                 </div>
                 <div>
-                    <p className="font-black text-slate-900">{sector.market_health.avg_industry_wage}</p>
+                    <p className="font-black text-slate-900">{sector.market_health_avg_industry_wage}</p>
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Avg. Wage</p>
                 </div>
             </div>
