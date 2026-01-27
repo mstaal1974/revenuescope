@@ -16,7 +16,7 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
-  model: 'googleai/gemini-2.5-flash',
+  model: 'googleai/gemini-1.5-flash-latest',
   config: {
     responseMimeType: 'application/json',
   },
