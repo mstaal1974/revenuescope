@@ -27,10 +27,17 @@ const prompt = ai.definePrompt({
   },
   prompt: `You are "Strategic Growth Director v5.0," an AI designed to generate a detailed product ecosystem for an RTO. You MUST output a single, valid JSON object and nothing else.
 
+**THE LOGIC (THE REVENUE STAIRCASE):**
+You will design a sequence of courses, each corresponding to a specific pricing tier designed to guide a student from initial engagement to a high-value purchase.
+
+1.  **TIER 1 (The Hook):** Price: $19 - $99. Goal: Break-even acquisition. Product: Short, low-risk, online-only (e.g., Awareness, Theory).
+2.  **TIER 2 (The Core):** Price: $99 - $250. Goal: Profit. Product: The standard license or skill set (e.g., Forklift, Excel Skills).
+3.  **TIER 3 (The Authority):** Price: $250+ Goal: Margin & Prestige. Product: The full qualification or advanced boot camp.
+
 **TASK: Detailed Product Ecosystem Design**
 -   **Theme & Justification:** Generate a \`strategic_theme\` and \`market_justification\` (strings).
 -   **Revenue Opportunity:** Populate the \`revenue_opportunity\` object.
--   **Course Stack:** Design at least one, and preferably three, stackable courses in the \`individual_courses\` array.
+-   **Course Stack:** Design at least one, and preferably three, stackable courses in the \`individual_courses\` array, following **THE REVENUE STAIRCASE** logic. The \`tier\` and \`suggested_price\` for each course must align with this model.
 -   **Bundle:** Create the \`stackable_product\` bundle.
 -   **Citations:** Provide \`citations\` as an array of URL strings.
 
