@@ -21,7 +21,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
-    output: { format: 'json' },
+    // output: { format: 'json' },
     model: 'googleai/gemini-2.5-flash',
     prompt: `{
     "SYSTEM_INSTRUCTION": {
@@ -52,7 +52,7 @@ const prompt = ai.definePrompt({
         "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...').",
         "Tier 3 (Trust)": "Channel must be Email/SMS. Headline must be 'Career Growth'."
       },
-      "OUTPUT_FORMAT": "Strict JSON Only. No preamble.",
+      "OUTPUT_FORMAT": "Strict Raw JSON Only. No preamble or markdown.",
       "JSON_STRUCTURE": {
         "strategy_summary": "String (1 sentence hook)",
         "tiers": [
@@ -144,12 +144,24 @@ const generateProductEcosystemFlow = ai.defineFlow(
     // outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('AI returned no valid output for Revenue Staircase generation.');
+    const response = await prompt(input);
+    const rawText = response.text;
+
+    if (!rawText) {
+      throw new Error('AI returned no text output for Revenue Staircase generation.');
     }
     
-    const validationResult = RevenueStaircaseSchema.safeParse(output);
+    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    let parsedJson: any;
+
+    try {
+        parsedJson = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI for Revenue Staircase:", e, "\nRaw text:", rawText);
+        throw new Error("AI returned malformed JSON for Revenue Staircase generation.");
+    }
+    
+    const validationResult = RevenueStaircaseSchema.safeParse(parsedJson);
     if (validationResult.success) {
       return validationResult.data;
     }

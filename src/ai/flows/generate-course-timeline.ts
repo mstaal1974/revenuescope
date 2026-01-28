@@ -27,21 +27,28 @@ const generateCourseTimelineFlow = ai.defineFlow(
   async ({ course_title, learning_outcomes }) => {
     const prompt = getCourseTimelinePrompt(course_title, learning_outcomes);
 
-    const { output } = await ai.generate({
+    const { text } = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       prompt: prompt,
-      output: {
-        format: 'json',
-      },
     });
 
-    if (!output) {
+    if (!text) {
       throw new Error(
         'AI returned no valid output for Course Timeline generation.'
       );
     }
+    
+    const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    let parsedJson: any;
 
-    const validationResult = CourseTimelineOutputSchema.safeParse(output);
+    try {
+        parsedJson = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI for Course Timeline:", e, "\nRaw text:", text);
+        throw new Error("AI returned malformed JSON for Course Timeline generation.");
+    }
+
+    const validationResult = CourseTimelineOutputSchema.safeParse(parsedJson);
     if (validationResult.success) {
       return validationResult.data;
     }

@@ -20,7 +20,7 @@ export async function generateLearningOutcomes(
 const prompt = ai.definePrompt({
   name: 'learningOutcomesPrompt',
   input: { schema: LearningOutcomesInputSchema },
-  output: { format: 'json' },
+  // output: { format: 'json' },
   model: 'googleai/gemini-2.5-flash',
   prompt: `
     You are an expert instructional designer. Your task is to generate a list of key learning outcomes for a course with the given title.
@@ -29,7 +29,7 @@ const prompt = ai.definePrompt({
     1.  Generate between 5 and 7 learning outcomes.
     2.  Each outcome should be a clear, concise, and measurable statement that starts with an action verb (e.g., "Define", "Analyze", "Apply", "Create").
     3.  The outcomes should be appropriate for the implied audience of the course title.
-    4.  Return a single JSON object with a single key, "learning_outcomes", which is an array of strings.
+    4.  Return a single raw JSON object with a single key, "learning_outcomes", which is an array of strings.
 
     **INPUT DATA:**
     *   Course Title: "{{course_title}}"
@@ -45,7 +45,7 @@ const prompt = ai.definePrompt({
       ]
     }
 
-    Now, generate the JSON for the provided input data.
+    Now, generate the raw JSON for the provided input data.
     `,
 });
 
@@ -56,14 +56,26 @@ const generateLearningOutcomesFlow = ai.defineFlow(
     // outputSchema: LearningOutcomesOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
+    const response = await prompt(input);
+    const rawText = response.text;
+
+    if (!rawText) {
       throw new Error(
-        'AI returned no valid output for Learning Outcomes generation.'
+        'AI returned no text output for Learning Outcomes generation.'
       );
     }
     
-    const validationResult = LearningOutcomesOutputSchema.safeParse(output);
+    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    let parsedJson: any;
+
+    try {
+        parsedJson = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI for Learning Outcomes:", e, "\nRaw text:", rawText);
+        throw new Error("AI returned malformed JSON for Learning Outcomes generation.");
+    }
+    
+    const validationResult = LearningOutcomesOutputSchema.safeParse(parsedJson);
     if (validationResult.success) {
       return validationResult.data;
     }

@@ -16,7 +16,7 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { format: 'json' },
+  // output: { format: 'json' },
   model: 'googleai/gemini-2.5-flash',
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
@@ -54,7 +54,7 @@ const prompt = ai.definePrompt({
   ]
 }
 
-**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure shown in the example. Do NOT group skills by qualification. Produce a single flat array of all skills. Do not wrap it in markdown backticks or any other explanatory text.**
+**Final Output Instructions: You MUST respond with a single raw JSON object that conforms to the structure shown in the example. Do NOT group skills by qualification. Produce a single flat array of all skills. Do not wrap it in markdown backticks or any other explanatory text.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
@@ -70,13 +70,24 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
     // outputSchema: SkillsHeatmapOutputSchema, // REMOVED
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('AI returned no valid output for Skills Heatmap.');
+    const response = await prompt(input);
+    const rawText = response.text;
+
+    if (!rawText) {
+      throw new Error('AI returned no text output for Skills Heatmap.');
+    }
+    
+    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    let parsedJson: any;
+
+    try {
+        parsedJson = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI for Skills Heatmap:", e, "\nRaw text:", rawText);
+        throw new Error("AI returned malformed JSON for Skills Heatmap.");
     }
 
-    // DEFENSIVE PARSING
-    const validationResult = SkillsHeatmapOutputSchema.safeParse(output);
+    const validationResult = SkillsHeatmapOutputSchema.safeParse(parsedJson);
     
     if (validationResult.success) {
       return validationResult.data;
@@ -84,7 +95,7 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
 
     console.warn("AI output for skills heatmap failed Zod validation. Attempting to recover.", validationResult.error);
     
-    const rawData = output as any;
+    const rawData = parsedJson as any;
     let flatSkillList: { skill_name: string, demand_level: string }[] = [];
 
     if (Array.isArray(rawData)) {

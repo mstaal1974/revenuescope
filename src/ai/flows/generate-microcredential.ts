@@ -20,7 +20,7 @@ export async function generateMicrocredential(
 const prompt = ai.definePrompt({
     name: 'microcredentialPrompt',
     input: { schema: MicrocredentialInputSchema },
-    output: { format: 'json' },
+    // output: { format: 'json' },
     model: 'googleai/gemini-2.5-flash',
     prompt: `
 **CORE DIRECTIVE:**
@@ -53,7 +53,7 @@ You must identify one specific "AI Productivity Skill" tailored to the target oc
 - Unit: \`{{{unit_code}}} - {{{unit_title}}}\`
 
 **TASK:**
-Based on the rules and logic above, generate a single JSON object for the micro-credential product derived from the provided Unit of Competency AND the associated AI opportunity.
+Based on the rules and logic above, generate a single raw JSON object for the micro-credential product derived from the provided Unit of Competency AND the associated AI opportunity.
 
 **REQUIRED JSON OUTPUT FORMAT (This is an example, you must generate real data based on the INPUT DATA):**
 {
@@ -86,12 +86,24 @@ const generateMicrocredentialFlow = ai.defineFlow(
     // outputSchema: MicrocredentialOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error("AI returned no valid output for Micro-credential generation.");
+    const response = await prompt(input);
+    const rawText = response.text;
+
+    if (!rawText) {
+      throw new Error("AI returned no text output for Micro-credential generation.");
     }
     
-    const validationResult = MicrocredentialOutputSchema.safeParse(output);
+    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    let parsedJson: any;
+    
+    try {
+        parsedJson = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI for Microcredential:", e, "\nRaw text:", rawText);
+        throw new Error("AI returned malformed JSON for Micro-credential generation.");
+    }
+    
+    const validationResult = MicrocredentialOutputSchema.safeParse(parsedJson);
     if (validationResult.success) {
       return validationResult.data;
     }

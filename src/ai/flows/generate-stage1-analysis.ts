@@ -16,7 +16,7 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { format: 'json' },
+  // output: { format: 'json' },
   model: 'googleai/gemini-2.5-flash',
   prompt: `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
@@ -60,7 +60,7 @@ Cap learner volumes based on realistic SME delivery constraints (staffing, asses
 
 **Task: High-Level Sector & Occupation Analysis**
 
-Your overall task is to act as a **Strategic Growth Director** and **Labour Market Data Scientist** to generate a single JSON object containing three top-level keys: \`executive_summary\`, \`sector_breakdown\`, and \`occupation_analysis\`.
+Your overall task is to act as a **Strategic Growth Director** and **Labour Market Data Scientist** to generate a single raw JSON object containing three top-level keys: \`executive_summary\`, \`sector_breakdown\`, and \`occupation_analysis\`.
 
 1.  **\`executive_summary\` (Object):** Synthesize your overall findings into this object.
     *   \`total_revenue_opportunity\`: A string summarizing the total potential range.
@@ -72,8 +72,8 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
 3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
 
 **OUTPUT RULES:**
-- Return ONLY valid JSON.
-- Do not wrap in \`\`\` fences.
+- Return ONLY valid, raw JSON.
+- Do not wrap in \`\`\` fences or other markdown.
 - Output must start with { and end with }.
 - The \`sector_breakdown\` key MUST contain an array of objects. Each object in the array MUST have a \`sector_name\` property.
 - The \`occupation_analysis\` key MUST contain an array of objects.
@@ -103,24 +103,6 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
       },
       "recommended_actions": ["Develop niche micro-credentials for specific software skills."],
       "suggested_ai_courses": ["AI for Business Process Automation", "Generative AI for Marketing Content"]
-    },
-    {
-      "sector_name": "Laboratory Operations",
-      "qualification_count": 3,
-      "market_health_demand_level": "Medium",
-      "market_health_trend_direction": "Growing",
-      "market_health_avg_industry_wage": "$75,000 AUD",
-      "financial_opportunity": {
-        "serviceable_learners_estimate": 5000,
-        "competition_intensity_label": "Low",
-        "competition_intensity_index": 0.6,
-        "provider_capacity_cap": 500,
-        "final_learner_estimate": 500,
-        "realistic_annual_revenue": "$225,000 AUD",
-        "assumptions": ["High relevance due to specialist skills.", "Assumes $150 average course yield."]
-      },
-      "recommended_actions": ["Target biotech and food testing industries."],
-      "suggested_ai_courses": ["AI in Clinical Pathology Analysis", "Machine Learning for Lab Automation"]
     }
   ],
   "occupation_analysis": [
@@ -149,13 +131,24 @@ const generateStage1AnalysisFlow = ai.defineFlow(
     // outputSchema: Stage1OutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const response = await prompt(input);
+    const rawText = response.text;
 
-    if (!output) {
-      throw new Error("AI generation for Stage 1 returned no output.");
+    if (!rawText) {
+      throw new Error("AI generation for Stage 1 returned no text output.");
     }
     
-    const validationResult = Stage1OutputSchema.safeParse(output);
+    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    let parsedJson: any;
+
+    try {
+        parsedJson = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI for Stage 1:", e, "\nRaw text:", rawText);
+        throw new Error("AI returned malformed JSON for Stage 1 analysis.");
+    }
+    
+    const validationResult = Stage1OutputSchema.safeParse(parsedJson);
     if (validationResult.success) {
       return validationResult.data;
     }
