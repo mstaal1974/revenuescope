@@ -172,6 +172,20 @@ export const MicrocredentialOutputSchema = z.object({
 });
 export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;
 
+// From generate-learning-outcomes.ts
+export const LearningOutcomesInputSchema = z.object({
+  course_title: z.string(),
+});
+export type LearningOutcomesInput = z.infer<typeof LearningOutcomesInputSchema>;
+
+export const LearningOutcomesOutputSchema = z.object({
+  learning_outcomes: z.array(z.string()),
+});
+export type LearningOutcomesOutput = z.infer<
+  typeof LearningOutcomesOutputSchema
+>;
+
+
 // From generate-course-timeline.ts
 export const CourseTimelineInputSchema = z.object({
   course_title: z.string(),

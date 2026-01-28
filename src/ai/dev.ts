@@ -7,3 +7,4 @@ import '@/ai/flows/generate-skills-heatmap';
 import '@/ai/flows/generate-product-ecosystem';
 import '@/ai/flows/generate-microcredential';
 import '@/ai/flows/generate-course-timeline';
+import '@/ai/flows/generate-learning-outcomes';

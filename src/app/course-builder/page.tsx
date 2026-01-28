@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { runGenerateCourseTimelineAction, type CourseTimelineActionResult } from '@/app/actions';
+import { runGenerateCourseTimelineAction, runGenerateLearningOutcomesAction, type CourseTimelineActionResult, type LearningOutcomesActionResult } from '@/app/actions';
 import { CourseTimeline } from '@/components/CourseBuilder/CourseTimeline';
 import type { CourseTimelineOutput } from '@/ai/types';
 import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
@@ -18,19 +18,30 @@ function CourseBuilderContent() {
 
   const [courseTitle, setCourseTitle] = useState(initialTitle);
   const [learningOutcomes, setLearningOutcomes] = useState('');
+  const [isOutcomesLoading, setIsOutcomesLoading] = useState(false);
   const [result, setResult] = useState<CourseTimelineOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // For the timeline component, which expects this prop.
-  // On this page, the content is the main purpose, so it's always "unlocked".
   const [isUnlocked, setIsUnlocked] = useState(true);
 
   useEffect(() => {
-    // This effect ensures that if the user navigates to this page with a new
-    // query parameter, the title updates.
+    setCourseTitle(initialTitle);
     if (initialTitle) {
-      setCourseTitle(initialTitle);
+      setLearningOutcomes(''); // Clear previous outcomes
+      setResult(null); // Clear previous results
+      const fetchOutcomes = async () => {
+        setIsOutcomesLoading(true);
+        setError(null);
+        const response: LearningOutcomesActionResult = await runGenerateLearningOutcomesAction({ course_title: initialTitle });
+        if (response.ok) {
+          setLearningOutcomes(response.result.learning_outcomes.join('\n'));
+        } else {
+          setError(`Failed to generate learning outcomes: ${response.error}`);
+        }
+        setIsOutcomesLoading(false);
+      };
+      fetchOutcomes();
     }
   }, [initialTitle]);
 
@@ -55,7 +66,7 @@ function CourseBuilderContent() {
 
     if (response.ok) {
       setResult(response.result);
-      setIsUnlocked(true); // Content is unlocked upon generation
+      setIsUnlocked(true);
     } else {
       setError(response.error);
     }
@@ -92,18 +103,22 @@ function CourseBuilderContent() {
             </div>
             <div className="space-y-2">
               <label htmlFor="learning-outcomes" className="text-sm font-bold text-slate-700">Learning Outcomes (one per line)</label>
-              <Textarea
-                id="learning-outcomes"
-                value={learningOutcomes}
-                onChange={(e) => setLearningOutcomes(e.target.value)}
-                placeholder="e.g., Define strategic leadership&#10;Differentiate between leadership and management"
-                className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-medium text-lg transition-all min-h-[150px]"
-                required
-              />
+              <div className="relative">
+                <Textarea
+                  id="learning-outcomes"
+                  value={learningOutcomes}
+                  onChange={(e) => setLearningOutcomes(e.target.value)}
+                  placeholder={isOutcomesLoading ? 'Generating learning outcomes with AI...' : 'e.g., Define strategic leadership\nDifferentiate between leadership and management'}
+                  className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-medium text-lg transition-all min-h-[150px]"
+                  required
+                  disabled={isOutcomesLoading}
+                />
+                {isOutcomesLoading && <Loader2 className="absolute top-1/2 left-1/2 -mt-3 -ml-3 h-6 w-6 animate-spin text-blue-500" />}
+              </div>
             </div>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isOutcomesLoading}
               className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl"
             >
               {isLoading ? (
