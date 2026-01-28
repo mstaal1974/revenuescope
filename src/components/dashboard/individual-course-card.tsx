@@ -54,15 +54,13 @@ interface IndividualCourseCardProps {
 export function IndividualCourseCard({ course, index, viewMode, expandedCourse, setExpandedCourse }: IndividualCourseCardProps) {
   const [timelineData, setTimelineData] = useState<CourseTimelineData | null>(null);
   const [isTimelineLoading, setIsTimelineLoading] = useState(false);
-  const [view, setView] = useState<'skeleton' | 'timeline'>('skeleton');
-
+  
   const { toast } = useToast();
   const isExpanded = expandedCourse === index;
 
   const formatValue = (val: string | undefined) => (val === '[REAL_DATA_REQUIRED]' || !val) ? 'DATA UNAVAILABLE' : val;
 
   const handleGenerateTimeline = async () => {
-    setView('timeline');
     setIsTimelineLoading(true);
     setTimelineData(null);
 
@@ -80,19 +78,16 @@ export function IndividualCourseCard({ course, index, viewMode, expandedCourse, 
         title: "Timeline Generation Failed",
         description: result.error,
       });
-      // Fall back to skeleton view on error
-      setView('skeleton');
     }
   }
 
   const handleToggleExpand = () => {
     if (isExpanded) {
-      setExpandedCourse(null)
+      setExpandedCourse(null);
+      setTimelineData(null); // Reset on collapse
     } else {
-      // Reset views when expanding
-      setView('skeleton');
-      setTimelineData(null);
       setExpandedCourse(index);
+      handleGenerateTimeline(); // Trigger on expand
     }
   };
   
@@ -139,106 +134,18 @@ export function IndividualCourseCard({ course, index, viewMode, expandedCourse, 
             onClick={handleToggleExpand}
             className="mt-auto w-full bg-slate-50 hover:bg-slate-100 text-slate-950 font-black py-4 rounded-2xl border border-slate-200 transition-all text-xs uppercase tracking-widest active:scale-95"
           >
-            Generate Full Skeleton
+            Generate Visual Outline
           </button>
         </>
       ) : (
         <div className="animate-in fade-in slide-in-from-top-4 duration-500 relative text-left">
-          
-          {view === 'timeline' ? (
-             <CourseTimeline data={timelineData} isLoading={isTimelineLoading} />
-          ) : (
-            <div className="grid md:grid-cols-2 gap-12 mt-4 blueprint-bg">
-                {/* ORIGINAL SKELETON VIEW */}
-                <div className="space-y-10 relative z-10 pt-8">
-                  <div>
-                    <h6 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                      <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black shadow-lg">1</span>
-                      80% Ready Skeleton
-                    </h6>
-                    <div className="space-y-6 relative bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Module Outline</h4>
-                      <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans">{course.module_outline_markdown}</pre>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-slate-950 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
-                    <h6 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                        <span className="w-6 h-6 bg-blue-900/50 rounded flex items-center justify-center text-[10px] border border-blue-500/30">2</span>
-                        B2B Sales Enablement
-                    </h6>
-                    <div className="mb-8">
-                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Target Student Persona</div>
-                        <div className="text-sm font-black text-white">{course.target_student}</div>
-                    </div>
-                    <div>
-                        <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Pre-Written Sales Script</div>
-                        <p className="text-xs leading-relaxed text-slate-300 font-medium italic">"{course.b2b_pitch_script}"</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-10 relative z-10 pt-8">
-                  <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
-                      <h6 className="text-[10px] font-black text-slate-950 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                          <span className="w-6 h-6 bg-slate-950 text-white rounded flex items-center justify-center text-[10px] font-black">3</span>
-                          Digital Badge & RSDs
-                      </h6>
-                      <div className="flex gap-6 items-center mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                        <BadgePreview course={course} view={viewMode} />
-                        <div>
-                            <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Badge Title</div>
-                            <div className="text-base font-black text-slate-900 leading-tight">{course.badge_name}</div>
-                        </div>
-                      </div>
-
-                      <div className="mb-8">
-                          <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 font-mono">Badge Skills</div>
-                          <div className="space-y-3">
-                              {(course.badge_skills || []).map((rsd, idx) => (
-                                  <div key={idx} className="flex gap-3 items-start p-3 bg-slate-50/50 rounded-xl border border-slate-100 group relative">
-                                      <div className="w-5 h-5 bg-blue-600 text-white text-[8px] font-black rounded flex items-center justify-center shrink-0">✓</div>
-                                      <div className="text-[10px] font-bold text-slate-700 leading-tight">{rsd}</div>
-                                  </div>
-                              ))}
-                          </div>
-                      </div>
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-[2rem] p-8 relative overflow-hidden">
-                      <h6 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                          <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black">4</span>
-                          Marketing Launch Plan
-                      </h6>
-                      <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm relative">
-                            <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-[7px] font-black px-2 py-0.5 rounded italic shadow-md uppercase">Ad Creative</div>
-                            <div className="text-xs font-black text-slate-950 mb-2 leading-tight">"{course.ad_headline}"</div>
-                            <p className="text-[10px] text-slate-500 mb-4 line-clamp-2 font-medium">"{course.ad_body_copy}"</p>
-                            <div className="bg-blue-600 text-white text-[9px] font-black py-2 rounded-lg text-center uppercase tracking-widest">{course.ad_cta_button}</div>
-                        </div>
-                      </div>
-                  </div>
-                </div>
-            </div>
-          )}
-          
+          <CourseTimeline data={timelineData} isLoading={isTimelineLoading} />
           <div className="flex gap-4 mt-8">
-            <button 
-              onClick={handleGenerateTimeline}
-              disabled={isTimelineLoading}
-              className={cn(
-                "w-full text-white font-black py-4 rounded-2xl transition-all text-xs uppercase tracking-widest active:scale-95",
-                view === 'timeline' ? "bg-blue-600 hover:bg-blue-700" : "bg-slate-700 hover:bg-slate-800"
-              )}
-            >
-              {isTimelineLoading ? 'Building...' : 'Build Visual Outline'}
-            </button>
             <button 
               onClick={handleToggleExpand}
               className="w-full text-slate-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest py-4 border-2 border-dashed border-slate-200 rounded-2xl transition-all font-mono"
             >
-              Hide Detailed Blueprint
+              Hide Visual Outline
             </button>
           </div>
         </div>

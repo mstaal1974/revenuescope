@@ -3,8 +3,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
-import type { FullAuditInput, FullAuditOutput, } from '@/ai/types';
+import { runStage1Action, runStage2Action, runStage3Action, runGenerateCourseTimelineAction } from '@/app/actions';
+import type { FullAuditInput, FullAuditOutput, CourseTimelineData } from '@/ai/types';
 import { Lock, Zap, FileText, Loader2, CheckCircle, XCircle, Circle } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
@@ -13,6 +13,8 @@ import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestam
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { CourseTimeline } from './CourseBuilder/CourseTimeline';
+import { cn } from '@/lib/utils';
 
 
 type AuditResult = FullAuditOutput;
@@ -63,6 +65,9 @@ const AuditWidget: React.FC = () => {
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const { toast } = useToast();
+
+  const [timelineData, setTimelineData] = useState<CourseTimelineData | null>(null);
+  const [isTimelineLoading, setIsTimelineLoading] = useState(false);
   
   const initialProgress: ProgressStep[] = [
     { name: 'Connecting to National Register...', status: 'pending' },
@@ -243,6 +248,27 @@ const AuditWidget: React.FC = () => {
       }
     }
   };
+
+  const handleGenerateTimeline = async (course: AuditResult["individual_courses"][0]) => {
+    setIsTimelineLoading(true);
+    setTimelineData(null);
+
+    const result = await runGenerateCourseTimelineAction({
+      course_title: course.course_title,
+      learning_outcomes: course.learning_outcomes,
+    });
+
+    setIsTimelineLoading(false);
+    if (result.ok) {
+      setTimelineData(result.result);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Timeline Generation Failed",
+        description: result.error,
+      });
+    }
+  }
 
   const formatValue = (val: string | undefined) => (!val || val === '[REAL_DATA_REQUIRED]') ? 'DATA UNAVAILABLE' : val;
 
@@ -474,8 +500,21 @@ const AuditWidget: React.FC = () => {
           )}
 
           <div className={`grid lg:grid-cols-3 gap-8 transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
-            {(result?.individual_courses || []).map((course, i) => (
-              <div key={i} className={`bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200 flex flex-col hover:shadow-2xl hover:border-blue-200 transition-all group relative overflow-hidden ${expandedCourse === i ? 'lg:col-span-3 ring-4 ring-blue-500/10' : ''}`}>
+            {(result?.individual_courses || []).map((course, i) => {
+              const isExpanded = expandedCourse === i;
+              
+              const handleToggleExpand = () => {
+                if (isExpanded) {
+                  setExpandedCourse(null);
+                  setTimelineData(null);
+                } else {
+                  setExpandedCourse(i);
+                  handleGenerateTimeline(course);
+                }
+              };
+
+              return (
+              <div key={i} className={`bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200 flex flex-col hover:shadow-2xl hover:border-blue-200 transition-all group relative overflow-hidden ${isExpanded ? 'lg:col-span-3 ring-4 ring-blue-500/10' : ''}`}>
                 
                 <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
                   <div className="flex-1 text-left">
@@ -496,7 +535,7 @@ const AuditWidget: React.FC = () => {
                   <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_name} />
                 </div>
 
-                {expandedCourse !== i && (
+                {!isExpanded && (
                   <div className={`mb-8 p-6 rounded-2xl border text-left ${viewMode === 'rto' ? 'bg-slate-50 border-slate-100' : 'bg-blue-50/50 border-blue-100'}`}>
                      <div className={`text-[8px] font-black uppercase tracking-widest mb-2 font-mono ${viewMode === 'rto' ? 'text-slate-400' : 'text-blue-400'}`}>
                         {viewMode === 'rto' ? 'Primary Sales Target' : 'Career Impact / RSD'}
@@ -507,98 +546,29 @@ const AuditWidget: React.FC = () => {
                   </div>
                 )}
 
-                {expandedCourse !== i ? (
+                {!isExpanded ? (
                   <>
                     <p className="text-sm font-medium text-slate-500 mb-8 line-clamp-2 italic text-left">"{course.learning_outcomes?.[0]}..."</p>
                     <button 
-                      onClick={() => setExpandedCourse(i)}
+                      onClick={handleToggleExpand}
                       className="mt-auto w-full bg-slate-50 hover:bg-slate-100 text-slate-950 font-black py-4 rounded-2xl border border-slate-200 transition-all text-xs uppercase tracking-widest active:scale-95"
                     >
-                      Generate Full Skeleton
+                      Generate Visual Outline
                     </button>
                   </>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-12 mt-4 animate-in fade-in slide-in-from-top-4 duration-500 relative text-left blueprint-bg">
-                    <div className="space-y-10 relative z-10 pt-8">
-                      <div>
-                        <h6 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                          <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black shadow-lg">1</span>
-                          80% Ready Skeleton
-                        </h6>
-                        <div className="space-y-6 relative bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Module Outline</h4>
-                           <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans">{course.module_outline_markdown}</pre>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-slate-950 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
-                         <h6 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                            <span className="w-6 h-6 bg-blue-900/50 rounded flex items-center justify-center text-[10px] border border-blue-500/30">2</span>
-                            B2B Sales Enablement
-                         </h6>
-                         <div className="mb-8">
-                            <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Target Student Persona</div>
-                            <div className="text-sm font-black text-white">{course.target_student}</div>
-                         </div>
-                         <div>
-                            <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 font-mono">Pre-Written Sales Script</div>
-                            <p className="text-xs leading-relaxed text-slate-300 font-medium italic">"{course.b2b_pitch_script}"</p>
-                         </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-10 relative z-10 pt-8">
-                      <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
-                          <h6 className="text-[10px] font-black text-slate-950 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                              <span className="w-6 h-6 bg-slate-950 text-white rounded flex items-center justify-center text-[10px] font-black">3</span>
-                              Digital Badge & RSDs
-                          </h6>
-                          <div className="flex gap-6 items-center mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                             <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_name} />
-                             <div>
-                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Badge Title</div>
-                                <div className="text-base font-black text-slate-900 leading-tight">{course.badge_name}</div>
-                             </div>
-                          </div>
-
-                          <div className="mb-8">
-                              <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 font-mono">Badge Skills</div>
-                              <div className="space-y-3">
-                                  {(course.badge_skills || []).map((rsd, idx) => (
-                                      <div key={idx} className="flex gap-3 items-start p-3 bg-slate-50/50 rounded-xl border border-slate-100 group relative">
-                                          <div className="w-5 h-5 bg-blue-600 text-white text-[8px] font-black rounded flex items-center justify-center shrink-0">✓</div>
-                                          <div className="text-[10px] font-bold text-slate-700 leading-tight">{rsd}</div>
-                                      </div>
-                                  ))}
-                              </div>
-                          </div>
-                      </div>
-
-                      <div className="bg-blue-50 border border-blue-200 rounded-[2rem] p-8 relative overflow-hidden">
-                          <h6 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                              <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] font-black">4</span>
-                              Marketing Launch Plan
-                          </h6>
-                          <div className="space-y-6">
-                             <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm relative">
-                                <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-[7px] font-black px-2 py-0.5 rounded italic shadow-md uppercase">Ad Creative</div>
-                                <div className="text-xs font-black text-slate-950 mb-2 leading-tight">"{course.ad_headline}"</div>
-                                <p className="text-[10px] text-slate-500 mb-4 line-clamp-2 font-medium">"{course.ad_body_copy}"</p>
-                                <div className="bg-blue-600 text-white text-[9px] font-black py-2 rounded-lg text-center uppercase tracking-widest">{course.ad_cta_button}</div>
-                             </div>
-                             <button 
-                                onClick={() => setExpandedCourse(null)}
-                                className="w-full text-slate-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest py-4 border-2 border-dashed border-slate-200 rounded-2xl transition-all font-mono"
-                             >
-                                Hide Detailed Blueprint
-                             </button>
-                          </div>
-                      </div>
-                    </div>
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-500 relative text-left">
+                    <CourseTimeline data={timelineData} isLoading={isTimelineLoading} />
+                    <button 
+                      onClick={handleToggleExpand}
+                      className="w-full mt-8 text-slate-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest py-4 border-2 border-dashed border-slate-200 rounded-2xl transition-all font-mono"
+                    >
+                      Hide Visual Outline
+                    </button>
                   </div>
                 )}
               </div>
-            ))}
+            )})}
           </div>
 
           {!isUnlocked && (
