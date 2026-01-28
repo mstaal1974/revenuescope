@@ -8,7 +8,7 @@ import { LeadCaptureOverlay } from "./lead-capture-overlay";
 import { OccupationAnalysis } from "./occupation-analysis";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { TierCard } from "./TierCard";
+import { RevenueCalculator } from "./RevenueCalculator";
 import { useToast } from "@/hooks/use-toast";
 import { Rocket } from "lucide-react";
 
@@ -54,10 +54,6 @@ export function DashboardClient({ data }: { data: AuditData }) {
         {!isUnlocked && <LeadCaptureOverlay onUnlock={() => setIsUnlocked(true)} data={data} />}
 
         <div className={`transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
-          <div className="text-left mb-16">
-              <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Commercial Product Stack</h4>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Unbundled from Top Performing Sector</p>
-          </div>
           
           {isUnlocked && (
             <div className="mb-12 animate-in fade-in duration-500">
@@ -72,23 +68,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
             </div>
           )}
 
-          <div className="space-y-8">
-            {(data.tiers || []).map((tier, i) => (
-              <TierCard key={i} tierData={tier} />
-            ))}
-          </div>
-
-          <div className="mt-16 p-8 bg-slate-100 border-2 border-dashed border-slate-300 rounded-3xl text-center">
-              <p className="text-slate-500 font-bold">Interactive Revenue Calculator Coming Soon...</p>
-          </div>
-
-          <div className="mt-12 text-center">
-                <Button asChild className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3">
-                    <Link href="/course-builder">
-                        Deploy this ScopeStack <Rocket />
-                    </Link>
-                </Button>
-          </div>
+          {data.tiers && <RevenueCalculator tiers={data.tiers} />}
         </div>
       </div>
 

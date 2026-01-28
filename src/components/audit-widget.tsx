@@ -10,7 +10,6 @@ import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket } from 'lucide
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
-import { TierCard } from './dashboard/TierCard';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -413,28 +412,8 @@ const AuditWidget: React.FC = () => {
         </div>
 
         <div className="p-8 md:p-16 relative bg-slate-50/50">
-          <div className="text-left mb-16">
-              <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Commercial Product Stack</h4>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Unbundled from Top Performing Sector</p>
-          </div>
-          
           <div className={`transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
-            <div className="space-y-8">
-              {(result?.tiers || []).map((tier, i) => (
-                <TierCard key={i} tierData={tier} />
-              ))}
-            </div>
-
-            {/* Interactive Revenue Calculator */}
-            {result?.tiers && <RevenueCalculator tiers={result.tiers} />}
-
-            <div className="mt-12 text-center">
-                <Button asChild className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3">
-                    <Link href="/course-builder">
-                        Deploy this ScopeStack <Rocket />
-                    </Link>
-                </Button>
-            </div>
+             {result?.tiers && <RevenueCalculator tiers={result.tiers} />}
           </div>
 
           {!isUnlocked && (
@@ -521,4 +500,5 @@ export default AuditWidget;
     
 
     
+
 
