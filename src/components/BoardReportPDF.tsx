@@ -92,7 +92,7 @@ export const BoardReportPDF = ({ data, rtoCode, rtoName }: BoardReportPDFProps) 
       {/* 3. Executive Summary */}
       {data.strategy_summary && (
         <View style={styles.summaryBox}>
-            <Text style={{fontSize: 12, fontFamily: 'Helvetica-Bold', marginBottom: 5, color: '#2b6cb0'}}>Strategy Summary:</Text>
+            <Text style={{...styles.bold, fontSize: 12, marginBottom: 5, color: '#2b6cb0'}}>Strategy Summary:</Text>
             <Text style={styles.summaryText}>{data.strategy_summary}</Text>
         </View>
       )}
@@ -115,7 +115,7 @@ export const BoardReportPDF = ({ data, rtoCode, rtoName }: BoardReportPDFProps) 
       {/* 5. The Revenue Staircase (Table) */}
       {data.tiers && data.tiers.length > 0 && (
           <>
-            <Text style={{fontSize: 14, fontFamily: 'Helvetica-Bold', marginTop: 10, marginBottom: 5}}>Recommended Product Architecture</Text>
+            <Text style={{...styles.bold, fontSize: 14, marginTop: 10, marginBottom: 5}}>Recommended Product Architecture</Text>
             <View style={styles.table}>
                 {/* Table Header */}
                 <View style={[styles.row, styles.headerRow]}>
