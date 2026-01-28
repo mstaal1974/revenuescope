@@ -14,10 +14,11 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Allow anyone to submit a lead, but no one to read/update/delete them from the client.
+    // Allow anyone to submit a lead, and update it, but no one to read/delete them from the client.
     match /leads/{leadId} {
       allow create: if true;
-      allow read, update, delete: if false;
+      allow update: if true; // Allow curriculum to be saved later
+      allow read, delete: if false;
     }
   }
 }

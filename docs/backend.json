@@ -108,6 +108,10 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp when the lead was created."
+        },
+        "curriculum": {
+          "type": "object",
+          "description": "The generated course curriculum data."
         }
       },
       "required": ["name", "email", "createdAt"]

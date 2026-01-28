@@ -11,6 +11,9 @@ import { runGenerateCourseTimelineAction, runGenerateLearningOutcomesAction, typ
 import { CourseTimeline } from '@/components/CourseBuilder/CourseTimeline';
 import type { CourseTimelineOutput } from '@/ai/types';
 import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+
 
 function CourseBuilderContent() {
   const searchParams = useSearchParams();
@@ -24,6 +27,7 @@ function CourseBuilderContent() {
   const [error, setError] = useState<string | null>(null);
   
   const [isUnlocked, setIsUnlocked] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     setCourseTitle(initialTitle);
@@ -67,6 +71,29 @@ function CourseBuilderContent() {
     if (response.ok) {
       setResult(response.result);
       setIsUnlocked(true);
+
+      try {
+        const leadId = localStorage.getItem('leadId');
+        if (leadId && response.result) {
+          const db = getFirestore();
+          const leadRef = doc(db, 'leads', leadId);
+          await updateDoc(leadRef, {
+            curriculum: response.result,
+          });
+          toast({
+            title: 'Curriculum Saved',
+            description: 'Your generated curriculum has been saved with your lead information.',
+          });
+        }
+      } catch (e) {
+        console.error('Failed to save curriculum to lead:', e);
+        toast({
+          variant: 'destructive',
+          title: 'Save Failed',
+          description: 'Could not save the curriculum to the database.',
+        });
+      }
+
     } else {
       setError(response.error);
     }

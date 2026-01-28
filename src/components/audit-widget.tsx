@@ -203,12 +203,13 @@ const AuditWidget: React.FC = () => {
     if (email && name && phone) {
       try {
         const db = getFirestore();
-        await addDoc(collection(db, "leads"), {
+        const docRef = await addDoc(collection(db, "leads"), {
           name,
           email,
           phone,
           createdAt: serverTimestamp(),
         });
+        localStorage.setItem('leadId', docRef.id);
         toast({
           title: "Information Submitted",
           description: "Thank you! The full report is now unlocked.",
@@ -500,6 +501,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
