@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
 import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket } from 'lucide-react';
@@ -14,6 +15,7 @@ import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestam
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { RevenueCalculator } from './dashboard/RevenueCalculator';
+import { Button } from './ui/button';
 
 
 type AuditResult = FullAuditOutput;
@@ -427,12 +429,11 @@ const AuditWidget: React.FC = () => {
             {result?.tiers && <RevenueCalculator tiers={result.tiers} />}
 
             <div className="mt-12 text-center">
-                <button
-                    className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3"
-                    onClick={() => toast({ title: "Course Builder coming soon!" })}
-                    >
-                    Deploy this ScopeStack <Rocket />
-                </button>
+                <Button asChild className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3">
+                    <Link href="/course-builder">
+                        Deploy this ScopeStack <Rocket />
+                    </Link>
+                </Button>
             </div>
           </div>
 
@@ -520,3 +521,4 @@ export default AuditWidget;
     
 
     
+

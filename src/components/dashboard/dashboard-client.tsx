@@ -83,12 +83,11 @@ export function DashboardClient({ data }: { data: AuditData }) {
           </div>
 
           <div className="mt-12 text-center">
-              <button
-                  className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3"
-                  onClick={() => toast({ title: "Course Builder coming soon!" })}
-                  >
-                  Deploy this ScopeStack <Rocket />
-              </button>
+                <Button asChild className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3">
+                    <Link href="/course-builder">
+                        Deploy this ScopeStack <Rocket />
+                    </Link>
+                </Button>
           </div>
         </div>
       </div>
