@@ -171,25 +171,22 @@ export const CourseTimelineInputSchema = z.object({
 });
 export type CourseTimelineInput = z.infer<typeof CourseTimelineInputSchema>;
 
-const UnlockedContentSchema = z.object({
-  learningObjective: z.string().describe("A single, clear sentence describing what the learner will be able to do."),
-  activityBreakdown: z.array(z.string()).describe("A list of specific activities the learner will perform in this step."),
-  suggestedAssessments: z.array(z.string()).describe("A list of methods to assess the learner's understanding."),
-  observableCriteria: z.array(z.string()).length(3).describe("A list of exactly three observable criteria to verify skill acquisition."),
+const CourseModuleItemSchema = z.object({
+  id: z.number(),
+  type: z.enum(['video', 'resource', 'award', 'quiz']).describe("The type of lesson item. 'video' for a lecture, 'resource' for a downloadable file, 'award' for a badge/certificate, 'quiz' for an assessment."),
+  title: z.string().describe("The catchy, commercial-style title for the lecture or activity."),
+  duration: z.string().describe("The estimated time to complete the item, formatted as 'MM:SS'."),
+  description: z.string().describe("A brief, engaging description of the lesson item."),
 });
 
-export const TimelineStepSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string(),
-  icon: z.string(),
-  contentType: z.enum(['lesson', 'quiz', 'project', 'conclusion']),
-  unlockedContent: UnlockedContentSchema,
+const CourseModuleSchema = z.object({
+  title: z.string().describe("The title of the course module, e.g., 'Module 1: Foundations'."),
+  total_duration: z.string().describe("The total estimated duration for the entire module."),
+  items: z.array(CourseModuleItemSchema),
 });
-export type TimelineStep = z.infer<typeof TimelineStepSchema>;
 
 export const CourseTimelineOutputSchema = z.object({
   courseTitle: z.string(),
-  timeline: z.array(TimelineStepSchema),
+  modules: z.array(CourseModuleSchema),
 });
 export type CourseTimelineOutput = z.infer<typeof CourseTimelineOutputSchema>;

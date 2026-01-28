@@ -1,92 +1,99 @@
 export const getCourseTimelinePrompt = (courseTitle: string, learningOutcomes: string[]): string => {
   return `
-    You are an expert instructional designer AI. Your task is to create a visual and engaging course outline for a micro-credential based on a given title and learning outcomes. The output MUST be a valid JSON object.
+    You are a world-class instructional designer and curriculum copywriter for a top online learning platform like Udemy or Coursera. Your task is to transform a set of academic learning outcomes into a sleek, commercial, and engaging course curriculum.
 
-    The structure should be a "metro-line" or vertical timeline. Each step in the timeline represents a learning activity.
+    **THE CORE TASK: The "Udemy" Transformation**
+    1.  **The "Copywriting" Layer:** Convert boring academic bullet points into catchy, clickable "Lecture Titles."
+    2.  **The "Visual" Layer:** Structure the output so it can be rendered with UI elements like video icons, time stamps, and "Start" buttons to make it feel interactive.
+    3.  **The "Structural" Layer:** Group related lectures into logical "Modules."
 
     **RULES:**
-    1.  **JSON Output Only:** Your entire response must be a single, valid JSON object. Do not include any text before or after the JSON.
-    2.  **Timeline Structure:** The JSON must have a \`courseTitle\` (string) and a \`timeline\` (array of objects).
-    3.  **Timeline Step Object:** Each object in the \`timeline\` array must have the following keys:
-        *   \`id\`: A unique string identifier (e.g., "step-1").
-        *   \`title\`: A short, engaging title for the step (string).
-        *   \`description\`: A one-sentence summary of the activity (string).
-        *   \`icon\`: A valid icon name from the Lucide React library. Choose an icon that semantically matches the content type (string). Examples: "BookOpen" for a lesson, "ClipboardCheck" for a quiz, "FileCode" for a project, "Award" for a conclusion.
-        *   \`contentType\`: The type of activity. Must be one of 'lesson', 'quiz', 'project', or 'conclusion' (string).
-        *   \`unlockedContent\`: An object containing detailed instructional design elements:
-            *   \`learningObjective\`: A single, clear sentence describing what the learner will be able to do after this step.
-            *   \`activityBreakdown\`: An array of strings detailing the specific activities.
-            *   \`suggestedAssessments\`: An array of strings describing how learning will be assessed.
-            *   \`observableCriteria\`: An array of **exactly three** strings describing what an assessor can observe to confirm competence.
-    4.  **Content Logic:**
-        *   Start with introductory lessons.
-        *   Include at least one 'quiz' to check for understanding.
-        *   Include one practical 'project' where the learner applies their skills.
-        *   End with a 'conclusion' step that summarizes the key takeaways and the badge earned.
-    5.  **Be Creative:** The titles and descriptions should be action-oriented and appealing to a modern learner.
+    1.  **JSON Output Only:** Your entire response must be a single, valid JSON object.
+    2.  **Structure:**
+        *   Top-level object must have \`courseTitle\` (string) and \`modules\` (array of Module objects).
+        *   Each **Module Object** must have:
+            *   \`title\`: A title for the module (e.g., "Module 1: Foundations of Strategic Leadership").
+            *   \`total_duration\`: A string representing the total time for the module (e.g., "45 Mins").
+            *   \`items\`: An array of **Lesson Item Objects**.
+        *   Each **Lesson Item Object** must have:
+            *   \`id\`: A unique number for ordering.
+            *   \`type\`: A string, must be one of: 'video', 'resource', 'award', 'quiz'.
+            *   \`title\`: The catchy, commercial-style title for the lecture.
+            *   \`duration\`: A string for the specific item's duration (e.g., "5:00").
+            *   \`description\`: A short, engaging 1-sentence description.
+    3.  **Content Logic:**
+        *   Analyze the input learning outcomes.
+        *   Synthesize them into 2-3 logical modules.
+        *   Within each module, create several lesson items.
+        *   Ensure there's a mix of item types ('video' for lectures, 'resource' for downloads, 'quiz' for checks, 'award' for the final badge).
+        *   The final module should always be a "Certification & Next Steps" type of module.
+
+    **EXAMPLE TRANSFORMATION:**
+
+    *   **IF INPUT IS:** "Review a summary of key takeaways."
+    *   **YOUR OUTPUT TITLE SHOULD BE:** "Lecture 4.1: The Executive Summary & Key Wins"
+
+    *   **IF INPUT IS:** "Access and claim digital badge."
+    *   **YOUR OUTPUT TITLE SHOULD BE:** "Action 4.2: How to Unlock Your Official Digital Badge"
 
     **INPUT DATA:**
     *   Course Title: "${courseTitle}"
     *   Learning Outcomes: ${JSON.stringify(learningOutcomes)}
 
-    **EXAMPLE JSON OUTPUT:**
+    **EXAMPLE JSON OUTPUT SHAPE (Use this structure exactly):**
     {
-      "courseTitle": "Intro to Responsive Web Design",
-      "timeline": [
+      "courseTitle": "Intro to Strategic Leadership",
+      "modules": [
         {
-          "id": "step-1",
-          "title": "Module 1: The Core Principles",
-          "description": "Understand what 'responsive' means and why it's critical for modern web development.",
-          "icon": "BookOpen",
-          "contentType": "lesson",
-          "unlockedContent": {
-            "learningObjective": "The learner will be able to articulate the business case for responsive design.",
-            "activityBreakdown": ["Watch 3 short video tutorials.", "Read the provided article from 'A List Apart'.", "Review 5 examples of responsive websites."],
-            "suggestedAssessments": ["Multiple-choice quiz on key terminology.", "Short answer question about the importance of mobile-first indexing."],
-            "observableCriteria": [
-              "Can correctly define 'media query'.",
-              "Can explain the difference between fluid grids and fixed-width layouts.",
-              "Can identify the primary benefit of a mobile-first approach."
-            ]
-          }
+          "title": "Module 1: Foundations",
+          "total_duration": "25 Mins",
+          "items": [
+            {
+              "id": 1,
+              "type": "video",
+              "title": "What is Strategic Leadership (And Why It Matters)",
+              "duration": "8:00",
+              "description": "Understand the core difference between management and strategic leadership in a modern workplace."
+            },
+            {
+              "id": 2,
+              "type": "resource",
+              "title": "The Leadership Styles Matrix (PDF)",
+              "duration": "7:00",
+              "description": "Download our one-page guide to identify your own leadership style and when to adapt it."
+            },
+            {
+              "id": 3,
+              "type": "quiz",
+              "title": "Knowledge Check: Core Principles",
+              "duration": "10:00",
+              "description": "A quick quiz to lock in your understanding of the foundational concepts."
+            }
+          ]
         },
         {
-          "id": "step-2",
-          "title": "Project: Build a Responsive Grid",
-          "description": "Apply your new skills to create a flexible, responsive layout using Flexbox or CSS Grid.",
-          "icon": "FileCode",
-          "contentType": "project",
-           "unlockedContent": {
-            "learningObjective": "The learner will build a functional, responsive webpage layout from scratch.",
-            "activityBreakdown": ["Download the starter files.", "Write the HTML structure for a simple page.", "Apply CSS Flexbox/Grid to create a layout that adapts to three different screen sizes."],
-            "suggestedAssessments": ["Code submission reviewed against a rubric.", "Peer review of another learner's project."],
-            "observableCriteria": [
-              "Layout does not break on mobile, tablet, or desktop views.",
-              "Code is well-structured and uses semantic HTML.",
-              "CSS uses appropriate media queries to target different breakpoints."
-            ]
-          }
-        },
-        {
-          "id": "step-3",
-          "title": "Conclusion & Your New Badge",
-          "description": "Congratulations! You've mastered the fundamentals of responsive design and earned your skill badge.",
-          "icon": "Award",
-          "contentType": "conclusion",
-           "unlockedContent": {
-            "learningObjective": "The learner will claim their digital badge and identify next steps in their learning journey.",
-            "activityBreakdown": ["Review the summary of skills acquired.", "Follow the link to claim the digital badge.", "Explore recommended advanced courses."],
-            "suggestedAssessments": ["Final course survey."],
-            "observableCriteria": [
-              "Badge is successfully claimed.",
-              "Course survey is completed.",
-              "Learner can state one advanced topic they wish to learn next."
-            ]
-          }
+          "title": "Module 2: Certification & Next Steps",
+          "total_duration": "15 Mins",
+          "items": [
+            {
+              "id": 4,
+              "type": "award",
+              "title": "How to Unlock Your Official Digital Badge",
+              "duration": "10:00",
+              "description": "A step-by-step guide to claiming your new credential for your LinkedIn profile."
+            },
+            {
+              "id": 5,
+              "type": "resource",
+              "title": "Your Future Roadmap & Tool Kit",
+              "duration": "5:00",
+              "description": "Downloadable templates and resources to continue your leadership journey."
+            }
+          ]
         }
       ]
     }
 
-    Now, generate the JSON for the provided course title and learning outcomes.
+    Now, generate the JSON for the provided input data.
   `;
 };
