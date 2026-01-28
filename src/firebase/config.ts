@@ -1,7 +1,7 @@
 // Your web app's Firebase configuration.
 // This is used to initialize the Firebase app.
 export const firebaseConfig = {
-  apiKey: "AIzaSyBQntOYepvLVplqVVoVnzq4j7CRYK3qDlo",
+  apiKey: "AIzaSyDXq0OyiQ0ie0CKWBnf9blhFIH6PUJ8f4s",
   authDomain: "studio-6042316553-65e28.firebaseapp.com",
   projectId: "studio-6042316553-65e28",
   storageBucket: "studio-6042316553-65e28.appspot.com",
