@@ -455,20 +455,34 @@ const AuditWidget: React.FC = () => {
           </div>
           
           {/* ACTION BUTTONS */}
-          {isClient && isUnlocked && pdfData && (
+          {isUnlocked && (
             <div className="mb-12 animate-in fade-in duration-500">
                 <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
                     <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now download your report.</p>
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <PDFDownloadLink
-                        document={<BoardReportPDF data={pdfData} rtoCode={result.rto_id} rtoName={result.rtoName || result.executive_summary.top_performing_sector} />}
-                        fileName="ScopeStack_Board_Report.pdf"
-                        className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm"
-                        >
-                        {({ loading }) => (loading ? 'Generating PDF...' : 'Download Board Report')}
-                        </PDFDownloadLink>
+                        {isClient && pdfData ? (
+                            <PDFDownloadLink
+                                document={
+                                    <BoardReportPDF 
+                                        data={pdfData} 
+                                        rtoCode={result.rto_id} 
+                                        rtoName={result.rtoName || result.executive_summary.top_performing_sector} 
+                                    />
+                                }
+                                fileName="ScopeStack_Board_Report.pdf"
+                                className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm"
+                            >
+                                {({ loading }) => 
+                                    loading ? 'Generating PDF...' : 'Download Board Report'
+                                }
+                            </PDFDownloadLink>
+                        ) : (
+                            <button disabled className="w-full sm:w-auto bg-gray-300 text-white font-bold py-4 px-6 rounded-2xl text-sm cursor-wait">
+                                Loading PDF Engine...
+                            </button>
+                        )}
                         <Button asChild variant="outline" className="w-full sm:w-auto bg-white/80 py-4 px-6 rounded-2xl text-sm font-bold">
-                        <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
+                          <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
                         </Button>
                     </div>
                 </div>
@@ -687,6 +701,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
