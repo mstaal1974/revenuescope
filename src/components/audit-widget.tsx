@@ -14,6 +14,8 @@ import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestam
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { BoardReportPDF, type MappedPdfData } from './BoardReportPDF';
 
 
 type AuditResult = FullAuditOutput;
@@ -66,6 +68,40 @@ const AuditWidget: React.FC = () => {
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [pdfData, setPdfData] = useState<MappedPdfData | null>(null);
+
+
+  useEffect(() => {
+    if (result) {
+        const parseCurrency = (val: string) => parseFloat(val?.replace(/[^0-9.]/g, '') || '0');
+        
+        const traditional = parseCurrency(result.stackable_product?.bundle_price);
+        const unbundled = parseCurrency(result.stackable_product?.total_value);
+        let increase = '0';
+        if (traditional > 0 && unbundled > traditional) {
+             increase = (((unbundled - traditional) / traditional) * 100).toFixed(0);
+        }
+
+        const mappedData: MappedPdfData = {
+            strategy_summary: result.executive_summary.strategic_advice,
+            revenue_comparison: {
+                traditional_model: result.stackable_product.bundle_price,
+                unbundled_model: result.stackable_product.total_value,
+                increase_percentage: `+${increase}%`
+            },
+            tiers: result.individual_courses.map(course => ({
+                level: course.tier,
+                product_name: course.course_title,
+                price: course.suggested_price,
+                tactic: course.target_student
+            })),
+            // ai_opportunity is not part of the main audit result.
+            // The PDF component handles this being undefined.
+            ai_opportunity: undefined 
+        };
+        setPdfData(mappedData);
+    }
+  }, [result]);
 
 
   const addLog = (message: string, status: AuditLog['status'] = 'info') => {
@@ -118,6 +154,7 @@ const AuditWidget: React.FC = () => {
       const sortedSectors = Object.keys(sectorCounts).sort((a, b) => sectorCounts[b] - sectorCounts[a]);
       
       let filteredQualifications = allQualifications;
+      let rtoName = filteredQualifications.length > 0 ? (filteredQualifications[0] as any).rtoLegalName : "";
 
       if (sortedSectors.length > 5) {
           const top5Sectors = sortedSectors.slice(0, 5);
@@ -128,10 +165,9 @@ const AuditWidget: React.FC = () => {
           addLog(`FOUND ${sortedSectors.length} SECTORS. LIMITING ANALYSIS TO TOP 5 (${filteredQualifications.length} QUALIFICATIONS) FOR EFFICIENCY.`, 'warning');
       }
       
-      let rtoName = "";
       const scopeItems: string[] = [];
       
-      filteredQualifications.forEach((data) => {
+      filteredQualifications.forEach((data: any) => {
         if (!rtoName && data.rtoLegalName) rtoName = data.rtoLegalName;
         scopeItems.push(`${data.code || ''},${data.title || ''},`);
       });
@@ -167,7 +203,6 @@ const AuditWidget: React.FC = () => {
       const stage3Response = await runStage3Action(stage3Input);
       if (!stage3Response.ok) {
         addLog(`AI Stage 3 Failed: ${stage3Response.error}`, "error");
-        console.error("Stage 3 response:", stage3Response);
         setState(AuditState.ERROR);
         return;
       }
@@ -589,7 +624,19 @@ const AuditWidget: React.FC = () => {
                   </button>
                 </form>
                  <div className="mt-8 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                    <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">Download Board-Ready PDF</Button>
+                    {isUnlocked && pdfData ? (
+                      <PDFDownloadLink
+                        document={<BoardReportPDF data={pdfData} rtoCode={result.rto_id} rtoName={result.rtoName || result.executive_summary.top_performing_sector} />}
+                        fileName="ScopeStack_Board_Report.pdf"
+                        className="w-full text-center items-center justify-center flex gap-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-bold py-6 rounded-[2rem] text-base"
+                      >
+                        {({ loading }) => (loading ? 'Generating PDF...' : '📄 Download Board Report (PDF)')}
+                      </PDFDownloadLink>
+                    ) : (
+                      <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold" disabled>
+                        📄 Download Board Report (PDF)
+                      </Button>
+                    )}
                     <Button asChild variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">
                       <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
                     </Button>
@@ -632,6 +679,7 @@ export default AuditWidget;
     
 
     
+
 
 
 

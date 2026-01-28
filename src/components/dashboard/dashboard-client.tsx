@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -46,7 +47,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
       </div>
 
       <div className="p-8 md:p-16 relative bg-slate-50/50">
-        {!isUnlocked && <LeadCaptureOverlay onUnlock={() => setIsUnlocked(true)} />}
+        {!isUnlocked && <LeadCaptureOverlay onUnlock={() => setIsUnlocked(true)} data={data} />}
 
         <div className={`transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
           <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-16">
