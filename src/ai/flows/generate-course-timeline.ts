@@ -28,8 +28,11 @@ const generateCourseTimelineFlow = ai.defineFlow(
     const prompt = getCourseTimelinePrompt(course_title, learning_outcomes);
 
     const { text } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash-002',
+      model: 'googleai/gemini-1.5-flash-001',
       prompt: prompt,
+      output: {
+          format: 'json',
+      }
     });
 
     if (!text) {
