@@ -30,9 +30,31 @@ const prompt = ai.definePrompt({
 - Your task is to act as a **Labor Market Intelligence Analyst**.
 - **Skill Extraction:** Execute the Validated Data Chain for the entire provided RTO Scope to generate a comprehensive list of all granular skills associated with the RTO's qualifications.
 - **Demand Analysis:** For each extracted skill, use your knowledge of Australian labor market data sources (e.g., Seek.com.au, Jora, ABS data) to determine its current market demand within Australia. Classify the demand as 'High', 'Medium', or 'Low'.
-- **Heatmap Population:** Populate the \`skills_heatmap\` array with this data, containing objects with \`skill_name\` (string) and \`demand_level\` (string).
+- **Heatmap Population:** Populate a single \`skills_heatmap\` array. Each object in the array must contain only two keys: \`skill_name\` (string) and \`demand_level\` (string).
 
-**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure and schema described in the task. Do not wrap it in markdown backticks or any other explanatory text.**
+**EXAMPLE JSON OUTPUT:**
+{
+  "skills_heatmap": [
+    {
+      "skill_name": "Lead and Manage Team Effectiveness",
+      "demand_level": "High"
+    },
+    {
+      "skill_name": "Manage Project Scope",
+      "demand_level": "High"
+    },
+    {
+      "skill_name": "Perform CPR",
+      "demand_level": "High"
+    },
+    {
+      "skill_name": "Operate spreadsheet applications",
+      "demand_level": "Medium"
+    }
+  ]
+}
+
+**Final Output Instructions: You MUST respond with a valid JSON object that conforms to the structure shown in the example. Do NOT group skills by qualification. Produce a single flat array of all skills. Do not wrap it in markdown backticks or any other explanatory text.**
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
