@@ -177,6 +177,12 @@ const CourseModuleItemSchema = z.object({
   title: z.string().describe("The catchy, commercial-style title for the lecture or activity."),
   duration: z.string().describe("The estimated time to complete the item, formatted as 'MM:SS'."),
   description: z.string().describe("A brief, engaging description of the lesson item."),
+  
+  // Unlocked Content (Flattened)
+  learning_objective: z.string().optional().describe("A clear, single-sentence learning objective for this specific item. THIS IS PART OF THE UNLOCKED CONTENT."),
+  activity_breakdown: z.string().optional().describe("A brief description of the activities or tasks the student will perform. THIS IS PART OF THE UNLOCKED CONTENT."),
+  suggested_assessment: z.string().optional().describe("A suggested method for assessing the student's understanding of this item. THIS IS PART OF THE UNLOCKED CONTENT."),
+  observable_criteria: z.array(z.string()).optional().describe("Exactly three specific, observable criteria to verify skill acquisition. THIS IS PART OF THE UNLOCKED CONTENT."),
 });
 
 const CourseModuleSchema = z.object({
