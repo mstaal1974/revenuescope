@@ -1,14 +1,10 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { BoardReportPDF, type MappedPdfData } from "../BoardReportPDF";
 import type { AuditData } from "@/app/actions";
 
 interface LeadCaptureOverlayProps {
@@ -16,42 +12,11 @@ interface LeadCaptureOverlayProps {
   data: AuditData;
 }
 
-export function LeadCaptureOverlay({ onUnlock, data }: LeadCaptureOverlayProps) {
+export function LeadCaptureOverlay({ onUnlock }: LeadCaptureOverlayProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const { toast } = useToast();
-  const [pdfData, setPdfData] = useState<MappedPdfData | null>(null);
-
-  useEffect(() => {
-    if (data) {
-        const parseCurrency = (val: string) => parseFloat(val?.replace(/[^0-9.]/g, '') || '0');
-        
-        const traditional = parseCurrency(data.stackable_product?.bundle_price);
-        const unbundled = parseCurrency(data.stackable_product?.total_value);
-        let increase = '0';
-        if (traditional > 0 && unbundled > traditional) {
-             increase = (((unbundled - traditional) / traditional) * 100).toFixed(0);
-        }
-
-        const mappedData: MappedPdfData = {
-            strategy_summary: data.executive_summary.strategic_advice,
-            revenue_comparison: {
-                traditional_model: data.stackable_product.bundle_price,
-                unbundled_model: data.stackable_product.total_value,
-                increase_percentage: `+${increase}%`
-            },
-            tiers: data.individual_courses.map(course => ({
-                level: course.tier,
-                product_name: course.course_title,
-                price: course.suggested_price,
-                tactic: course.target_student
-            })),
-            ai_opportunity: undefined 
-        };
-        setPdfData(mappedData);
-    }
-  }, [data]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,24 +90,6 @@ export function LeadCaptureOverlay({ onUnlock, data }: LeadCaptureOverlayProps) 
             Download Sales & Content Pack
           </button>
         </form>
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            {pdfData ? (
-                <PDFDownloadLink
-                    document={<BoardReportPDF data={pdfData} rtoCode={data.rto_id} rtoName={data.rtoName || data.executive_summary.top_performing_sector} />}
-                    fileName="ScopeStack_Board_Report.pdf"
-                    className="w-full text-center items-center justify-center flex gap-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-bold py-6 rounded-[2rem] text-base"
-                >
-                {({ loading }) => (loading ? 'Generating PDF...' : '📄 Download Board Report (PDF)')}
-                </PDFDownloadLink>
-            ) : (
-                <Button variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold" disabled>
-                    📄 Download Board Report (PDF)
-                </Button>
-            )}
-            <Button asChild variant="outline" className="w-full py-6 rounded-[2rem] text-base font-bold">
-              <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
-            </Button>
-        </div>
       </div>
     </div>
   );

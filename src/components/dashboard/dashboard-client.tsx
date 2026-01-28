@@ -1,17 +1,53 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AuditData } from "@/app/actions";
 import { LeadCaptureOverlay } from "./lead-capture-overlay";
 import { IndividualCourseCard } from "./individual-course-card";
 import { OccupationAnalysis } from "./occupation-analysis";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { BoardReportPDF, type MappedPdfData } from "../BoardReportPDF";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const [monitoring, setMonitoring] = useState(false);
+  const [pdfData, setPdfData] = useState<MappedPdfData | null>(null);
+
+  useEffect(() => {
+    if (data) {
+        const parseCurrency = (val: string) => parseFloat(val?.replace(/[^0-9.]/g, '') || '0');
+        
+        const traditional = parseCurrency(data.stackable_product?.bundle_price);
+        const unbundled = parseCurrency(data.stackable_product?.total_value);
+        let increase = '0';
+        if (traditional > 0 && unbundled > traditional) {
+             increase = (((unbundled - traditional) / traditional) * 100).toFixed(0);
+        }
+
+        const mappedData: MappedPdfData = {
+            strategy_summary: data.executive_summary.strategic_advice,
+            revenue_comparison: {
+                traditional_model: data.stackable_product.bundle_price,
+                unbundled_model: data.stackable_product.total_value,
+                increase_percentage: `+${increase}%`
+            },
+            tiers: data.individual_courses.map(course => ({
+                level: course.tier,
+                product_name: course.course_title,
+                price: course.suggested_price,
+                tactic: course.target_student
+            })),
+            ai_opportunity: undefined 
+        };
+        setPdfData(mappedData);
+    }
+  }, [data]);
+
 
   const formatValue = (val: string | undefined) => (val === '[REAL_DATA_REQUIRED]' || !val) ? 'DATA UNAVAILABLE' : val;
 
@@ -76,6 +112,26 @@ export function DashboardClient({ data }: { data: AuditData }) {
               </button>
             </div>
           </div>
+          
+          {isUnlocked && pdfData && (
+            <div className="mb-12 animate-in fade-in duration-500">
+                <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
+                    <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now download your report.</p>
+                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                        <PDFDownloadLink
+                        document={<BoardReportPDF data={pdfData} rtoCode={data.rto_id} rtoName={data.rtoName || data.executive_summary.top_performing_sector} />}
+                        fileName="ScopeStack_Board_Report.pdf"
+                        className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm"
+                        >
+                        {({ loading }) => (loading ? 'Generating PDF...' : '📄 Download Board Report (PDF)')}
+                        </PDFDownloadLink>
+                        <Button asChild variant="outline" className="w-full sm:w-auto bg-white/80 py-4 px-6 rounded-2xl text-sm font-bold">
+                        <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
+                        </Button>
+                    </div>
+                </div>
+            </div>
+          )}
 
           <div className="grid lg:grid-cols-3 gap-8">
             {(data.individual_courses || []).map((course, i) => (
