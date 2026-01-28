@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PlayCircle, FileText, Award, CheckSquare, Lock, Loader2 } from 'lucide-react';
+import { PlayCircle, FileText, Award, CheckSquare, Lock, Loader2, Goal, ListChecks, BrainCircuit, Target } from 'lucide-react';
 import type { CourseTimelineOutput as CourseTimelineData } from '@/ai/types';
 
 const getIcon = (type: 'video' | 'resource' | 'award' | 'quiz') => {
@@ -22,7 +22,8 @@ const getIcon = (type: 'video' | 'resource' | 'award' | 'quiz') => {
 export const CourseTimeline: React.FC<{
   data: CourseTimelineData | null;
   isLoading: boolean;
-}> = ({ data, isLoading }) => {
+  isUnlocked: boolean;
+}> = ({ data, isLoading, isUnlocked }) => {
   if (isLoading) {
     return (
       <div className="text-center p-10">
@@ -83,12 +84,48 @@ export const CourseTimeline: React.FC<{
                   <p className="text-xs text-slate-500 leading-relaxed mb-2">
                     {item.description}
                   </p>
+                  
+                  {isUnlocked && item.unlocked_content ? (
+                    <div className="mt-4 p-4 bg-slate-50/50 rounded-lg space-y-3 animate-in fade-in">
+                      <div className="flex items-start gap-3 text-slate-700">
+                        <Goal className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                        <div>
+                          <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">Learning Objective</h4>
+                          <p className="text-sm font-medium">{item.unlocked_content.learning_objective}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 text-slate-700">
+                        <ListChecks className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                        <div>
+                          <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">Activity Breakdown</h4>
+                          <p className="text-sm font-medium">{item.unlocked_content.activity_breakdown}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 text-slate-700">
+                        <BrainCircuit className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                        <div>
+                          <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">Suggested Assessment</h4>
+                          <p className="text-sm font-medium">{item.unlocked_content.suggested_assessment}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 text-slate-700">
+                        <Target className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                        <div>
+                          <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">Observable Criteria</h4>
+                          <ul className="list-disc list-inside text-sm font-medium space-y-1 mt-1">
+                            {item.unlocked_content.observable_criteria.map((crit, i) => <li key={i}>{crit}</li>)}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-xs font-bold text-blue-600 flex items-center gap-1">
+                        <PlayCircle className="w-3 h-3" /> Start Lecture
+                      </span>
+                    </div>
+                  )}
 
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-xs font-bold text-blue-600 flex items-center gap-1">
-                      <PlayCircle className="w-3 h-3" /> Start Lecture
-                    </span>
-                  </div>
                 </div>
               </div>
             ))}

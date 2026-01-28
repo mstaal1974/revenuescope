@@ -4,7 +4,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action, runGenerateCourseTimelineAction } from '@/app/actions';
-import type { FullAuditInput, FullAuditOutput, CourseTimelineData } from '@/ai/types';
+import type { FullAuditInput, FullAuditOutput } from '@/ai/types';
+import { type CourseTimelineOutput as CourseTimelineData } from '@/ai/types';
 import { Lock, Zap, FileText, Loader2, CheckCircle, XCircle, Circle } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
@@ -558,7 +559,7 @@ const AuditWidget: React.FC = () => {
                   </>
                 ) : (
                   <div className="animate-in fade-in slide-in-from-top-4 duration-500 relative text-left">
-                    <CourseTimeline data={timelineData} isLoading={isTimelineLoading} />
+                    <CourseTimeline data={timelineData} isLoading={isTimelineLoading} isUnlocked={isUnlocked} />
                     <button 
                       onClick={handleToggleExpand}
                       className="w-full mt-8 text-slate-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest py-4 border-2 border-dashed border-slate-200 rounded-2xl transition-all font-mono"
