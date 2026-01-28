@@ -6,13 +6,15 @@ import {googleAI} from '@genkit-ai/google-genai';
 // due to the key not being picked up from the environment automatically.
 export const ai = genkit({
   plugins: [
-    googleAI({ apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY }),
+    googleAI({ 
+        apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY,
+        apiVersion: 'v1',
+    }),
   ],
 });
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using the specific 'gemini-1.5-flash-001' version for maximum stability and to resolve
- * regional availability issues that cause 404 Not Found errors with aliases.
+ * Using a stable model alias with the 'v1' API to ensure availability.
  */
-export const MODEL_NAME = 'gemini-1.5-flash-001';
+export const MODEL_NAME = 'gemini-pro';
