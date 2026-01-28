@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,10 +7,15 @@ import type { AuditData } from "@/app/actions";
 import { LeadCaptureOverlay } from "./lead-capture-overlay";
 import { IndividualCourseCard } from "./individual-course-card";
 import { OccupationAnalysis } from "./occupation-analysis";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import dynamic from "next/dynamic";
 import { BoardReportPDF, type MappedPdfData } from "../BoardReportPDF";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -17,11 +23,6 @@ export function DashboardClient({ data }: { data: AuditData }) {
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const [monitoring, setMonitoring] = useState(false);
   const [pdfData, setPdfData] = useState<MappedPdfData | null>(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   useEffect(() => {
     if (data) {
@@ -123,9 +124,9 @@ export function DashboardClient({ data }: { data: AuditData }) {
                 <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
                     <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now download your report.</p>
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        {isClient && pdfData ? (
+                        {pdfData ? (
                             <PDFDownloadLink
-                                document={<BoardReportPDF data={pdfData} rtoCode={data.rto_id} rtoName={data.rtoName || data.executive_summary.top_performing_sector} />}
+                                document={<BoardReportPDF data={pdfData} rtoCode={data.rto_id} rtoName={data.rtoName || data.executive_summary.top_performing_sector || "RTO Report"} />}
                                 fileName={`ScopeStack_Report_${data.rto_id}.pdf`}
                                 className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm transition-all"
                             >

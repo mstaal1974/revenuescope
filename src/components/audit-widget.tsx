@@ -14,8 +14,13 @@ import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestam
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import dynamic from "next/dynamic";
 import { BoardReportPDF, type MappedPdfData } from './BoardReportPDF';
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 
 
 type AuditResult = FullAuditOutput;
@@ -69,12 +74,6 @@ const AuditWidget: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [pdfData, setPdfData] = useState<MappedPdfData | null>(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
 
   useEffect(() => {
     if (result) {
@@ -460,13 +459,13 @@ const AuditWidget: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
                     <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now download your report.</p>
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        {isClient && pdfData ? (
+                        {pdfData ? (
                             <PDFDownloadLink
                                 document={
                                     <BoardReportPDF 
                                         data={pdfData} 
                                         rtoCode={result.rto_id} 
-                                        rtoName={result.rtoName || result.executive_summary.top_performing_sector} 
+                                        rtoName={result.rtoName || result.executive_summary?.top_performing_sector || "RTO Report"} 
                                     />
                                 }
                                 fileName={`ScopeStack_Report_${result.rto_id}.pdf`}
@@ -703,26 +702,3 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
