@@ -1,11 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type CourseTimelineData, type TimelineStep } from '@/types/course';
-import Link from 'next/link';
 
 // A type guard to ensure the icon name is a valid key in LucideIcons
 const isValidIcon = (iconName: string): iconName is keyof typeof LucideIcons => {
@@ -26,6 +25,7 @@ const TimelineStepCard: React.FC<{ step: TimelineStep; isLast: boolean }> = ({
   step,
   isLast,
 }) => {
+  const [unlocked, setUnlocked] = useState(false);
   const nodeColor =
     step.contentType === 'conclusion' ? 'bg-emerald-500' : 'bg-blue-500';
 
@@ -51,15 +51,29 @@ const TimelineStepCard: React.FC<{ step: TimelineStep; isLast: boolean }> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-slate-600">{step.description}</p>
-            <Button asChild variant="secondary" className="w-full">
-              <Link
-                href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink"
-                target="_blank"
+            {unlocked ? (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-center animate-in fade-in">
+                <p className="font-bold text-emerald-800 flex items-center justify-center gap-2">
+                  <LucideIcons.CheckCircle className="h-5 w-5 text-emerald-500" />
+                  Content Unlocked
+                </p>
+                <p className="text-sm text-emerald-600 mt-2">
+                  This is a preview. The full content would be available after your scheduled meeting.
+                </p>
+              </div>
+            ) : (
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => {
+                  window.open('https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink', '_blank');
+                  setUnlocked(true);
+                }}
               >
                 <LucideIcons.Lock className="mr-2 h-4 w-4" />
                 Book Meeting to Unlock Content
-              </Link>
-            </Button>
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
