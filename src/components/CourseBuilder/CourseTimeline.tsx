@@ -5,16 +5,7 @@ import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type CourseTimelineData, type TimelineStep } from '@/types/course';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import Link from 'next/link';
 
 // A type guard to ensure the icon name is a valid key in LucideIcons
 const isValidIcon = (iconName: string): iconName is keyof typeof LucideIcons => {
@@ -29,45 +20,6 @@ const TimelineIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
     ? LucideIcons[iconName]
     : FallbackIcon;
   return <IconComponent className="h-6 w-6 text-white" />;
-};
-
-const LeadCaptureModal: React.FC<{ triggerButton: React.ReactNode }> = ({
-  triggerButton,
-}) => {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Unlock Full Course Content</DialogTitle>
-          <DialogDescription>
-            Enter your details to generate the full content for this module,
-            including lesson plans and assessments.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" defaultValue="Your Name" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              defaultValue="your.email@example.com"
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <Button type="submit">Generate & Download</Button>
-      </DialogContent>
-    </Dialog>
-  );
 };
 
 const TimelineStepCard: React.FC<{ step: TimelineStep; isLast: boolean }> = ({
@@ -99,14 +51,15 @@ const TimelineStepCard: React.FC<{ step: TimelineStep; isLast: boolean }> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-slate-600">{step.description}</p>
-            <LeadCaptureModal
-              triggerButton={
-                <Button variant="secondary" className="w-full">
-                  <LucideIcons.Sparkles className="mr-2 h-4 w-4" />
-                  Generate Content
-                </Button>
-              }
-            />
+            <Button asChild variant="secondary" className="w-full">
+              <Link
+                href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink"
+                target="_blank"
+              >
+                <LucideIcons.Lock className="mr-2 h-4 w-4" />
+                Book Meeting to Unlock Content
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
