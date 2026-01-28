@@ -13,6 +13,7 @@ import { TierCard } from './dashboard/TierCard';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { RevenueCalculator } from './dashboard/RevenueCalculator';
 
 
 type AuditResult = FullAuditOutput;
@@ -422,10 +423,8 @@ const AuditWidget: React.FC = () => {
               ))}
             </div>
 
-            {/* Placeholder for Calculator */}
-            <div className="mt-16 p-8 bg-slate-100 border-2 border-dashed border-slate-300 rounded-3xl text-center">
-                <p className="text-slate-500 font-bold">Interactive Revenue Calculator Coming Soon...</p>
-            </div>
+            {/* Interactive Revenue Calculator */}
+            {result?.tiers && <RevenueCalculator tiers={result.tiers} />}
 
             <div className="mt-12 text-center">
                 <button
