@@ -67,66 +67,74 @@ export const SkillsHeatmapOutputSchema = z.object({
 export type SkillsHeatmapOutput = z.infer<typeof SkillsHeatmapOutputSchema>;
 
 
-// STAGE 3: Product Ecosystem
-// Input for Stage 3 needs outputs from Stage 1 & 2
-export const ProductEcosystemInputSchema = FullAuditInputSchema.extend({
+// STAGE 3: 3-Tier Revenue Staircase
+export const RevenueStaircaseInputSchema = FullAuditInputSchema.extend({
     top_performing_sector: z.string(),
     skills_heatmap: z.array(SkillHeatmapItemSchema),
 });
-export type ProductEcosystemInput = z.infer<typeof ProductEcosystemInputSchema>;
+export type RevenueStaircaseInput = z.infer<typeof RevenueStaircaseInputSchema>;
 
-
-// Final parsed schema for Stage 3
-export const ProductEcosystemOutputSchema = z.object({
-  strategic_theme: z.string(),
-  market_justification: z.string(),
-
-  revenue_opportunity: z.object({
-    total_market_size: z.string(),
-    conservative_capture: z.string(),
-    ambitious_capture: z.string(),
-    acquisition_rationale: z.string(),
-  }),
-
-  individual_courses: z.array(z.object({
-    tier: z.string(),
-    course_title: z.string(),
-    duration: z.string(),
-    suggested_price: z.string(),
-    pricing_tier: z.string(),
-    target_student: z.string(),
-
-    // flattened outputs (easy for model to match)
-    learning_outcomes: z.array(z.string()).default([]),
-    module_outline_markdown: z.string().default(""),
-
-    b2b_pitch_script: z.string().default(""),
-
-    badge_name: z.string().default(""),
-    badge_skills: z.array(z.string()).default([]),
-
-    ad_headline: z.string().default(""),
-    ad_body_copy: z.string().default(""),
-    ad_cta_button: z.string().default(""),
-  })).min(1),
-
-  stackable_product: z.object({
-    bundle_title: z.string(),
-    total_value: z.string(),
-    bundle_price: z.string(),
-    discount_applied: z.string(),
-    marketing_pitch: z.string(),
-    badges_issued: z.coerce.number(),
-  }),
-
-  citations: z.array(z.string()).default([]),
+// Tier 1 Commercial Leverage
+const CommercialLeverageTier1Schema = z.object({
+  cac_offset: z.string().describe("e.g. 'Pays for 100% of Ads'"),
+  volume_potential: z.string().describe("e.g. '50x wider audience than Diploma'"),
+  trust_velocity: z.string().describe("e.g. 'Impulse Buy (<5 mins)'"),
 });
-export type ProductEcosystemOutput = z.infer<typeof ProductEcosystemOutputSchema>;
+
+// Tier 2 Commercial Leverage
+const CommercialLeverageTier2Schema = z.object({
+  speed_to_revenue: z.string().describe("e.g. '7 Days vs 12 Months'"),
+  employer_urgency: z.string().describe("e.g. 'Mandatory for Site Entry'"),
+  margin_health: z.string().describe("e.g. 'High - Low Assessment Overhead'"),
+});
+
+// Tier 3 Commercial Leverage
+const CommercialLeverageTier3Schema = z.object({
+  conversion_probability: z.string().describe("e.g. 'High (Warm Leads from Tier 2)'"),
+  marketing_cost: z.string().describe("e.g. '$0 - Internal Upsell'"),
+  ltv_impact: z.string().describe("e.g. 'Doubles Customer Value'"),
+});
+
+// Discriminated union for Tiers
+export const TierSchema = z.discriminatedUnion('tier_level', [
+    z.object({
+        tier_level: z.literal(1),
+        title: z.string(),
+        format: z.string(),
+        price: z.number(),
+        commercial_leverage: CommercialLeverageTier1Schema,
+        marketing_hook: z.string(),
+    }),
+    z.object({
+        tier_level: z.literal(2),
+        title: z.string(),
+        format: z.string(),
+        price: z.number(),
+        commercial_leverage: CommercialLeverageTier2Schema,
+        marketing_hook: z.string(),
+    }),
+    z.object({
+        tier_level: z.literal(3),
+        title: z.string(),
+        format: z.string(),
+        price: z.number(),
+        commercial_leverage: CommercialLeverageTier3Schema,
+        marketing_hook: z.string(),
+    }),
+]);
+export type Tier = z.infer<typeof TierSchema>;
+
+// Main output schema for Stage 3
+export const RevenueStaircaseSchema = z.object({
+  strategy_summary: z.string(),
+  tiers: z.array(TierSchema).length(3),
+});
+export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
 
 
 // This is the final, fully-parsed schema that the application uses internally.
 // It's a merge of all the stage outputs.
-export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(ProductEcosystemOutputSchema).extend({
+export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(RevenueStaircaseSchema).extend({
     rto_id: z.string()
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;

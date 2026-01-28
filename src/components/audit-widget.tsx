@@ -3,18 +3,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { runStage1Action, runStage2Action, runStage3Action, runGenerateCourseTimelineAction } from '@/app/actions';
-import type { FullAuditInput, FullAuditOutput } from '@/ai/types';
-import { type CourseTimelineOutput as CourseTimelineData } from '@/ai/types';
-import { Lock, Zap, FileText, Loader2, CheckCircle, XCircle, Circle } from 'lucide-react';
+import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
+import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
+import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
+import { TierCard } from './dashboard/TierCard';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Button } from './ui/button';
-import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { CourseTimeline } from './CourseBuilder/CourseTimeline';
 import { cn } from '@/lib/utils';
 
 
@@ -33,26 +30,6 @@ type ProgressStep = {
   details?: string;
 };
 
-const BadgePreview: React.FC<{ title: string; tier: string; badgeName?: string; }> = ({ title, tier, badgeName }) => {
-  const isGold = tier.toLowerCase().includes('strategic') || tier.toLowerCase().includes('3');
-  const isSilver = tier.toLowerCase().includes('practitioner') || tier.toLowerCase().includes('2');
-
-  return (
-    <div className="relative w-28 h-28 shrink-0 perspective-1000 group">
-      <div className={`w-full h-full rounded-2xl flex flex-col items-center justify-center p-3 text-[7px] font-black text-center uppercase tracking-tighter border-4 shadow-xl transition-all duration-700 group-hover:rotate-12 group-hover:scale-110 ${
-        isGold ? 'bg-amber-400 border-amber-600 text-amber-900 shadow-amber-500/20' :
-        isSilver ? 'bg-slate-300 border-slate-400 text-slate-800 shadow-slate-400/20' :
-        'bg-orange-200 border-orange-400 text-orange-900 shadow-orange-500/20'
-      }`}>
-        <div className="mb-1 opacity-50 font-mono">microcredentials.io</div>
-        <div className="leading-tight mb-1 px-1 line-clamp-2">{badgeName || title}</div>
-        <div className={`px-2 py-0.5 rounded-full mt-auto text-[6px] ${
-          isGold ? 'bg-amber-900/10' : isSilver ? 'bg-slate-800/10' : 'bg-orange-950/10'
-        }`}>OFFICIAL CREDENTIAL</div>
-      </div>
-    </div>
-  );
-};
 
 const AuditWidget: React.FC = () => {
   const [rtoCode, setRtoCode] = useState('');
@@ -63,19 +40,14 @@ const AuditWidget: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const { toast } = useToast();
-
-  const [timelineData, setTimelineData] = useState<CourseTimelineData | null>(null);
-  const [isTimelineLoading, setIsTimelineLoading] = useState(false);
   
   const initialProgress: ProgressStep[] = [
     { name: 'Connecting to National Register...', status: 'pending' },
     { name: 'Analysing Scope & Competitors...', status: 'pending' },
     { name: 'AI Stage 1: Sector & Occupation Analysis', status: 'pending' },
     { name: 'AI Stage 2: Skills Demand Heatmap', status: 'pending' },
-    { name: 'AI Stage 3: Product Ecosystem Architecture', status: 'pending' },
+    { name: 'AI Stage 3: 3-Tier Revenue Staircase Design', status: 'pending' },
     { name: 'Finalizing Report...', status: 'pending' },
   ];
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>(initialProgress);
@@ -186,18 +158,18 @@ const AuditWidget: React.FC = () => {
       updateProgress(3, 'success', `Generated heatmap with ${stage2Result.skills_heatmap.length} unique skills.`);
 
       // PHASE 5: Run Stage 3 AI Analysis
-      const stage3Input = {
+      const stage3Input: RevenueStaircaseInput = {
         ...baseAuditInput,
         top_performing_sector: stage1Result.executive_summary.top_performing_sector,
         skills_heatmap: stage2Result.skills_heatmap,
       };
-      updateProgress(4, 'running', 'Model is designing a full product-suite with pricing...');
+      updateProgress(4, 'running', 'Model is designing a 3-tier revenue staircase with commercial leverage...');
       const stage3Response = await runStage3Action(stage3Input);
       if (!stage3Response.ok) {
         throw new Error(`AI Stage 3 Failed: ${stage3Response.error}`);
       }
       const stage3Result = stage3Response.result;
-      updateProgress(4, 'success', 'Product architecture and revenue model complete.');
+      updateProgress(4, 'success', '3-Tier product architecture and revenue model complete.');
 
       // PHASE 6: Merge and Finalize
       updateProgress(5, 'running');
@@ -249,27 +221,6 @@ const AuditWidget: React.FC = () => {
       }
     }
   };
-
-  const handleGenerateTimeline = async (course: AuditResult["individual_courses"][0]) => {
-    setIsTimelineLoading(true);
-    setTimelineData(null);
-
-    const result = await runGenerateCourseTimelineAction({
-      course_title: course.course_title,
-      learning_outcomes: course.learning_outcomes,
-    });
-
-    setIsTimelineLoading(false);
-    if (result.ok) {
-      setTimelineData(result.result);
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Timeline Generation Failed",
-        description: result.error,
-      });
-    }
-  }
 
   const formatValue = (val: string | undefined) => (!val || val === '[REAL_DATA_REQUIRED]') ? 'DATA UNAVAILABLE' : val;
 
@@ -439,19 +390,19 @@ const AuditWidget: React.FC = () => {
       )}
 
 
-      {/* 4. MICRO-STACK ARCHITECT */}
+      {/* 4. REVENUE STAIRCASE */}
       <div className="bg-white rounded-b-[3rem] overflow-hidden">
         <div className="bg-slate-950 p-8 md:p-16 text-white text-left relative overflow-hidden border-b-2 border-blue-500/10">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[180px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="relative z-10">
             <div className="bg-emerald-500/20 text-emerald-400 text-xs font-black px-5 py-2 rounded-full uppercase tracking-[0.3em] border border-emerald-500/30 inline-flex items-center gap-3 shadow-lg shadow-emerald-500/10 mb-10">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
-              Deep Dive: Product Ecosystem
+              Deep Dive: 3-Tier Revenue Staircase
             </div>
             
-            <h3 className="text-slate-500 text-sm font-black uppercase tracking-[0.2em] mb-4 font-mono">Strategic Product Theme</h3>
-            <div className="text-5xl lg:text-7xl font-black mb-10 tracking-tighter text-white leading-none">
-              {formatValue(result?.strategic_theme)}
+            <h3 className="text-slate-500 text-sm font-black uppercase tracking-[0.2em] mb-4 font-mono">Strategy Summary</h3>
+            <div className="text-2xl lg:text-4xl font-black mb-10 tracking-tight text-white leading-tight italic">
+              "{formatValue(result?.strategy_summary)}"
             </div>
             
             <OccupationAnalysis data={result.occupation_analysis} />
@@ -459,117 +410,31 @@ const AuditWidget: React.FC = () => {
         </div>
 
         <div className="p-8 md:p-16 relative bg-slate-50/50">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-16">
-            <div className="text-left">
-              <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Micro-Stack Architect</h4>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Calibrated Sequential Pathway v4.5</p>
-            </div>
-            
-            <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center shadow-inner relative">
-              <div className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-500 ease-out ${viewMode === 'rto' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}></div>
-              <button 
-                onClick={() => setViewMode('rto')}
-                className={`relative z-10 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                  viewMode === 'rto' ? 'text-slate-950' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                RTO Perspective
-              </button>
-              <button 
-                onClick={() => setViewMode('student')}
-                className={`relative z-10 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                  viewMode === 'student' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                Student Perspective
-              </button>
-            </div>
+          <div className="text-left mb-16">
+              <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Commercial Product Stack</h4>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Unbundled from Top Performing Sector</p>
           </div>
           
-          {/* ACTION BUTTONS */}
-          {isUnlocked && (
-           <div className="mb-12 animate-in fade-in duration-500">
-               <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
-                   <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now book a meeting.</p>
-                   <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                       <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-6 px-8 rounded-2xl text-base animate-pulse-grow shadow-lg shadow-emerald-500/30">
-                         <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
-                       </Button>
-                   </div>
-               </div>
-           </div>
-          )}
+          <div className={`transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
+            <div className="space-y-8">
+              {(result?.tiers || []).map((tier, i) => (
+                <TierCard key={i} tierData={tier} />
+              ))}
+            </div>
 
-          <div className={`grid lg:grid-cols-3 gap-8 transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
-            {(result?.individual_courses || []).map((course, i) => {
-              const isExpanded = expandedCourse === i;
-              
-              const handleToggleExpand = () => {
-                if (isExpanded) {
-                  setExpandedCourse(null);
-                  setTimelineData(null);
-                } else {
-                  setExpandedCourse(i);
-                  handleGenerateTimeline(course);
-                }
-              };
+            {/* Placeholder for Calculator */}
+            <div className="mt-16 p-8 bg-slate-100 border-2 border-dashed border-slate-300 rounded-3xl text-center">
+                <p className="text-slate-500 font-bold">Interactive Revenue Calculator Coming Soon...</p>
+            </div>
 
-              return (
-              <div key={i} className={`bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200 flex flex-col hover:shadow-2xl hover:border-blue-200 transition-all group relative overflow-hidden ${isExpanded ? 'lg:col-span-3 ring-4 ring-blue-500/10' : ''}`}>
-                
-                <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">{course.tier}</span>
-                      <div className="flex items-center gap-2">
-                         <span className="text-xl font-black text-slate-900">{formatValue(course.suggested_price)}</span>
-                         <span className="text-[8px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-widest font-mono">{course.pricing_tier}</span>
-                      </div>
-                    </div>
-                    <h5 className="text-2xl font-black text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">
-                      {viewMode === 'student' ? (course.badge_name || course.course_title) : course.course_title}
-                    </h5>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-                      {viewMode === 'student' ? 'EARN DIGITAL CREDENTIAL' : `${course.duration} CONTACT HOURS`}
-                    </p>
-                  </div>
-                  <BadgePreview title={course.course_title} tier={course.tier} badgeName={course.badge_name} />
-                </div>
-
-                {!isExpanded && (
-                  <div className={`mb-8 p-6 rounded-2xl border text-left ${viewMode === 'rto' ? 'bg-slate-50 border-slate-100' : 'bg-blue-50/50 border-blue-100'}`}>
-                     <div className={`text-[8px] font-black uppercase tracking-widest mb-2 font-mono ${viewMode === 'rto' ? 'text-slate-400' : 'text-blue-400'}`}>
-                        {viewMode === 'rto' ? 'Primary Sales Target' : 'Career Impact / RSD'}
-                     </div>
-                     <div className="text-sm font-bold text-slate-900 leading-relaxed italic">
-                        {viewMode === 'rto' ? course.target_student : `"${course.badge_skills?.[0]}"`}
-                     </div>
-                  </div>
-                )}
-
-                {!isExpanded ? (
-                  <>
-                    <p className="text-sm font-medium text-slate-500 mb-8 line-clamp-2 italic text-left">"{course.learning_outcomes?.[0]}..."</p>
-                    <button 
-                      onClick={handleToggleExpand}
-                      className="mt-auto w-full bg-slate-50 hover:bg-slate-100 text-slate-950 font-black py-4 rounded-2xl border border-slate-200 transition-all text-xs uppercase tracking-widest active:scale-95"
+            <div className="mt-12 text-center">
+                <button
+                    className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3"
+                    onClick={() => toast({ title: "Course Builder coming soon!" })}
                     >
-                      Generate Visual Outline
-                    </button>
-                  </>
-                ) : (
-                  <div className="animate-in fade-in slide-in-from-top-4 duration-500 relative text-left">
-                    <CourseTimeline data={timelineData} isLoading={isTimelineLoading} isUnlocked={isUnlocked} />
-                    <button 
-                      onClick={handleToggleExpand}
-                      className="w-full mt-8 text-slate-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest py-4 border-2 border-dashed border-slate-200 rounded-2xl transition-all font-mono"
-                    >
-                      Hide Visual Outline
-                    </button>
-                  </div>
-                )}
-              </div>
-            )})}
+                    Deploy this ScopeStack <Rocket />
+                </button>
+            </div>
           </div>
 
           {!isUnlocked && (

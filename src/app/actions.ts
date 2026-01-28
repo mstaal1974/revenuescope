@@ -10,8 +10,8 @@ import {
   type FullAuditInput, 
   type Stage1Output,
   type SkillsHeatmapOutput,
-  type ProductEcosystemInput,
-  type ProductEcosystemOutput,
+  type RevenueStaircaseInput,
+  type RevenueStaircaseOutput,
   type FullAuditOutput,
   type MicrocredentialInput,
   type MicrocredentialOutput,
@@ -31,7 +31,7 @@ export type Stage2ActionResult =
   | { ok: false; error: string };
 
 export type Stage3ActionResult = 
-  | { ok: true; result: ProductEcosystemOutput }
+  | { ok: true; result: RevenueStaircaseOutput }
   | { ok: false; error: string };
 
 export type MicrocredentialActionResult =
@@ -89,7 +89,7 @@ export async function runStage2Action(
 
 // STAGE 3 ACTION
 export async function runStage3Action(
-  input: ProductEcosystemInput
+  input: RevenueStaircaseInput
 ): Promise<Stage3ActionResult> {
   try {
     checkApiKey();

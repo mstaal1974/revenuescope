@@ -2,19 +2,20 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { AuditData } from "@/app/actions";
 import { LeadCaptureOverlay } from "./lead-capture-overlay";
-import { IndividualCourseCard } from "./individual-course-card";
 import { OccupationAnalysis } from "./occupation-analysis";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { TierCard } from "./TierCard";
+import { useToast } from "@/hooks/use-toast";
+import { Rocket } from "lucide-react";
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const [monitoring, setMonitoring] = useState(false);
+  const { toast } = useToast();
 
   const formatValue = (val: string | undefined) => (val === '[REAL_DATA_REQUIRED]' || !val) ? 'DATA UNAVAILABLE' : val;
 
@@ -39,10 +40,10 @@ export function DashboardClient({ data }: { data: AuditData }) {
             </button>
           </div>
           
-          <h3 className="text-slate-500 text-sm font-black uppercase tracking-[0.2em] mb-4 font-mono">Strategic Product Theme</h3>
-          <div className="text-5xl lg:text-7xl font-black mb-10 tracking-tighter text-white leading-none">
-            {formatValue(data.strategic_theme)}
-          </div>
+          <h3 className="text-slate-500 text-sm font-black uppercase tracking-[0.2em] mb-4 font-mono">Strategy Summary</h3>
+            <div className="text-2xl lg:text-4xl font-black mb-10 tracking-tight text-white leading-tight italic">
+              "{formatValue(data?.strategy_summary)}"
+            </div>
           
           <OccupationAnalysis data={data.occupation_analysis} />
 
@@ -53,31 +54,9 @@ export function DashboardClient({ data }: { data: AuditData }) {
         {!isUnlocked && <LeadCaptureOverlay onUnlock={() => setIsUnlocked(true)} data={data} />}
 
         <div className={`transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
-          <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-16">
-            <div className="text-left">
-              <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Micro-Stack Architect</h4>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Calibrated Sequential Pathway v4.5</p>
-            </div>
-            
-            <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center shadow-inner relative">
-              <div className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-500 ease-out ${viewMode === 'rto' ? 'left-1.5' : 'left-[calc(50%+1.5px)]'}`}></div>
-              <button 
-                onClick={() => setViewMode('rto')}
-                className={`relative z-10 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                  viewMode === 'rto' ? 'text-slate-950' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                RTO Perspective
-              </button>
-              <button 
-                onClick={() => setViewMode('student')}
-                className={`relative z-10 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                  viewMode === 'student' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                Student Perspective
-              </button>
-            </div>
+          <div className="text-left mb-16">
+              <h4 className="font-black text-4xl text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Commercial Product Stack</h4>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Unbundled from Top Performing Sector</p>
           </div>
           
           {isUnlocked && (
@@ -93,17 +72,23 @@ export function DashboardClient({ data }: { data: AuditData }) {
             </div>
           )}
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {(data.individual_courses || []).map((course, i) => (
-              <IndividualCourseCard 
-                key={i} 
-                course={course}
-                index={i}
-                viewMode={viewMode}
-                expandedCourse={expandedCourse}
-                setExpandedCourse={setExpandedCourse}
-              />
+          <div className="space-y-8">
+            {(data.tiers || []).map((tier, i) => (
+              <TierCard key={i} tierData={tier} />
             ))}
+          </div>
+
+          <div className="mt-16 p-8 bg-slate-100 border-2 border-dashed border-slate-300 rounded-3xl text-center">
+              <p className="text-slate-500 font-bold">Interactive Revenue Calculator Coming Soon...</p>
+          </div>
+
+          <div className="mt-12 text-center">
+              <button
+                  className="bg-slate-950 hover:bg-blue-600 text-white font-black px-12 py-6 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl inline-flex items-center gap-3"
+                  onClick={() => toast({ title: "Course Builder coming soon!" })}
+                  >
+                  Deploy this ScopeStack <Rocket />
+              </button>
           </div>
         </div>
       </div>

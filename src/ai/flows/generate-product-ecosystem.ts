@@ -1,113 +1,121 @@
 'use server';
 /**
- * @fileOverview This file defines the third stage of the audit, designing a detailed product ecosystem.
+ * @fileOverview This file defines the third stage of the audit, designing a detailed product ecosystem using a 3-Tier Revenue Staircase model.
  */
 
 import { ai } from '@/ai/genkit';
 import { 
-    ProductEcosystemInputSchema,
-    ProductEcosystemOutputSchema,
-    type ProductEcosystemInput, 
-    type ProductEcosystemOutput 
+    RevenueStaircaseInputSchema,
+    RevenueStaircaseSchema,
+    type RevenueStaircaseInput, 
+    type RevenueStaircaseOutput 
 } from '@/ai/types';
 
 export async function generateProductEcosystem(
-  input: ProductEcosystemInput
-): Promise<ProductEcosystemOutput> {
+  input: RevenueStaircaseInput
+): Promise<RevenueStaircaseOutput> {
   const result = await generateProductEcosystemFlow(input);
   return result;
 }
 
-const prompt = ai.definePrompt({
-  name: 'productEcosystemPrompt',
-  input: { schema: ProductEcosystemInputSchema },
-  output: { schema: ProductEcosystemOutputSchema },
-  model: 'googleai/gemini-2.5-flash',
-  prompt: `You are "Strategic Growth Director v5.0," an AI designed to generate a detailed product ecosystem for an RTO. You MUST output a single, valid JSON object and nothing else.
+const masterSystemInstruction = `{
+    "SYSTEM_INSTRUCTION": {
+      "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",
+      "TASK": "Unbundle the user's input Qualification into a 3-Tier Revenue Staircase. You must invent specific products and calculate their financial leverage.",
+      "TIER_RULES": {
+        "TIER_1": {
+          "Goal": "Acquisition (Lead Magnet)",
+          "Price_Range": "$47 - $97",
+          "Product_Type": "Non-Accredited / Theory / Awareness / Tool-Based",
+          "Constraint": "Must be online, automated, and solve an immediate 'Monday Morning' pain point."
+        },
+        "TIER_2": {
+          "Goal": "Cash Flow (The Core)",
+          "Price_Range": "$450 - $850",
+          "Product_Type": "Accredited Skill Set / License / High-Demand Unit",
+          "Constraint": "Must be the specific technical skill employers are hiring for right now."
+        },
+        "TIER_3": {
+          "Goal": "Lifetime Value (The Upsell)",
+          "Price_Range": "$1,500 - $4,500",
+          "Product_Type": "Full Qualification / Career Pathway",
+          "Constraint": "Positioned as the 'Expert' outcome for graduates of Tier 2."
+        }
+      },
+      "OUTPUT_FORMAT": "Strict JSON Only. No preamble.",
+      "JSON_STRUCTURE": {
+        "strategy_summary": "String (1 sentence hook)",
+        "tiers": [
+          {
+            "tier_level": 1,
+            "title": "String (The Marketing Name)",
+            "format": "String (e.g. '2-Hour Video Masterclass')",
+            "price": "Number",
+            "commercial_leverage": {
+              "cac_offset": "String (e.g. 'Pays for 100% of Ads')",
+              "volume_potential": "String (e.g. '50x wider audience than Diploma')",
+              "trust_velocity": "String (e.g. 'Impulse Buy (<5 mins)')"
+            },
+            "marketing_hook": "String (The ad headline)"
+          },
+          {
+            "tier_level": 2,
+            "title": "String (The Skill Set Name)",
+            "format": "String (e.g. '1-Day Intensive Workshop')",
+            "price": "Number",
+            "commercial_leverage": {
+              "speed_to_revenue": "String (e.g. '7 Days vs 12 Months')",
+              "employer_urgency": "String (e.g. 'Mandatory for Site Entry')",
+              "margin_health": "String (e.g. 'High - Low Assessment Overhead')"
+            },
+            "marketing_hook": "String"
+          },
+          {
+            "tier_level": 3,
+            "title": "String (The Full Qual Name)",
+            "format": "String (e.g. 'Fast-Track Diploma')",
+            "price": "Number",
+            "commercial_leverage": {
+              "conversion_probability": "String (e.g. 'High (Warm Leads from Tier 2)')",
+              "marketing_cost": "String (e.g. '$0 - Internal Upsell')",
+              "ltv_impact": "String (e.g. 'Doubles Customer Value')"
+            },
+            "marketing_hook": "String"
+          }
+        ]
+      }
+    }
+  }`;
 
-**THE LOGIC (THE REVENUE STAIRCASE):**
-1.  **TIER 1 (The Hook):** Price: $19 - $99. Goal: Break-even acquisition. Product: Short, low-risk, online-only (e.g., Awareness, Theory).
-2.  **TIER 2 (The Core):** Price: $99 - $250. Goal: Profit. Product: The standard license or skill set (e.g., Forklift, Excel Skills).
-3.  **TIER 3 (The Authority):** Price: $250+ Goal: Margin & Prestige. Product: The full qualification or advanced boot camp.
+const prompt = `
+${masterSystemInstruction}
 
-**TASK: Detailed Product Ecosystem Design**
--   **Theme & Justification:** Generate a \`strategic_theme\` and \`market_justification\` (strings).
--   **Revenue Opportunity:** Populate the \`revenue_opportunity\` object.
--   **Course Stack:** Design at least one, and preferably three, stackable courses in the \`individual_courses\` array, following **THE REVENUE STAIRCASE** logic. The \`tier\` and \`suggested_price\` for each course must align with this model.
--   **Bundle:** Create the \`stackable_product\` bundle.
--   **Citations:** Provide \`citations\` as an array of URL strings.
+Given the following RTO data, generate the 3-Tier Revenue Staircase. Pick the most representative qualification from the RTO's scope in the top performing sector to unbundle and create the 3 tiers from.
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
 *   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
 *   Top Performing Sector: {{{top_performing_sector}}}
-*   Identified Skills: 
-    {{#each skills_heatmap}}
-    - Skill: {{this.skill_name}}, Demand: {{this.demand_level}}
-    {{/each}}
+`;
 
-**OUTPUT RULES:**
-- Return ONLY valid JSON.
-- Do not wrap in \`\`\` fences.
-- Output must start with { and end with }.
-- \`individual_courses\` MUST be an array of objects (not strings).
-- \`module_outline_markdown\` MUST be a string.
-- \`badges_issued\` MUST be a number.
-- All monetary values (\`total_market_size\`, \`conservative_capture\`, \`suggested_price\`, \`total_value\`, \`bundle_price\`) **MUST** be formatted as **strings** with a currency symbol (e.g., "$12,500 AUD").
-- \`citations\` MUST be an array of URL strings.
-
-**EXAMPLE SHAPE (abbreviated):**
-{
-  "strategic_theme":"...",
-  "market_justification":"...",
-  "revenue_opportunity":{
-    "total_market_size":"...",
-    "conservative_capture":"...",
-    "ambitious_capture":"...",
-    "acquisition_rationale":"..."
-  },
-  "individual_courses":[
-    {
-      "tier":"Foundation",
-      "course_title":"...",
-      "duration":"...",
-      "suggested_price":"...",
-      "pricing_tier":"...",
-      "target_student":"...",
-      "learning_outcomes":["..."],
-      "module_outline_markdown":"## Module 1\\n- Topic A\\n",
-      "b2b_pitch_script":"...",
-      "badge_name":"...",
-      "badge_skills":["..."],
-      "ad_headline":"...",
-      "ad_body_copy":"...",
-      "ad_cta_button":"..."
-    }
-  ],
-  "stackable_product":{
-    "bundle_title":"...",
-    "total_value":"...",
-    "bundle_price":"...",
-    "discount_applied":"...",
-    "marketing_pitch":"...",
-    "badges_issued":5
-  },
-  "citations":["https://..."]
-}
-
-Begin analysis.`,
-});
 
 const generateProductEcosystemFlow = ai.defineFlow(
   {
-    name: 'generateProductEcosystemFlow',
-    inputSchema: ProductEcosystemInputSchema,
-    outputSchema: ProductEcosystemOutputSchema,
+    name: 'generateRevenueStaircaseFlow',
+    inputSchema: RevenueStaircaseInputSchema,
+    outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output } = await ai.generate({
+      model: 'googleai/gemini-1.5-flash-preview-0514',
+      prompt: prompt,
+      output: {
+        format: 'json',
+        schema: RevenueStaircaseSchema,
+      },
+    });
     if (!output) {
-      throw new Error('AI returned no valid output for Product Ecosystem.');
+      throw new Error('AI returned no valid output for Revenue Staircase generation.');
     }
     return output;
   }
