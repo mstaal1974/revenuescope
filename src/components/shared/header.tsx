@@ -9,9 +9,14 @@ export function Header() {
         <Link href="/">
           <Logo />
         </Link>
-        <Button asChild>
-          <a href="/">Get Started</a>
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button asChild variant="ghost">
+                <Link href="/admin">Admin</Link>
+            </Button>
+            <Button asChild>
+                <a href="/">Get Started</a>
+            </Button>
+        </div>
       </div>
     </header>
   );
