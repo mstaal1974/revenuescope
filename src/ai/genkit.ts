@@ -15,6 +15,6 @@ export const ai = genkit({
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using 'gemini-pro', a stable model alias, to ensure availability and prevent 'Not Found' errors.
+ * Using 'gemini-1.5-flash', a stable and widely available model, to ensure availability and prevent 'Not Found' errors.
  */
-export const MODEL_NAME = 'gemini-pro';
+export const MODEL_NAME = 'gemini-1.5-flash';
