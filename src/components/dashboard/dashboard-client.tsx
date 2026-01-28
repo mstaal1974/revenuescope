@@ -11,6 +11,7 @@ import Link from "next/link";
 import { RevenueCalculator } from "./RevenueCalculator";
 import { useToast } from "@/hooks/use-toast";
 import { Rocket } from "lucide-react";
+import { SavedCurriculum } from "./SavedCurriculum";
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -69,6 +70,8 @@ export function DashboardClient({ data }: { data: AuditData }) {
           )}
 
           {data.tiers && <RevenueCalculator tiers={data.tiers} />}
+
+          <SavedCurriculum />
         </div>
       </div>
 
