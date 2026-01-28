@@ -21,7 +21,7 @@ const prompt = ai.definePrompt({
     name: 'microcredentialPrompt',
     input: { schema: MicrocredentialInputSchema },
     // output: { format: 'json' },
-    model: 'googleai/gemini-1.5-flash-002',
+    model: 'googleai/gemini-1.5-flash-001',
     prompt: `
 **CORE DIRECTIVE:**
 You are prohibited from simply treating a "Unit of Competency" (e.g., *BSBOPS301*) as a Microcredential.
