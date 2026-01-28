@@ -146,7 +146,7 @@ const generateStage1AnalysisFlow = ai.defineFlow(
   {
     name: 'generateStage1AnalysisFlow',
     inputSchema: FullAuditInputSchema,
-    outputSchema: Stage1OutputSchema,
+    // outputSchema: Stage1OutputSchema,
   },
   async (input) => {
     const { output } = await prompt(input);
@@ -154,7 +154,13 @@ const generateStage1AnalysisFlow = ai.defineFlow(
     if (!output) {
       throw new Error("AI generation for Stage 1 returned no output.");
     }
+    
+    const validationResult = Stage1OutputSchema.safeParse(output);
+    if (validationResult.success) {
+      return validationResult.data;
+    }
 
-    return output;
+    console.error("AI output for Stage 1 failed validation.", validationResult.error);
+    throw new Error(`AI output for Stage 1 failed validation: ${validationResult.error.message}`);
   }
 );

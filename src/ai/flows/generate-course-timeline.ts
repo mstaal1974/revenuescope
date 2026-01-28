@@ -22,7 +22,7 @@ const generateCourseTimelineFlow = ai.defineFlow(
   {
     name: 'generateCourseTimelineFlow',
     inputSchema: CourseTimelineInputSchema,
-    outputSchema: CourseTimelineOutputSchema,
+    // outputSchema: CourseTimelineOutputSchema,
   },
   async ({ course_title, learning_outcomes }) => {
     const prompt = getCourseTimelinePrompt(course_title, learning_outcomes);
@@ -41,6 +41,12 @@ const generateCourseTimelineFlow = ai.defineFlow(
       );
     }
 
-    return output;
+    const validationResult = CourseTimelineOutputSchema.safeParse(output);
+    if (validationResult.success) {
+      return validationResult.data;
+    }
+    
+    console.error("AI output for Course Timeline failed validation.", validationResult.error);
+    throw new Error(`AI output for Course Timeline failed validation: ${validationResult.error.message}`);
   }
 );

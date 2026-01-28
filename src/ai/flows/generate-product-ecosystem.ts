@@ -141,13 +141,20 @@ const generateProductEcosystemFlow = ai.defineFlow(
   {
     name: 'generateRevenueStaircaseFlow',
     inputSchema: RevenueStaircaseInputSchema,
-    outputSchema: RevenueStaircaseSchema,
+    // outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error('AI returned no valid output for Revenue Staircase generation.');
     }
-    return output;
+    
+    const validationResult = RevenueStaircaseSchema.safeParse(output);
+    if (validationResult.success) {
+      return validationResult.data;
+    }
+    
+    console.error("AI output for Revenue Staircase failed validation.", validationResult.error);
+    throw new Error(`AI output for Revenue Staircase failed validation: ${validationResult.error.message}`);
   }
 );

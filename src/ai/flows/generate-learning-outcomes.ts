@@ -53,7 +53,7 @@ const generateLearningOutcomesFlow = ai.defineFlow(
   {
     name: 'generateLearningOutcomesFlow',
     inputSchema: LearningOutcomesInputSchema,
-    outputSchema: LearningOutcomesOutputSchema,
+    // outputSchema: LearningOutcomesOutputSchema,
   },
   async (input) => {
     const { output } = await prompt(input);
@@ -62,6 +62,13 @@ const generateLearningOutcomesFlow = ai.defineFlow(
         'AI returned no valid output for Learning Outcomes generation.'
       );
     }
-    return output;
+    
+    const validationResult = LearningOutcomesOutputSchema.safeParse(output);
+    if (validationResult.success) {
+      return validationResult.data;
+    }
+
+    console.error("AI output for Learning Outcomes failed validation.", validationResult.error);
+    throw new Error(`AI output for Learning Outcomes failed validation: ${validationResult.error.message}`);
   }
 );

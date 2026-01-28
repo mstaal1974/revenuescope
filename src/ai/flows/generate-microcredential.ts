@@ -83,13 +83,20 @@ const generateMicrocredentialFlow = ai.defineFlow(
   {
     name: 'generateMicrocredentialFlow',
     inputSchema: MicrocredentialInputSchema,
-    outputSchema: MicrocredentialOutputSchema,
+    // outputSchema: MicrocredentialOutputSchema,
   },
   async (input) => {
     const { output } = await prompt(input);
     if (!output) {
       throw new Error("AI returned no valid output for Micro-credential generation.");
     }
-    return output;
+    
+    const validationResult = MicrocredentialOutputSchema.safeParse(output);
+    if (validationResult.success) {
+      return validationResult.data;
+    }
+
+    console.error("AI output for Microcredential failed validation.", validationResult.error);
+    throw new Error(`AI output for Microcredential failed validation: ${validationResult.error.message}`);
   }
 );
