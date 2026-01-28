@@ -12,6 +12,6 @@ export const ai = genkit({
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using 'gemini-1.5-pro' for broad availability and stability.
+ * Using 'gemini-pro' for broad availability and stability.
  */
-export const MODEL_NAME = 'gemini-1.5-pro';
+export const MODEL_NAME = 'gemini-pro';
