@@ -9,9 +9,9 @@ export const ai = genkit({
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using a stable, generally available model name is crucial to prevent availability
- * errors (like 404 Not Found) which can occur with highly specific or newly
- * released model versions that may not be rolled out to all regions.
- * We are using 'gemini-1.5-pro' as it is a powerful and widely available model.
+ * Using a stable, generally available model alias like 'gemini-1.5-flash' is crucial.
+ * This instructs the platform to use the latest stable 'flash' version,
+ * preventing 'Not Found' errors from specific versioning and reducing timeouts
+ * due to its high performance. This aligns with Firebase's best practices for production AI.
  */
-export const MODEL_NAME = 'gemini-1.5-pro';
+export const MODEL_NAME = 'gemini-1.5-flash';
