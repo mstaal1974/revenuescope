@@ -469,16 +469,22 @@ const AuditWidget: React.FC = () => {
                                         rtoName={result.rtoName || result.executive_summary.top_performing_sector} 
                                     />
                                 }
-                                fileName="ScopeStack_Board_Report.pdf"
-                                className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm"
+                                fileName={`ScopeStack_Report_${result.rto_id}.pdf`}
+                                className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm transition-all"
                             >
                                 {({ loading }) => 
-                                    loading ? 'Generating PDF...' : 'Download Board Report'
+                                    loading ? (
+                                        <span>Generating PDF...</span>
+                                    ) : (
+                                        <>
+                                            <span>📄</span> Download Board Report
+                                        </>
+                                    )
                                 }
                             </PDFDownloadLink>
                         ) : (
-                            <button disabled className="w-full sm:w-auto bg-gray-300 text-white font-bold py-4 px-6 rounded-2xl text-sm cursor-wait">
-                                Loading PDF Engine...
+                            <button disabled className="w-full sm:w-auto bg-gray-200 text-gray-500 font-bold py-4 px-6 rounded-2xl text-sm cursor-wait flex items-center justify-center gap-2">
+                                <span>⏳</span> Preparing Download...
                             </button>
                         )}
                         <Button asChild variant="outline" className="w-full sm:w-auto bg-white/80 py-4 px-6 rounded-2xl text-sm font-bold">
@@ -701,6 +707,7 @@ export default AuditWidget;
     
 
     
+
 
 
 
