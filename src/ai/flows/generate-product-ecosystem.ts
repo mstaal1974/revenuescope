@@ -18,7 +18,12 @@ export async function generateProductEcosystem(
   return result;
 }
 
-const masterSystemInstruction = `{
+const prompt = ai.definePrompt({
+    name: 'revenueStaircasePrompt',
+    input: { schema: RevenueStaircaseInputSchema },
+    output: { format: 'json' },
+    model: 'googleai/gemini-2.5-flash',
+    prompt: `{
     "SYSTEM_INSTRUCTION": {
       "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",
       "TASK": "Unbundle the user's input Qualification into a 3-Tier Revenue Staircase. You must invent specific products and calculate their financial leverage.",
@@ -85,10 +90,7 @@ const masterSystemInstruction = `{
         ]
       }
     }
-  }`;
-
-const prompt = `
-${masterSystemInstruction}
+  }
 
 Given the following RTO data, generate the 3-Tier Revenue Staircase. Pick the most representative qualification from the RTO's scope in the top performing sector to unbundle and create the 3 tiers from.
 
@@ -96,7 +98,8 @@ Given the following RTO data, generate the 3-Tier Revenue Staircase. Pick the mo
 *   RTO ID: {{{rtoId}}}
 *   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
 *   Top Performing Sector: {{{top_performing_sector}}}
-`;
+`
+});
 
 
 const generateProductEcosystemFlow = ai.defineFlow(
@@ -106,13 +109,7 @@ const generateProductEcosystemFlow = ai.defineFlow(
     outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
-    const { output } = await ai.generate({
-      model: 'googleai/gemini-2.5-flash',
-      prompt: prompt,
-      output: {
-        format: 'json',
-      },
-    });
+    const { output } = await prompt(input);
     if (!output) {
       throw new Error('AI returned no valid output for Revenue Staircase generation.');
     }
