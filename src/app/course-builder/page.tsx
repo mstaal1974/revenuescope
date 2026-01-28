@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { runGenerateCourseTimelineAction, runGenerateLearningOutcomesAction, type CourseTimelineActionResult, type LearningOutcomesActionResult } from '@/app/actions';
 import { CourseTimeline } from '@/components/CourseBuilder/CourseTimeline';
 import type { CourseTimelineOutput } from '@/ai/types';
-import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle, Save, CheckCircle2 } from 'lucide-react';
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,6 +27,8 @@ function CourseBuilderContent() {
   const [error, setError] = useState<string | null>(null);
   
   const [isUnlocked, setIsUnlocked] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -34,6 +36,7 @@ function CourseBuilderContent() {
     if (initialTitle) {
       setLearningOutcomes(''); // Clear previous outcomes
       setResult(null); // Clear previous results
+      setIsSaved(false); // Reset saved state
       const fetchOutcomes = async () => {
         setIsOutcomesLoading(true);
         setError(null);
@@ -55,6 +58,7 @@ function CourseBuilderContent() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setIsSaved(false);
 
     const outcomesArray = learningOutcomes.split('\n').filter(line => line.trim() !== '');
     if (!courseTitle || outcomesArray.length === 0) {
@@ -72,33 +76,59 @@ function CourseBuilderContent() {
       setResult(response.result);
       setIsUnlocked(true);
 
-      try {
-        const leadId = localStorage.getItem('leadId');
-        if (leadId && response.result) {
-          const db = getFirestore();
-          const leadRef = doc(db, 'leads', leadId);
-          await updateDoc(leadRef, {
-            curriculum: response.result,
-          });
-          toast({
-            title: 'Curriculum Saved',
-            description: 'Your generated curriculum has been saved with your lead information.',
-          });
-        }
-      } catch (e) {
-        console.error('Failed to save curriculum to lead:', e);
-        toast({
-          variant: 'destructive',
-          title: 'Save Failed',
-          description: 'Could not save the curriculum to the database.',
-        });
-      }
-
     } else {
       setError(response.error);
     }
     setIsLoading(false);
   };
+
+  const handleSaveCurriculum = async () => {
+    if (!result) return;
+    setIsSaving(true);
+    
+    try {
+      const leadId = localStorage.getItem('leadId');
+      if (leadId && result) {
+        const db = getFirestore();
+        const leadRef = doc(db, 'leads', leadId);
+        await updateDoc(leadRef, {
+          curriculum: result,
+        });
+        setIsSaved(true);
+        toast({
+          title: 'Curriculum Saved!',
+          description: (
+            <p>
+              Please contact{' '}
+              <a
+                href="mailto:mstaal@blocksure.com.au"
+                className="font-bold underline text-blue-600"
+              >
+                mstaal@blocksure.com.au
+              </a>{' '}
+              for your copy.
+            </p>
+          ),
+          duration: 9000,
+        });
+      } else {
+         toast({
+            variant: 'destructive',
+            title: 'Profile Not Found',
+            description: "We couldn't find your profile. Please complete an audit first to save your curriculum.",
+        });
+      }
+    } catch (e) {
+      console.error('Failed to save curriculum to lead:', e);
+      toast({
+        variant: 'destructive',
+        title: 'Save Failed',
+        description: 'Could not save the curriculum to the database.',
+      });
+    } finally {
+        setIsSaving(false);
+    }
+  }
 
   return (
     <div className="w-full max-w-4xl">
@@ -171,6 +201,32 @@ function CourseBuilderContent() {
 
         {(isLoading || result) && (
           <CourseTimeline data={result} isLoading={isLoading} isUnlocked={isUnlocked} />
+        )}
+
+        {result && !isSaved && (
+          <div className="mt-8 text-center bg-white border-2 border-dashed border-slate-200 rounded-2xl p-8 animate-in fade-in">
+              <h4 className="text-xl font-bold text-slate-800">Ready to save your work?</h4>
+              <p className="text-slate-500 mt-2 mb-6 max-w-lg mx-auto">Save this generated curriculum to your profile. You can request a copy for your records and for use in your RTO's official documentation.</p>
+              <Button
+                onClick={handleSaveCurriculum}
+                disabled={isSaving}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/20"
+              >
+                {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5 mr-2" />}
+                {isSaving ? 'Saving...' : 'Save Curriculum to Profile'}
+              </Button>
+          </div>
+        )}
+
+        {isSaved && (
+            <div className="mt-8 text-center bg-emerald-50 border border-emerald-200 rounded-2xl p-8 animate-in fade-in">
+                <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold text-emerald-900">Curriculum Saved Successfully!</h4>
+                <p className="text-emerald-700 mt-2 max-w-lg mx-auto">
+                    This curriculum has been associated with your profile.
+                    Check your email for confirmation or contact our team to receive your copy.
+                </p>
+            </div>
         )}
       </div>
 
