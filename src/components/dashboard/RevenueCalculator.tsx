@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DollarSign, Users, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import MarketingKit from './MarketingKit';
 
 interface RevenueCalculatorProps {
   tiers: Tier[];
@@ -152,34 +153,7 @@ export function RevenueCalculator({ tiers }: RevenueCalculatorProps) {
                     
                     {/* MARKETING ACTION BOX */}
                     {tier.marketing_playbook && (
-                      <div className="mt-6 bg-slate-800 rounded-lg p-6 text-white relative overflow-hidden">
-                        <div className="absolute right-[-10px] top-[-10px] opacity-[0.03] text-6xl" aria-hidden="true">
-                          📢
-                        </div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
-                          ⚡ Ready-to-Use Campaign
-                        </h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3">
-                            <span className="text-slate-400 text-xs uppercase w-24 shrink-0 font-mono">Channel:</span>
-                            <span className="font-semibold text-sm bg-white/10 px-3 py-1 rounded-full text-blue-300 border border-blue-500/20">
-                              {tier.marketing_playbook.best_channel}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-slate-400 text-xs uppercase block mb-1 font-mono">Ad Headline:</span>
-                            <div className="font-medium text-lg text-white leading-tight font-serif italic">
-                              "{tier.marketing_playbook.ad_headline}"
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-slate-400 text-xs uppercase block mb-1 font-mono">Email Subject:</span>
-                            <div className="text-sm text-slate-300 font-mono flex items-center gap-2">
-                              <span role="img" aria-label="email">✉️</span> {tier.marketing_playbook.email_subject}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <MarketingKit tierData={tier} />
                     )}
                     
                     {/* COURSE BUILDER CTA */}

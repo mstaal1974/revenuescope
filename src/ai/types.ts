@@ -96,10 +96,14 @@ const CommercialLeverageTier3Schema = z.object({
 });
 
 const MarketingPlaybookSchema = z.object({
-  best_channel: z.string().describe("e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2"),
-  ad_headline: z.string().describe("A punchy 5-word hook for the ad"),
-  email_subject: z.string().describe("The subject line to sell this product"),
-  cta_text: z.string().describe("e.g. 'Start Instantly' vs 'Apply Now'"),
+    target_audience: z.string().describe("e.g. 'Frustrated Retail Workers looking for stable hours'"),
+    pain_point: z.string().describe("e.g. 'Tired of weekend shifts?'"),
+    channel: z.string().describe("e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2"),
+    ad_creative_visual: z.string().describe("e.g. 'Close up of hands holding a pipette, clean blue lighting, high trust'"),
+    ad_headline: z.string().describe("A punchy 5-word hook for the ad"),
+    ad_body_copy: z.string().describe("2 sentences of ad copy expanding on the hook"),
+    hashtags: z.string().describe("e.g. '#CareerChange #Pathology'"),
+    email_subject: z.string().describe("The subject line to sell this product"),
 });
 
 // Discriminated union for Tiers

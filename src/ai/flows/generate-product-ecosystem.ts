@@ -68,10 +68,14 @@ const prompt = ai.definePrompt({
             },
             "marketing_hook": "String (The ad headline)",
             "marketing_playbook": {
-                "best_channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
-                "ad_headline": "String (A punchy 5-word hook for the ad)",
-                "email_subject": "String (The subject line to sell this product)",
-                "cta_text": "String (e.g. 'Start Instantly' vs 'Apply Now')"
+                "target_audience": "String (e.g. 'Frustrated Retail Workers looking for stable hours')",
+                "pain_point": "String (e.g. 'Tired of weekend shifts?')",
+                "channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
+                "ad_creative_visual": "String (e.g. 'Close up of hands holding a pipette, clean blue lighting, high trust')",
+                "ad_headline": "String (e.g. 'Stop selling clothes. Start saving lives.')",
+                "ad_body_copy": "String (2 sentences of ad copy expanding on the hook)",
+                "hashtags": "String (e.g. '#CareerChange #Pathology')",
+                "email_subject": "String (The subject line to sell this product)"
             }
           },
           {
@@ -86,10 +90,14 @@ const prompt = ai.definePrompt({
             },
             "marketing_hook": "String",
             "marketing_playbook": {
-                "best_channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
-                "ad_headline": "String (A punchy 5-word hook for the ad)",
-                "email_subject": "String (The subject line to sell this product)",
-                "cta_text": "String (e.g. 'Start Instantly' vs 'Apply Now')"
+                "target_audience": "String (e.g. 'Frustrated Retail Workers looking for stable hours')",
+                "pain_point": "String (e.g. 'Tired of weekend shifts?')",
+                "channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
+                "ad_creative_visual": "String (e.g. 'Close up of hands holding a pipette, clean blue lighting, high trust')",
+                "ad_headline": "String (e.g. 'Stop selling clothes. Start saving lives.')",
+                "ad_body_copy": "String (2 sentences of ad copy expanding on the hook)",
+                "hashtags": "String (e.g. '#CareerChange #Pathology')",
+                "email_subject": "String (The subject line to sell this product)"
             }
           },
           {
@@ -104,10 +112,14 @@ const prompt = ai.definePrompt({
             },
             "marketing_hook": "String",
             "marketing_playbook": {
-                "best_channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
-                "ad_headline": "String (A punchy 5-word hook for the ad)",
-                "email_subject": "String (The subject line to sell this product)",
-                "cta_text": "String (e.g. 'Start Instantly' vs 'Apply Now')"
+                "target_audience": "String (e.g. 'Frustrated Retail Workers looking for stable hours')",
+                "pain_point": "String (e.g. 'Tired of weekend shifts?')",
+                "channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
+                "ad_creative_visual": "String (e.g. 'Close up of hands holding a pipette, clean blue lighting, high trust')",
+                "ad_headline": "String (e.g. 'Stop selling clothes. Start saving lives.')",
+                "ad_body_copy": "String (2 sentences of ad copy expanding on the hook)",
+                "hashtags": "String (e.g. '#CareerChange #Pathology')",
+                "email_subject": "String (The subject line to sell this product)"
             }
           }
         ]
