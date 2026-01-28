@@ -111,7 +111,6 @@ const generateProductEcosystemFlow = ai.defineFlow(
       prompt: prompt,
       output: {
         format: 'json',
-        schema: RevenueStaircaseSchema,
       },
     });
     if (!output) {
