@@ -9,6 +9,6 @@ export const ai = genkit({
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using 'gemini-pro' for broad availability and stability to resolve "Not Found" errors.
+ * Using 'gemini-1.5-pro' for broad availability and stability to resolve "Not Found" errors.
  */
-export const MODEL_NAME = 'gemini-pro';
+export const MODEL_NAME = 'gemini-1.5-pro';
