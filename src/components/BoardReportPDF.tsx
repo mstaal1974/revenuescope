@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', backgroundColor: '#ffffff', color: '#2d3748' },
   
   // Header Section
-  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 40, borderBottomWidth: 2, borderBottomColor: '#1a365d', paddingBottom: 10 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 40, borderBottomWidth: 2, borderBottomColor: '#1a365d', paddingBottom: 10, borderBottomStyle: 'solid' },
   brand: { fontSize: 20, color: '#1a365d', fontFamily: 'Helvetica-Bold' },
   date: { fontSize: 10, color: '#718096', marginTop: 8 },
 
@@ -18,27 +18,27 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: '#718096', marginBottom: 20 },
 
   // Executive Summary Box
-  summaryBox: { backgroundColor: '#f7fafc', padding: 15, borderRadius: 5, marginBottom: 25, borderLeftWidth: 4, borderLeftColor: '#3182ce' },
+  summaryBox: { backgroundColor: '#f7fafc', padding: 15, borderRadius: 5, marginBottom: 25, borderLeftWidth: 4, borderLeftColor: '#3182ce', borderLeftStyle: 'solid' },
   summaryText: { fontSize: 11, lineHeight: 1.5, color: '#2d3748' },
 
   // Financial Highlight (The "Money" Shot)
   metricContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 },
-  metricBox: { width: '48%', padding: 10, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 5 },
+  metricBox: { width: '48%', padding: 10, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 5, borderStyle: 'solid' },
   metricLabel: { fontSize: 10, color: '#718096', textTransform: 'uppercase' },
   metricValue: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: '#2d3748', marginTop: 5 },
   upliftValue: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: '#38a169', marginTop: 5 },
 
   // The Table (Revenue Staircase)
-  table: { width: '100%', borderTopWidth: 1, borderTopColor: '#e2e8f0', marginTop: 10 },
-  row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingVertical: 8, alignItems: 'center' },
-  headerRow: { backgroundColor: '#edf2f7', borderTopWidth: 1, borderTopColor: '#e2e8f0' },
+  table: { width: '100%', borderTopWidth: 1, borderTopColor: '#e2e8f0', marginTop: 10, borderTopStyle: 'solid' },
+  row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingVertical: 8, alignItems: 'center', borderBottomStyle: 'solid' },
+  headerRow: { backgroundColor: '#edf2f7', borderTopWidth: 1, borderTopColor: '#e2e8f0', borderTopStyle: 'solid' },
   col1: { width: '15%', fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#4a5568' }, // Tier
   col2: { width: '45%', fontSize: 10, color: '#2d3748' }, // Product
   col3: { width: '15%', fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#2d3748' }, // Price
   col4: { width: '25%', fontSize: 9, color: '#718096', fontStyle: 'italic' }, // Strategy
 
   // AI Section
-  aiSection: { marginTop: 30, padding: 15, backgroundColor: '#f0fff4', borderRadius: 5, borderWidth: 1, borderColor: '#c6f6d5' },
+  aiSection: { marginTop: 30, padding: 15, backgroundColor: '#f0fff4', borderRadius: 5, borderWidth: 1, borderColor: '#c6f6d5', borderStyle: 'solid' },
   sectionTitle: { fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#22543d', marginBottom: 5 },
   text: { fontSize: 10, marginBottom: 5, lineHeight: 1.4 },
   bold: { fontFamily: 'Helvetica-Bold' }
