@@ -32,7 +32,6 @@ const generateCourseTimelineFlow = ai.defineFlow(
       prompt: prompt,
       output: {
         format: 'json',
-        schema: CourseTimelineOutputSchema,
       },
     });
 
