@@ -16,7 +16,6 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { format: 'json' },
   model: `googleai/${MODEL_NAME}`,
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 

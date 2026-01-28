@@ -21,7 +21,6 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
-    output: { format: 'json' },
     model: `googleai/${MODEL_NAME}`,
     prompt: `{
     "SYSTEM_INSTRUCTION": {

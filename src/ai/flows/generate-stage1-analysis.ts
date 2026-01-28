@@ -16,7 +16,6 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
-  output: { format: 'json' },
   model: `googleai/${MODEL_NAME}`,
   prompt: `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 

@@ -20,7 +20,6 @@ export async function generateMicrocredential(
 const prompt = ai.definePrompt({
     name: 'microcredentialPrompt',
     input: { schema: MicrocredentialInputSchema },
-    output: { format: 'json' },
     model: `googleai/${MODEL_NAME}`,
     prompt: `
 **CORE DIRECTIVE:**

@@ -30,9 +30,6 @@ const generateCourseTimelineFlow = ai.defineFlow(
     const { text } = await ai.generate({
       model: `googleai/${MODEL_NAME}`,
       prompt: prompt,
-      output: {
-          format: 'json',
-      }
     });
 
     if (!text) {
