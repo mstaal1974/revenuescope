@@ -5,18 +5,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, } from '@/ai/types';
-import { Lock, Zap, FileText } from 'lucide-react';
+import { Lock, Zap, FileText, Loader2, CheckCircle, XCircle, Circle } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
-import { Textarea } from './ui/textarea';
 import { OccupationAnalysis } from './dashboard/occupation-analysis';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
+
 type AuditResult = FullAuditOutput;
-type IndividualCourse = FullAuditOutput['individual_courses'][0];
 
 enum AuditState {
   IDLE,
@@ -25,10 +24,10 @@ enum AuditState {
   RESULTS,
 }
 
-type AuditLog = {
-  message: string;
-  status: 'info' | 'success' | 'error' | 'warning';
-  timestamp: Date;
+type ProgressStep = {
+  name: string;
+  status: 'pending' | 'running' | 'success' | 'error';
+  details?: string;
 };
 
 const BadgePreview: React.FC<{ title: string; tier: string; badgeName?: string; }> = ({ title, tier, badgeName }) => {
@@ -55,7 +54,6 @@ const BadgePreview: React.FC<{ title: string; tier: string; badgeName?: string; 
 const AuditWidget: React.FC = () => {
   const [rtoCode, setRtoCode] = useState('');
   const [state, setState] = useState<AuditState>(AuditState.IDLE);
-  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [competitorData, setCompetitorData] = useState<{ qualTitle: string; count: number } | null>(null);
   const [name, setName] = useState('');
@@ -64,34 +62,45 @@ const AuditWidget: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
-  const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  
+  const initialProgress: ProgressStep[] = [
+    { name: 'Connecting to National Register...', status: 'pending' },
+    { name: 'Analysing Scope & Competitors...', status: 'pending' },
+    { name: 'AI Stage 1: Sector & Occupation Analysis', status: 'pending' },
+    { name: 'AI Stage 2: Skills Demand Heatmap', status: 'pending' },
+    { name: 'AI Stage 3: Product Ecosystem Architecture', status: 'pending' },
+    { name: 'Finalizing Report...', status: 'pending' },
+  ];
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>(initialProgress);
 
-  const addLog = (message: string, status: AuditLog['status'] = 'info') => {
-    setLogs(prev => [...prev, { message, status, timestamp: new Date() }]);
+  const updateProgress = (stepIndex: number, status: ProgressStep['status'], details?: string) => {
+      setProgressSteps(prev => {
+          const newSteps = [...prev];
+          newSteps[stepIndex] = { ...newSteps[stepIndex], status, details };
+          if (status === 'running') {
+              for (let i = stepIndex + 1; i < newSteps.length; i++) {
+                  newSteps[i].status = 'pending';
+              }
+          }
+          return newSteps;
+      });
   };
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [logs]);
 
   const handleAudit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!rtoCode) {
-      addLog('RTO Code is required.', 'error');
+      updateProgress(0, 'error', 'RTO Code is required.');
       return;
     }
 
     setState(AuditState.PROCESSING);
-    setLogs([]);
+    setProgressSteps(initialProgress);
     setCompetitorData(null);
-    addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
-
+    
     try {
       // PHASE 1: Get Scope from Firestore
-      addLog(`[1/8] QUERYING FIRESTORE FOR RTO CODE: "${rtoCode}"...`, 'info');
+      updateProgress(0, 'running');
       const db = getFirestore();
       const qualificationsRef = collection(db, "qualifications");
       const q = query(qualificationsRef, where("rtoCode", "==", rtoCode), where("usageRecommendation", "==", "Current"));
@@ -100,30 +109,27 @@ const AuditWidget: React.FC = () => {
       if (querySnapshot.empty) {
         throw new Error(`RTO ID "${rtoCode}" is invalid or has no 'Current' qualifications in the database.`);
       }
-      addLog(`[2/8] SUCCESS: FOUND ${querySnapshot.size} CURRENT QUALIFICATIONS.`, 'success');
-
-      // Competitor Spy Logic
+      updateProgress(0, 'success', `Found ${querySnapshot.size} current qualifications on scope.`);
+      
+      // PHASE 2: Analyze scope and competitors
+      updateProgress(1, 'running');
+      const allQualifications = querySnapshot.docs.map(doc => doc.data());
+      
       try {
           const firstQual = querySnapshot.docs[0]?.data();
           if (firstQual && firstQual.code) {
-              addLog(`[3/8] BONUS: RUNNING COMPETITOR SPY ON ${firstQual.code}...`, 'info');
               const competitorQuery = query(collection(db, "qualifications"), where("code", "==", firstQual.code));
               const competitorSnapshot = await getDocs(competitorQuery);
-              const competitorCount = competitorSnapshot.size > 1 ? competitorSnapshot.size - 1 : 0; // Subtract self
+              const competitorCount = competitorSnapshot.size > 1 ? competitorSnapshot.size - 1 : 0;
               setCompetitorData({ qualTitle: firstQual.title, count: competitorCount });
-              addLog(`[3/8] SPY COMPLETE: FOUND ${competitorCount} RIVALS WITH THIS QUALIFICATION.`, 'success');
+              updateProgress(1, 'running', `Competitor Spy: Found ${competitorCount} rivals with qualification ${firstQual.code}.`);
           }
       } catch (spyError) {
-          addLog(`[!] Competitor spy module failed. Continuing main audit...`, 'warning');
+          updateProgress(1, 'running', `Competitor spy module failed. Continuing...`);
       }
 
-      // New logic to filter to top 5 sectors
-      addLog('[4/8] ANALYSING SCOPE FOR SECTOR DISTRIBUTION...', 'info');
-      const allQualifications = querySnapshot.docs.map(doc => doc.data());
-      
       const sectorCounts: { [key: string]: number } = {};
       allQualifications.forEach(qual => {
-          // Training packages are usually the first 3 letters of the qual code.
           const sectorCode = qual.code?.substring(0, 3);
           if (sectorCode) {
               sectorCounts[sectorCode] = (sectorCounts[sectorCode] || 0) + 1;
@@ -141,11 +147,12 @@ const AuditWidget: React.FC = () => {
               const sectorCode = qual.code?.substring(0, 3);
               return sectorCode && top5Sectors.includes(sectorCode);
           });
-          addLog(`FOUND ${sortedSectors.length} SECTORS. LIMITING ANALYSIS TO TOP 5 (${filteredQualifications.length} QUALIFICATIONS) FOR EFFICIENCY.`, 'warning');
+           updateProgress(1, 'success', `Prioritized Top 5 of ${sortedSectors.length} sectors for analysis.`);
+      } else {
+           updateProgress(1, 'success', `Analyzed all ${sortedSectors.length} sectors.`);
       }
       
       const scopeItems: string[] = [];
-      
       filteredQualifications.forEach((data: any) => {
         if (!rtoName && data.rtoLegalName) rtoName = data.rtoLegalName;
         scopeItems.push(`${data.code || ''},${data.title || ''},`);
@@ -158,38 +165,36 @@ const AuditWidget: React.FC = () => {
         manualScopeDataset: manualScopeDataset 
       };
 
-      // PHASE 2: Run Stage 1 AI Analysis
-      addLog(`[5/8] AI STAGE 1/3: EXECUTING SECTOR & OCCUPATION ANALYSIS...`, 'info');
+      // PHASE 3: Run Stage 1 AI Analysis
+      updateProgress(2, 'running', 'Model is analyzing market health and financial opportunities...');
       const stage1Response = await runStage1Action(baseAuditInput);
       if (!stage1Response.ok) throw new Error(`AI Stage 1 Failed: ${stage1Response.error}`);
       const stage1Result = stage1Response.result;
-      addLog('[6/8] AI STAGE 1/3: ANALYSIS COMPLETE.', 'success');
+      updateProgress(2, 'success', `Identified ${stage1Result.executive_summary.top_performing_sector} as top sector.`);
 
-      // PHASE 3: Run Stage 2 AI Analysis
-      addLog('[7/8] AI STAGE 2/3: GENERATING SKILLS DEMAND HEATMAP...', 'info');
+      // PHASE 4: Run Stage 2 AI Analysis
+      updateProgress(3, 'running', 'Model is mapping all skills to current employer demand...');
       const stage2Response = await runStage2Action(baseAuditInput);
       if (!stage2Response.ok) throw new Error(`AI Stage 2 Failed: ${stage2Response.error}`);
       const stage2Result = stage2Response.result;
-      addLog('[7/8] AI STAGE 2/3: HEATMAP COMPLETE.', 'success');
+      updateProgress(3, 'success', `Generated heatmap with ${stage2Result.skills_heatmap.length} unique skills.`);
 
-      // PHASE 4: Run Stage 3 AI Analysis
+      // PHASE 5: Run Stage 3 AI Analysis
       const stage3Input = {
         ...baseAuditInput,
         top_performing_sector: stage1Result.executive_summary.top_performing_sector,
         skills_heatmap: stage2Result.skills_heatmap,
       };
-      addLog('[8/8] AI STAGE 3/3: ARCHITECTING PRODUCT ECOSYSTEM...', 'info');
+      updateProgress(4, 'running', 'Model is designing a full product-suite with pricing...');
       const stage3Response = await runStage3Action(stage3Input);
       if (!stage3Response.ok) {
-        addLog(`AI Stage 3 Failed: ${stage3Response.error}`, "error");
-        setState(AuditState.ERROR);
-        return;
+        throw new Error(`AI Stage 3 Failed: ${stage3Response.error}`);
       }
       const stage3Result = stage3Response.result;
+      updateProgress(4, 'success', 'Product architecture and revenue model complete.');
 
-      addLog('ALL AI STAGES COMPLETE. MERGING RESULTS...', 'success');
-
-      // PHASE 5: Merge and Finalize
+      // PHASE 6: Merge and Finalize
+      updateProgress(5, 'running');
       const fullAuditResult: AuditResult = {
         rto_id: baseAuditInput.rtoId,
         ...stage1Result,
@@ -199,17 +204,20 @@ const AuditWidget: React.FC = () => {
 
       setResult(fullAuditResult);
       localStorage.setItem("auditData", JSON.stringify(fullAuditResult));
+      updateProgress(5, 'success');
       setState(AuditState.RESULTS);
-      addLog('AUDIT COMPLETE. REPORT GENERATED.', 'success');
 
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : "An unknown error occurred.";
-      addLog(`ERROR: ${message}`, 'error');
-      addLog(`FATAL: An unexpected error occurred. Please check the RTO code or try again later.`, 'error');
+      const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
+      if (runningStepIndex !== -1) {
+          updateProgress(runningStepIndex, 'error', message);
+      }
       setState(AuditState.ERROR);
     }
   };
+
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && name && phone) {
@@ -235,8 +243,6 @@ const AuditWidget: React.FC = () => {
       }
     }
   };
-
-  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   const formatValue = (val: string | undefined) => (!val || val === '[REAL_DATA_REQUIRED]') ? 'DATA UNAVAILABLE' : val;
 
@@ -283,26 +289,38 @@ const AuditWidget: React.FC = () => {
           </div>
           <span className="text-blue-500 text-xs font-black tracking-[0.2em] uppercase italic">Verifying Registry Data...</span>
         </div>
-        <div ref={scrollRef} className="h-80 overflow-y-auto font-mono text-xs md:text-sm space-y-4 scrollbar-hide py-2 text-left">
-          {logs.map((log, i) => (
-            <div key={i} className={`flex gap-4 ${
-              log.status === 'success' ? 'text-emerald-400' : 
-              log.status === 'error' ? 'text-rose-400' : 
-              log.status === 'warning' ? 'text-amber-400' : 'text-blue-400'
-            }`}>
-              <span className="opacity-40 shrink-0">[{log.timestamp.toLocaleTimeString([], { hour12: false })}]</span>
-              <span className="font-bold">{log.message}</span>
-            </div>
-          ))}
-          {state === AuditState.PROCESSING && (
-            <div className="text-slate-200 pl-4 border-l-2 border-slate-800 ml-1 py-1">
-              <div className="cursor-blink bg-blue-400 w-2 h-4"></div>
-            </div>
-          )}
+        <div className="space-y-6 py-2">
+            {progressSteps.map((step, index) => {
+                const isRunning = step.status === 'running';
+                const isSuccess = step.status === 'success';
+                const isError = step.status === 'error';
+                const isPending = step.status === 'pending';
+                
+                const statusColor = isSuccess ? 'text-emerald-400' : isError ? 'text-rose-400' : isRunning ? 'text-blue-400' : 'text-slate-500';
+
+                return (
+                    <div key={index} className="flex items-start gap-4 transition-all duration-300">
+                        <div className="w-5 h-5 shrink-0 flex items-center justify-center mt-0.5">
+                            {isRunning && <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />}
+                            {isSuccess && <CheckCircle className="w-5 h-5 text-emerald-400" />}
+                            {isError && <XCircle className="w-5 h-5 text-rose-400" />}
+                            {isPending && <Circle className="w-5 h-5 text-slate-700" />}
+                        </div>
+                        <div className="flex-1">
+                            <p className={`font-bold ${statusColor}`}>{step.name}</p>
+                            {step.details && <p className="text-xs text-slate-400 mt-1 font-mono">{step.details}</p>}
+                        </div>
+                    </div>
+                );
+            })}
         </div>
         
         {state === AuditState.ERROR && (
           <div className="mt-8">
+             <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6">
+                <p className="text-rose-400 font-bold text-sm">An Error Occurred</p>
+                <p className="text-rose-400/80 text-xs mt-1 font-mono">{progressSteps.find(s => s.status === 'error')?.details}</p>
+             </div>
             <button
               onClick={() => setState(AuditState.IDLE)}
               className="w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
@@ -443,16 +461,16 @@ const AuditWidget: React.FC = () => {
           
           {/* ACTION BUTTONS */}
           {isUnlocked && (
-            <div className="mb-12 animate-in fade-in duration-500">
-                <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
-                    <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now book a discovery meeting.</p>
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-6 px-8 rounded-2xl text-base animate-pulse-grow shadow-lg shadow-emerald-500/30">
-                          <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
-                        </Button>
-                    </div>
-                </div>
-            </div>
+           <div className="mb-12 animate-in fade-in duration-500">
+               <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
+                   <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now book a meeting.</p>
+                   <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                       <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-6 px-8 rounded-2xl text-base animate-pulse-grow shadow-lg shadow-emerald-500/30">
+                         <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
+                       </Button>
+                   </div>
+               </div>
+           </div>
           )}
 
           <div className={`grid lg:grid-cols-3 gap-8 transition-all duration-1000 ${!isUnlocked ? 'filter blur-3xl pointer-events-none' : ''}`}>
