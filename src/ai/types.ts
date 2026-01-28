@@ -171,13 +171,22 @@ export const CourseTimelineInputSchema = z.object({
 });
 export type CourseTimelineInput = z.infer<typeof CourseTimelineInputSchema>;
 
+const UnlockedContentSchema = z.object({
+  learningObjective: z.string().describe("A single, clear sentence describing what the learner will be able to do."),
+  activityBreakdown: z.array(z.string()).describe("A list of specific activities the learner will perform in this step."),
+  suggestedAssessments: z.array(z.string()).describe("A list of methods to assess the learner's understanding."),
+  observableCriteria: z.array(z.string()).length(3).describe("A list of exactly three observable criteria to verify skill acquisition."),
+});
+
 export const TimelineStepSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string(),
   icon: z.string(),
   contentType: z.enum(['lesson', 'quiz', 'project', 'conclusion']),
+  unlockedContent: UnlockedContentSchema,
 });
+export type TimelineStep = z.infer<typeof TimelineStepSchema>;
 
 export const CourseTimelineOutputSchema = z.object({
   courseTitle: z.string(),

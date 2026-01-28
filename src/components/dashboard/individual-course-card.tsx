@@ -5,7 +5,7 @@ import type { AuditData } from "@/app/actions";
 import { runGenerateCourseTimelineAction, type CourseTimelineActionResult } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import { CourseTimeline } from '../CourseBuilder/CourseTimeline';
-import { type CourseTimelineData } from '@/types/course';
+import { type CourseTimelineOutput as CourseTimelineData } from '@/ai/types';
 import { useToast } from '@/hooks/use-toast';
 
 
