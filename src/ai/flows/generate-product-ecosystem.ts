@@ -22,7 +22,7 @@ const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
     // output: { format: 'json' },
-    model: 'googleai/gemini-2.5-flash',
+    model: 'googleai/gemini-1.5-flash',
     prompt: `{
     "SYSTEM_INSTRUCTION": {
       "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",

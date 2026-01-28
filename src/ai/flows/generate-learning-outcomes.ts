@@ -21,7 +21,7 @@ const prompt = ai.definePrompt({
   name: 'learningOutcomesPrompt',
   input: { schema: LearningOutcomesInputSchema },
   // output: { format: 'json' },
-  model: 'googleai/gemini-2.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   prompt: `
     You are an expert instructional designer. Your task is to generate a list of key learning outcomes for a course with the given title.
 
