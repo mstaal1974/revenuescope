@@ -3,7 +3,7 @@
  * @fileOverview This file defines a flow for generating a marketable, non-accredited micro-credential from a formal Unit of Competency.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, MODEL_NAME } from '@/ai/genkit';
 import {
   MicrocredentialInputSchema,
   MicrocredentialOutputSchema,
@@ -21,7 +21,7 @@ const prompt = ai.definePrompt({
     name: 'microcredentialPrompt',
     input: { schema: MicrocredentialInputSchema },
     output: { format: 'json' },
-    model: 'googleai/gemini-1.5-flash-001',
+    model: `googleai/${MODEL_NAME}`,
     prompt: `
 **CORE DIRECTIVE:**
 You are prohibited from simply treating a "Unit of Competency" (e.g., *BSBOPS301*) as a Microcredential.
