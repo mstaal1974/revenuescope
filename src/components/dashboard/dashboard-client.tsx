@@ -85,7 +85,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
                 <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
                     <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now book a discovery meeting.</p>
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <Button asChild variant="outline" className="w-full sm:w-auto bg-white/80 py-4 px-6 rounded-2xl text-sm font-bold">
+                        <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-6 px-8 rounded-2xl text-base animate-pulse-grow shadow-lg shadow-emerald-500/30">
                         <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
                         </Button>
                     </div>
