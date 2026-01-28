@@ -14,14 +14,6 @@ import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestam
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import dynamic from "next/dynamic";
-import { BoardReportPDF, type MappedPdfData } from './BoardReportPDF';
-
-const PDFDownloadLink = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
-  { ssr: false }
-);
-
 
 type AuditResult = FullAuditOutput;
 type IndividualCourse = FullAuditOutput['individual_courses'][0];
@@ -73,40 +65,6 @@ const AuditWidget: React.FC = () => {
   const [viewMode, setViewMode] = useState<'rto' | 'student'>('rto');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const [pdfData, setPdfData] = useState<MappedPdfData | null>(null);
-
-  useEffect(() => {
-    if (result) {
-        const parseCurrency = (val: string) => parseFloat(val?.replace(/[^0-9.]/g, '') || '0');
-        
-        const traditional = parseCurrency(result.stackable_product?.bundle_price);
-        const unbundled = parseCurrency(result.stackable_product?.total_value);
-        let increase = '0';
-        if (traditional > 0 && unbundled > traditional) {
-             increase = (((unbundled - traditional) / traditional) * 100).toFixed(0);
-        }
-
-        const mappedData: MappedPdfData = {
-            strategy_summary: result.executive_summary.strategic_advice,
-            revenue_comparison: {
-                traditional_model: result.stackable_product.bundle_price,
-                unbundled_model: result.stackable_product.total_value,
-                increase_percentage: `+${increase}%`
-            },
-            tiers: result.individual_courses.map(course => ({
-                level: course.tier,
-                product_name: course.course_title,
-                price: course.suggested_price,
-                tactic: course.target_student
-            })),
-            // ai_opportunity is not part of the main audit result.
-            // The PDF component handles this being undefined.
-            ai_opportunity: undefined 
-        };
-        setPdfData(mappedData);
-    }
-  }, [result]);
-
 
   const addLog = (message: string, status: AuditLog['status'] = 'info') => {
     setLogs(prev => [...prev, { message, status, timestamp: new Date() }]);
@@ -457,35 +415,8 @@ const AuditWidget: React.FC = () => {
           {isUnlocked && (
             <div className="mb-12 animate-in fade-in duration-500">
                 <div className="flex flex-col sm:flex-row gap-4 p-6 bg-emerald-50 border border-emerald-200 rounded-3xl justify-center items-center">
-                    <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now download your report.</p>
+                    <p className="font-bold text-emerald-900 text-center sm:text-left">✓ Report Unlocked. You can now book a discovery meeting.</p>
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        {pdfData ? (
-                            <PDFDownloadLink
-                                document={
-                                    <BoardReportPDF 
-                                        data={pdfData} 
-                                        rtoCode={result.rto_id} 
-                                        rtoName={result.rtoName || result.executive_summary?.top_performing_sector || "RTO Report"} 
-                                    />
-                                }
-                                fileName={`ScopeStack_Report_${result.rto_id}.pdf`}
-                                className="w-full sm:w-auto text-center items-center justify-center flex gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-sm transition-all"
-                            >
-                                {({ loading }) => 
-                                    loading ? (
-                                        <span>Generating PDF...</span>
-                                    ) : (
-                                        <>
-                                            <span>📄</span> Download Board Report
-                                        </>
-                                    )
-                                }
-                            </PDFDownloadLink>
-                        ) : (
-                            <button disabled className="w-full sm:w-auto bg-gray-200 text-gray-500 font-bold py-4 px-6 rounded-2xl text-sm cursor-wait flex items-center justify-center gap-2">
-                                <span>⏳</span> Preparing Download...
-                            </button>
-                        )}
                         <Button asChild variant="outline" className="w-full sm:w-auto bg-white/80 py-4 px-6 rounded-2xl text-sm font-bold">
                           <Link href="https://outlook.office.com/bookwithme/user/a656a2e7353645d98cae126f07ebc593@blocksure.com.au/meetingtype/OAyzW_rOmEGxuBmLJElpTw2?anonymous&ismsaljsauthenabled&ep=mlink" target="_blank">Book Discovery Meeting</Link>
                         </Button>
