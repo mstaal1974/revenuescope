@@ -9,10 +9,9 @@ export const ai = genkit({
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using a stable alias like 'gemini-1.5-flash' is recommended over a specific
- * version (e.g., 'gemini-1.5-flash-001') because it allows Google's backend
- * to route to the latest stable version available in the region, preventing
- * 'Not Found' errors during deployment. This acts as a server-side check
- * for model availability.
+ * Using a stable, generally available model name is crucial to prevent availability
+ * errors (like 404 Not Found) which can occur with highly specific or newly
+ * released model versions that may not be rolled out to all regions.
+ * We are using 'gemini-1.5-pro' as it is a powerful and widely available model.
  */
-export const MODEL_NAME = 'gemini-1.5-flash';
+export const MODEL_NAME = 'gemini-1.5-pro';
