@@ -163,3 +163,24 @@ export const MicrocredentialOutputSchema = z.object({
   ai_opportunity: AIOpportunitySchema,
 });
 export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;
+
+// From generate-course-timeline.ts
+export const CourseTimelineInputSchema = z.object({
+  course_title: z.string(),
+  learning_outcomes: z.array(z.string()),
+});
+export type CourseTimelineInput = z.infer<typeof CourseTimelineInputSchema>;
+
+export const TimelineStepSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  icon: z.string(),
+  contentType: z.enum(['lesson', 'quiz', 'project', 'conclusion']),
+});
+
+export const CourseTimelineOutputSchema = z.object({
+  courseTitle: z.string(),
+  timeline: z.array(TimelineStepSchema),
+});
+export type CourseTimelineOutput = z.infer<typeof CourseTimelineOutputSchema>;

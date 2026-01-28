@@ -4,6 +4,7 @@ import { generateStage1Analysis } from "@/ai/flows/generate-stage1-analysis";
 import { generateSkillsHeatmap } from "@/ai/flows/generate-skills-heatmap";
 import { generateProductEcosystem } from "@/ai/flows/generate-product-ecosystem";
 import { generateMicrocredential } from "@/ai/flows/generate-microcredential";
+import { generateCourseTimeline } from "@/ai/flows/generate-course-timeline";
 
 import { 
   type FullAuditInput, 
@@ -13,7 +14,9 @@ import {
   type ProductEcosystemOutput,
   type FullAuditOutput,
   type MicrocredentialInput,
-  type MicrocredentialOutput
+  type MicrocredentialOutput,
+  type CourseTimelineInput,
+  type CourseTimelineOutput
 } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
@@ -33,6 +36,10 @@ export type Stage3ActionResult =
 
 export type MicrocredentialActionResult =
   | { ok: true; result: MicrocredentialOutput }
+  | { ok: false; error: string };
+
+export type CourseTimelineActionResult =
+  | { ok: true; result: CourseTimelineOutput }
   | { ok: false; error: string };
 
 
@@ -112,6 +119,24 @@ export async function runMicrocredentialAction(
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runMicrocredentialAction failed:", e);
+    return { ok: false, error: message };
+  }
+}
+
+// COURSE TIMELINE ACTION
+export async function runGenerateCourseTimelineAction(
+  input: CourseTimelineInput
+): Promise<CourseTimelineActionResult> {
+  try {
+    checkApiKey();
+    if (!input.course_title || !input.learning_outcomes) {
+      throw new Error("Course Title and Learning Outcomes are required.");
+    }
+    const result = await generateCourseTimeline(input);
+    return { ok: true, result };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("runGenerateCourseTimelineAction failed:", e);
     return { ok: false, error: message };
   }
 }
