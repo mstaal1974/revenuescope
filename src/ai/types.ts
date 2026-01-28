@@ -95,6 +95,13 @@ const CommercialLeverageTier3Schema = z.object({
   ltv_impact: z.string().describe("e.g. 'Doubles Customer Value'"),
 });
 
+const MarketingPlaybookSchema = z.object({
+  best_channel: z.string().describe("e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2"),
+  ad_headline: z.string().describe("A punchy 5-word hook for the ad"),
+  email_subject: z.string().describe("The subject line to sell this product"),
+  cta_text: z.string().describe("e.g. 'Start Instantly' vs 'Apply Now'"),
+});
+
 // Discriminated union for Tiers
 export const TierSchema = z.discriminatedUnion('tier_level', [
     z.object({
@@ -104,6 +111,7 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
         price: z.number(),
         commercial_leverage: CommercialLeverageTier1Schema,
         marketing_hook: z.string(),
+        marketing_playbook: MarketingPlaybookSchema,
     }),
     z.object({
         tier_level: z.literal(2),
@@ -112,6 +120,7 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
         price: z.number(),
         commercial_leverage: CommercialLeverageTier2Schema,
         marketing_hook: z.string(),
+        marketing_playbook: MarketingPlaybookSchema,
     }),
     z.object({
         tier_level: z.literal(3),
@@ -120,6 +129,7 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
         price: z.number(),
         commercial_leverage: CommercialLeverageTier3Schema,
         marketing_hook: z.string(),
+        marketing_playbook: MarketingPlaybookSchema,
     }),
 ]);
 export type Tier = z.infer<typeof TierSchema>;

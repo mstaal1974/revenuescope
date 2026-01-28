@@ -47,6 +47,11 @@ const prompt = ai.definePrompt({
           "Constraint": "Positioned as the 'Expert' outcome for graduates of Tier 2."
         }
       },
+      "MARKETING_GENERATION_RULES": {
+        "Tier 1 (Impulse)": "Channel must be Social Media. Headline must be 'Pattern Interrupt' (e.g., 'Stop scrolling...').",
+        "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...').",
+        "Tier 3 (Trust)": "Channel must be Email/SMS. Headline must be 'Career Growth'."
+      },
       "OUTPUT_FORMAT": "Strict JSON Only. No preamble.",
       "JSON_STRUCTURE": {
         "strategy_summary": "String (1 sentence hook)",
@@ -61,7 +66,13 @@ const prompt = ai.definePrompt({
               "volume_potential": "String (e.g. '50x wider audience than Diploma')",
               "trust_velocity": "String (e.g. 'Impulse Buy (<5 mins)')"
             },
-            "marketing_hook": "String (The ad headline)"
+            "marketing_hook": "String (The ad headline)",
+            "marketing_playbook": {
+                "best_channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
+                "ad_headline": "String (A punchy 5-word hook for the ad)",
+                "email_subject": "String (The subject line to sell this product)",
+                "cta_text": "String (e.g. 'Start Instantly' vs 'Apply Now')"
+            }
           },
           {
             "tier_level": 2,
@@ -73,7 +84,13 @@ const prompt = ai.definePrompt({
               "employer_urgency": "String (e.g. 'Mandatory for Site Entry')",
               "margin_health": "String (e.g. 'High - Low Assessment Overhead')"
             },
-            "marketing_hook": "String"
+            "marketing_hook": "String",
+            "marketing_playbook": {
+                "best_channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
+                "ad_headline": "String (A punchy 5-word hook for the ad)",
+                "email_subject": "String (The subject line to sell this product)",
+                "cta_text": "String (e.g. 'Start Instantly' vs 'Apply Now')"
+            }
           },
           {
             "tier_level": 3,
@@ -85,7 +102,13 @@ const prompt = ai.definePrompt({
               "marketing_cost": "String (e.g. '$0 - Internal Upsell')",
               "ltv_impact": "String (e.g. 'Doubles Customer Value')"
             },
-            "marketing_hook": "String"
+            "marketing_hook": "String",
+            "marketing_playbook": {
+                "best_channel": "String (e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2)",
+                "ad_headline": "String (A punchy 5-word hook for the ad)",
+                "email_subject": "String (The subject line to sell this product)",
+                "cta_text": "String (e.g. 'Start Instantly' vs 'Apply Now')"
+            }
           }
         ]
       }
