@@ -113,7 +113,7 @@ const AuditWidget: React.FC = () => {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        throw new Error(`RTO ID "${rtoCode}" is invalid or has no 'Current' qualifications in the database.`);
+        throw new Error(`RTO ID "${rtoCode}" is invalid or has no 'Current' qualifications. Please check the RTO code and try again.`);
       }
       updateProgress(0, 'success', `Found ${querySnapshot.size} current qualifications on scope.`);
       
@@ -652,5 +652,7 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
 
     
