@@ -107,7 +107,7 @@ const generateProductEcosystemFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash-preview-0514',
+      model: 'googleai/gemini-1.5-flash',
       prompt: prompt,
       output: {
         format: 'json',
