@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, } from '@/ai/types';
-import { Lock, Zap } from 'lucide-react';
+import { Lock, Zap, FileText } from 'lucide-react';
 import { SectorCard } from './dashboard/sector-card';
 import { SkillsHeatmap } from './dashboard/skills-heatmap';
 import { Textarea } from './ui/textarea';
@@ -57,6 +57,7 @@ const AuditWidget: React.FC = () => {
   const [state, setState] = useState<AuditState>(AuditState.IDLE);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [result, setResult] = useState<AuditResult | null>(null);
+  const [competitorData, setCompetitorData] = useState<{ qualTitle: string; count: number } | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -85,6 +86,7 @@ const AuditWidget: React.FC = () => {
 
     setState(AuditState.PROCESSING);
     setLogs([]);
+    setCompetitorData(null);
     addLog(`INITIATING CALIBRATED PRICING AUDIT v5.0...`, 'info');
 
     try {
@@ -100,8 +102,23 @@ const AuditWidget: React.FC = () => {
       }
       addLog(`[2/8] SUCCESS: FOUND ${querySnapshot.size} CURRENT QUALIFICATIONS.`, 'success');
 
+      // Competitor Spy Logic
+      try {
+          const firstQual = querySnapshot.docs[0]?.data();
+          if (firstQual && firstQual.code) {
+              addLog(`[3/8] BONUS: RUNNING COMPETITOR SPY ON ${firstQual.code}...`, 'info');
+              const competitorQuery = query(collection(db, "qualifications"), where("code", "==", firstQual.code));
+              const competitorSnapshot = await getDocs(competitorQuery);
+              const competitorCount = competitorSnapshot.size > 1 ? competitorSnapshot.size - 1 : 0; // Subtract self
+              setCompetitorData({ qualTitle: firstQual.title, count: competitorCount });
+              addLog(`[3/8] SPY COMPLETE: FOUND ${competitorCount} RIVALS WITH THIS QUALIFICATION.`, 'success');
+          }
+      } catch (spyError) {
+          addLog(`[!] Competitor spy module failed. Continuing main audit...`, 'warning');
+      }
+
       // New logic to filter to top 5 sectors
-      addLog('[3/8] ANALYSING SCOPE FOR SECTOR DISTRIBUTION...', 'info');
+      addLog('[4/8] ANALYSING SCOPE FOR SECTOR DISTRIBUTION...', 'info');
       const allQualifications = querySnapshot.docs.map(doc => doc.data());
       
       const sectorCounts: { [key: string]: number } = {};
@@ -142,14 +159,14 @@ const AuditWidget: React.FC = () => {
       };
 
       // PHASE 2: Run Stage 1 AI Analysis
-      addLog(`[4/8] AI STAGE 1/3: EXECUTING SECTOR & OCCUPATION ANALYSIS...`, 'info');
+      addLog(`[5/8] AI STAGE 1/3: EXECUTING SECTOR & OCCUPATION ANALYSIS...`, 'info');
       const stage1Response = await runStage1Action(baseAuditInput);
       if (!stage1Response.ok) throw new Error(`AI Stage 1 Failed: ${stage1Response.error}`);
       const stage1Result = stage1Response.result;
-      addLog('[5/8] AI STAGE 1/3: ANALYSIS COMPLETE.', 'success');
+      addLog('[6/8] AI STAGE 1/3: ANALYSIS COMPLETE.', 'success');
 
       // PHASE 3: Run Stage 2 AI Analysis
-      addLog('[6/8] AI STAGE 2/3: GENERATING SKILLS DEMAND HEATMAP...', 'info');
+      addLog('[7/8] AI STAGE 2/3: GENERATING SKILLS DEMAND HEATMAP...', 'info');
       const stage2Response = await runStage2Action(baseAuditInput);
       if (!stage2Response.ok) throw new Error(`AI Stage 2 Failed: ${stage2Response.error}`);
       const stage2Result = stage2Response.result;
@@ -340,6 +357,19 @@ const AuditWidget: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* NEW: COMPETITOR SPY WIDGET */}
+      {competitorData && !isUnlocked && (
+        <div className="p-8 md:p-16 bg-white border-y border-slate-200 animate-in fade-in duration-1000">
+          <div className="max-w-4xl mx-auto text-center p-8 rounded-3xl bg-amber-50 border-2 border-dashed border-amber-300">
+              <h4 className="font-black text-2xl text-amber-900 tracking-tight mb-2">⚠️ Competitor Alert for "{competitorData.qualTitle}"</h4>
+              <p className="text-amber-800 text-lg font-medium max-w-2xl mx-auto">
+                  Our intel shows <span className="font-black">{competitorData.count} other providers</span> hold this on scope. We've identified <span className="font-black">at least 3 marketing competing micro-credentials</span> for these skills.
+              </p>
+              <p className="mt-4 text-sm font-bold text-amber-600">Unlock the full report for competitive analysis and market positioning strategies.</p>
+          </div>
+        </div>
+      )}
 
       {/* 2. SECTOR BREAKDOWN */}
       {result.sector_breakdown && result.sector_breakdown.length > 0 && (
@@ -633,3 +663,5 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
