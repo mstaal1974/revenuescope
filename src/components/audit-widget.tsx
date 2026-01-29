@@ -190,12 +190,12 @@ const AuditWidget: React.FC = () => {
             placeholder="Enter your RTO Number (e.g., 45123, 91398)..."
             value={rtoCode}
             onChange={(e) => setRtoCode(e.target.value)}
-            className="flex-grow px-6 py-5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-white transition-all text-center sm:text-left"
+            className="flex-grow px-6 py-5 bg-white/50 backdrop-blur-md border-2 border-white/30 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-slate-900 transition-all text-center sm:text-left placeholder:text-slate-500"
             required
           />
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-lg shadow-blue-900/50 active:scale-[0.98] text-xl inline-flex items-center justify-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-black px-8 py-5 rounded-2xl transition-all shadow-lg shadow-black/20 active:scale-[0.98] text-xl inline-flex items-center justify-center gap-2"
           >
             Reveal Revenue Strategy <Rocket className="w-5 h-5" />
           </button>
@@ -206,14 +206,14 @@ const AuditWidget: React.FC = () => {
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     return (
-      <div className="bg-slate-900 rounded-[2.5rem] shadow-2xl p-10 border border-slate-800 max-w-2xl mx-auto overflow-hidden ring-1 ring-slate-800">
+      <div className="glass-card p-10 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex gap-2.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/80 animate-pulse"></div>
-            <div className="w-3 h-3 rounded-full bg-amber-500/80 animate-pulse delay-75"></div>
-            <div className="w-3 h-3 rounded-full bg-emerald-500/80 animate-pulse delay-150"></div>
+            <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></div>
+            <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" style={{ animationDelay: '0.1s'}}></div>
+            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" style={{ animationDelay: '0.2s'}}></div>
           </div>
-          <span className="text-blue-500 text-xs font-black tracking-[0.2em] uppercase italic">Analyzing National Register...</span>
+          <span className="text-blue-600 text-xs font-black tracking-[0.2em] uppercase italic">Analyzing National Register...</span>
         </div>
         <div className="space-y-6 py-2">
             {progressSteps.map((step, index) => {
@@ -222,19 +222,19 @@ const AuditWidget: React.FC = () => {
                 const isError = step.status === 'error';
                 const isPending = step.status === 'pending';
                 
-                const statusColor = isSuccess ? 'text-emerald-400' : isError ? 'text-rose-400' : isRunning ? 'text-blue-400' : 'text-slate-500';
+                const statusColor = isSuccess ? 'text-emerald-700' : isError ? 'text-rose-700' : isRunning ? 'text-blue-700' : 'text-slate-500';
 
                 return (
                     <div key={index} className="flex items-start gap-4 transition-all duration-300">
                         <div className="w-5 h-5 shrink-0 flex items-center justify-center mt-0.5">
-                            {isRunning && <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />}
-                            {isSuccess && <CheckCircle className="w-5 h-5 text-emerald-400" />}
-                            {isError && <XCircle className="w-5 h-5 text-rose-400" />}
-                            {isPending && <Circle className="w-5 h-5 text-slate-700" />}
+                            {isRunning && <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />}
+                            {isSuccess && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                            {isError && <XCircle className="w-5 h-5 text-rose-500" />}
+                            {isPending && <Circle className="w-5 h-5 text-slate-400" />}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 text-left">
                             <p className={`font-bold ${statusColor}`}>{step.name}</p>
-                            {step.details && <p className="text-xs text-slate-400 mt-1 font-mono">{step.details}</p>}
+                            {step.details && <p className="text-xs text-slate-500 mt-1 font-mono">{step.details}</p>}
                         </div>
                     </div>
                 );
@@ -243,13 +243,13 @@ const AuditWidget: React.FC = () => {
         
         {state === AuditState.ERROR && (
           <div className="mt-8">
-             <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6">
-                <p className="text-rose-400 font-bold text-sm">An Error Occurred</p>
-                <p className="text-rose-400/80 text-xs mt-1 font-mono">{progressSteps.find(s => s.status === 'error')?.details}</p>
+             <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6 text-left">
+                <p className="text-rose-700 font-bold text-sm">An Error Occurred</p>
+                <p className="text-rose-600/80 text-xs mt-1 font-mono">{progressSteps.find(s => s.status === 'error')?.details}</p>
              </div>
             <button
               onClick={() => setState(AuditState.IDLE)}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-black px-8 py-4 rounded-2xl transition-all text-lg active:scale-[0.98]"
             >
               Try Again
             </button>
@@ -261,9 +261,9 @@ const AuditWidget: React.FC = () => {
   
   if (state === AuditState.RESULTS) {
     return (
-      <div className="bg-slate-900/50 p-10 md:p-16 rounded-[4rem] shadow-2xl border border-slate-800 max-w-2xl text-center relative overflow-hidden animate-in fade-in zoom-in-95">
-        <h5 className="font-black text-4xl text-white mb-6 tracking-tight">Strategy Ready!</h5>
-        <p className="text-slate-400 text-xl mb-12 leading-relaxed font-medium">
+      <div className="glass-card p-10 md:p-16 max-w-2xl text-center relative overflow-hidden animate-in fade-in zoom-in-95">
+        <h5 className="font-black text-4xl text-slate-900 mb-6 tracking-tight">Strategy Ready!</h5>
+        <p className="text-slate-600 text-xl mb-12 leading-relaxed font-medium">
           Where should we send the full Go-To-Market report?
         </p>
         <form onSubmit={handleLeadSubmit} className="space-y-4 max-w-md mx-auto">
@@ -272,7 +272,7 @@ const AuditWidget: React.FC = () => {
             placeholder="Your Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-8 py-6 bg-slate-800 border border-slate-700 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-white"
+            className="w-full px-8 py-6 bg-white/50 border-2 border-white/30 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-slate-900 placeholder:text-slate-500"
             required
           />
           <input
@@ -280,7 +280,7 @@ const AuditWidget: React.FC = () => {
             placeholder="Work Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-8 py-6 bg-slate-800 border border-slate-700 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-white"
+            className="w-full px-8 py-6 bg-white/50 border-2 border-white/30 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-slate-900 placeholder:text-slate-500"
             pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
             title="Please enter a valid email address."
             required
@@ -290,14 +290,14 @@ const AuditWidget: React.FC = () => {
             placeholder="Your Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-8 py-6 bg-slate-800 border border-slate-700 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-white"
+            className="w-full px-8 py-6 bg-white/50 border-2 border-white/30 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-slate-900 placeholder:text-slate-500"
             pattern="[\d\s\+\(\)-]{8,}"
             title="Please enter a valid phone number."
             required
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-[2rem] transition-all shadow-2xl shadow-blue-900/50 text-xl uppercase tracking-widest"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 rounded-[2rem] transition-all shadow-2xl shadow-black/20 text-xl uppercase tracking-widest"
           >
             Go to Dashboard
           </button>
