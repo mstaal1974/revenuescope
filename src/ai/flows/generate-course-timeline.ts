@@ -3,7 +3,7 @@
  * @fileOverview This file defines a flow for generating a visual course timeline.
  */
 
-import { ai, MODEL_NAME } from '@/ai/genkit';
+import { ai, flashModel } from '@/ai/genkit';
 import { getCourseTimelinePrompt } from '@/lib/ai-prompts';
 import {
   CourseTimelineInputSchema,
@@ -28,7 +28,7 @@ const generateCourseTimelineFlow = ai.defineFlow(
     const prompt = getCourseTimelinePrompt(course_title, learning_outcomes);
 
     const { text } = await ai.generate({
-      model: `googleai/${MODEL_NAME}`,
+      model: flashModel,
       prompt: prompt,
     });
 

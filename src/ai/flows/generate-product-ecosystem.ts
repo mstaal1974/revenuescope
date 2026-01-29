@@ -3,7 +3,7 @@
  * @fileOverview This file defines the third stage of the audit, designing a detailed product ecosystem using a 3-Tier Revenue Staircase model.
  */
 
-import { ai, MODEL_NAME } from '@/ai/genkit';
+import { ai, flashModel } from '@/ai/genkit';
 import { 
     RevenueStaircaseInputSchema,
     RevenueStaircaseSchema,
@@ -21,7 +21,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
-    model: `googleai/${MODEL_NAME}`,
+    model: flashModel,
     prompt: `{
     "SYSTEM_INSTRUCTION": {
       "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",

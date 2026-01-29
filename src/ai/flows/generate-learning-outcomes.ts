@@ -3,7 +3,7 @@
  * @fileOverview This file defines a flow for generating learning outcomes for a course.
  */
 
-import { ai, MODEL_NAME } from '@/ai/genkit';
+import { ai, flashModel } from '@/ai/genkit';
 import {
   LearningOutcomesInputSchema,
   LearningOutcomesOutputSchema,
@@ -20,7 +20,7 @@ export async function generateLearningOutcomes(
 const prompt = ai.definePrompt({
   name: 'learningOutcomesPrompt',
   input: { schema: LearningOutcomesInputSchema },
-  model: `googleai/${MODEL_NAME}`,
+  model: flashModel,
   prompt: `
     You are an expert instructional designer. Your task is to generate a list of key learning outcomes for a course with the given title.
 

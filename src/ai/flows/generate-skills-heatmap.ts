@@ -3,7 +3,7 @@
  * @fileOverview This file defines the second stage of the audit, generating a skills heatmap.
  */
 
-import { ai, MODEL_NAME } from '@/ai/genkit';
+import { ai, flashModel } from '@/ai/genkit';
 import { FullAuditInputSchema, SkillsHeatmapOutputSchema, type FullAuditInput, type SkillsHeatmapOutput } from '@/ai/types';
 
 export async function generateSkillsHeatmap(
@@ -16,7 +16,7 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
-  model: `googleai/${MODEL_NAME}`,
+  model: flashModel,
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**

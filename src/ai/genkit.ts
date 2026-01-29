@@ -12,8 +12,7 @@ export const ai = genkit({
 
 /**
  * Defines the model used for all AI generation tasks.
- * Using 'gemini-1.5-flash' (without version suffix) as the correct model identifier
- * for the Gemini API v1. The full path 'models/gemini-1.5-flash' is constructed
- * by the googleAI plugin when prefixed with 'googleai/'.
+ * Create a model reference using googleAI.model() as required by Genkit v1.x.
+ * This ensures the correct API endpoint and version are used internally by the plugin.
  */
-export const MODEL_NAME = 'gemini-1.5-flash';
+export const flashModel = googleAI.model('gemini-1.5-flash');
