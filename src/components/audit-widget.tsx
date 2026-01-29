@@ -187,7 +187,7 @@ const AuditWidget: React.FC = () => {
         <form onSubmit={handleAudit} className="flex flex-col sm:flex-row gap-4">
           <input
             type="text"
-            placeholder="Enter Qualification Code (e.g., RII30820, CHC50121, BSB40120)..."
+            placeholder="Enter your RTO Number (e.g., 45123, 91398)..."
             value={rtoCode}
             onChange={(e) => setRtoCode(e.target.value)}
             className="flex-grow px-6 py-5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-white transition-all text-center sm:text-left"
