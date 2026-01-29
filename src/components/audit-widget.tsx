@@ -1,18 +1,12 @@
 
-
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
 import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket } from 'lucide-react';
-import { SectorCard } from './dashboard/sector-card';
-import { SkillsHeatmap } from './dashboard/skills-heatmap';
-import { OccupationAnalysis } from './dashboard/occupation-analysis';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { RevenueCalculator } from './dashboard/RevenueCalculator';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -34,7 +28,7 @@ type ProgressStep = {
 
 
 const AuditWidget: React.FC = () => {
-  const [auditType, setAuditType] = useState<'rto' | 'qual'>('rto');
+  const [auditType, setAuditType] = useState<'qual' | 'rto'>('qual');
   const [rtoCode, setRtoCode] = useState('');
   const [qualCode, setQualCode] = useState('');
 
@@ -46,19 +40,12 @@ const AuditWidget: React.FC = () => {
   const { toast } = useToast();
   const router = useRouter();
   
-  const initialProgress: ProgressStep[] = [
-    { name: 'Connecting to National Register...', status: 'pending' },
-    { name: 'Analysing Scope & Competitors...', status: 'pending' },
-    { name: 'AI Stage 1: Sector & Occupation Analysis', status: 'pending' },
-    { name: 'AI Stage 2: Skills Demand Heatmap', status: 'pending' },
-    { name: 'AI Stage 3: 3-Tier Revenue Staircase Design', status: 'pending' },
-    { name: 'Finalizing Report...', status: 'pending' },
-  ];
-  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>(initialProgress);
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
 
   const updateProgress = (stepIndex: number, status: ProgressStep['status'], details?: string) => {
       setProgressSteps(prev => {
           const newSteps = [...prev];
+          if (!newSteps[stepIndex]) return prev;
           newSteps[stepIndex] = { ...newSteps[stepIndex], status, details };
           if (status === 'running') {
               for (let i = stepIndex + 1; i < newSteps.length; i++) {
@@ -72,17 +59,38 @@ const AuditWidget: React.FC = () => {
   const handleAudit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     
-    if (auditType === 'rto' && !rtoCode) {
+    const isRtoAudit = auditType === 'rto';
+
+    if (isRtoAudit && !rtoCode) {
       toast({ variant: "destructive", title: "RTO Number Required", description: "Please enter an RTO number to start the audit." });
       return;
     }
-    if (auditType === 'qual' && !qualCode) {
+    if (!isRtoAudit && !qualCode) {
       toast({ variant: "destructive", title: "Qualification Code Required", description: "Please enter a qualification code to start the analysis." });
       return;
     }
 
+    const initialProgressRTO: ProgressStep[] = [
+      { name: 'Connecting to National Register...', status: 'pending' },
+      { name: 'Analysing Full Scope & Competitors...', status: 'pending' },
+      { name: 'AI Stage 1: Sector & Occupation Analysis', status: 'pending' },
+      { name: 'AI Stage 2: Skills Demand Heatmap', status: 'pending' },
+      { name: 'AI Stage 3: 3-Tier Revenue Staircase Design', status: 'pending' },
+      { name: 'Finalizing Report...', status: 'pending' },
+    ];
+
+    const initialProgressQual: ProgressStep[] = [
+      { name: 'Looking up Qualification details...', status: 'pending' },
+      { name: 'Preparing for AI Analysis...', status: 'pending' },
+      { name: 'AI Stage 1: Market & Occupation Analysis', status: 'pending' },
+      { name: 'AI Stage 2: Core Skills Analysis', status: 'pending' },
+      { name: 'AI Stage 3: 3-Tier Revenue Staircase Design', status: 'pending' },
+      { name: 'Finalizing Report...', status: 'pending' },
+    ];
+    
+    const steps = isRtoAudit ? initialProgressRTO : initialProgressQual;
+    setProgressSteps(steps);
     setState(AuditState.PROCESSING);
-    setProgressSteps(initialProgress);
     
     // Fake 3-second delay to build anticipation
     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -95,7 +103,7 @@ const AuditWidget: React.FC = () => {
       let querySnapshot;
       let rtoIdForAudit: string;
 
-      if (auditType === 'rto') {
+      if (isRtoAudit) {
         const q = query(qualificationsRef, where("rtoCode", "==", rtoCode.trim()), where("usageRecommendation", "==", "Current"));
         querySnapshot = await getDocs(q);
         rtoIdForAudit = rtoCode.trim();
@@ -110,17 +118,20 @@ const AuditWidget: React.FC = () => {
       }
 
       if (querySnapshot.empty) {
-        const identifier = auditType === 'rto' ? `RTO ID "${rtoCode}"` : `Qualification Code "${qualCode}"`;
+        const identifier = isRtoAudit ? `RTO ID "${rtoCode}"` : `Qualification Code "${qualCode}"`;
         throw new Error(`${identifier} is invalid or has no 'Current' qualifications. Please check the code and try again.`);
       }
 
-      updateProgress(0, 'success', `Found ${querySnapshot.size} current qualification(s) on scope.`);
+      const successMessage1 = isRtoAudit 
+        ? `Found ${querySnapshot.size} current qualification(s) on scope.`
+        : `Successfully located qualification ${qualCode.trim().toUpperCase()}.`;
+      updateProgress(0, 'success', successMessage1);
       
       updateProgress(1, 'running');
       const allQualifications = querySnapshot.docs.map(doc => doc.data());
       const rtoName = allQualifications.length > 0 ? (allQualifications[0] as any).rtoLegalName : "";
       
-      const scopeData = auditType === 'rto' ? allQualifications : [allQualifications[0]];
+      const scopeData = isRtoAudit ? allQualifications : [allQualifications[0]];
       
       const scopeItems: string[] = scopeData.map((data: any) => {
         return `${data.code || ''},${data.title || ''},`;
@@ -132,7 +143,11 @@ const AuditWidget: React.FC = () => {
         rtoName: rtoName,
         manualScopeDataset: manualScopeDataset 
       };
-      updateProgress(1, 'success', `Analyzing ${rtoName}...`);
+      
+      const successMessage2 = isRtoAudit
+        ? `Analyzing ${rtoName}...`
+        : `Analyzing single qualification for RTO: ${rtoName || rtoIdForAudit}...`;
+      updateProgress(1, 'success', successMessage2);
 
       updateProgress(2, 'running', 'Model is analyzing market health and financial opportunities...');
       const stage1Response = await runStage1Action(baseAuditInput);
@@ -213,20 +228,20 @@ const AuditWidget: React.FC = () => {
     return (
       <div className="max-w-3xl mx-auto">
         <form onSubmit={handleAudit}>
-            <Tabs defaultValue="rto" onValueChange={(value) => setAuditType(value as 'rto' | 'qual')} className="w-full">
+            <Tabs defaultValue="qual" onValueChange={(value) => setAuditType(value as 'qual' | 'rto')} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate-800/50 border-slate-700 text-slate-400">
-                    <TabsTrigger value="rto">Full Scope Audit</TabsTrigger>
                     <TabsTrigger value="qual">Single Qualification</TabsTrigger>
+                    <TabsTrigger value="rto">Full Scope Audit</TabsTrigger>
                 </TabsList>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                     {auditType === 'rto' ? (
                         <input
                             type="text"
-                            placeholder="Enter your RTO Number (e.g., 45123, 91398)..."
+                            placeholder="Enter your RTO Number (e.g., 45123)..."
                             value={rtoCode}
                             onChange={(e) => setRtoCode(e.target.value)}
-                            className="flex-grow px-6 py-5 bg-white/5 backdrop-blur-md border-2 border-white/10 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-white transition-all text-center sm:text-left placeholder:text-slate-400"
+                            className="flex-grow px-6 py-5 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-white transition-all text-center sm:text-left placeholder:text-slate-400"
                         />
                     ) : (
                         <input
@@ -234,7 +249,7 @@ const AuditWidget: React.FC = () => {
                             placeholder="Enter Qualification Code (e.g., RII30820)..."
                             value={qualCode}
                             onChange={(e) => setQualCode(e.target.value)}
-                            className="flex-grow px-6 py-5 bg-white/5 backdrop-blur-md border-2 border-white/10 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-white transition-all text-center sm:text-left placeholder:text-slate-400"
+                            className="flex-grow px-6 py-5 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-white transition-all text-center sm:text-left placeholder:text-slate-400"
                         />
                     )}
                     <button
@@ -259,7 +274,7 @@ const AuditWidget: React.FC = () => {
             <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" style={{ animationDelay: '0.1s'}}></div>
             <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" style={{ animationDelay: '0.2s'}}></div>
           </div>
-          <span className="text-blue-400 text-xs font-black tracking-[0.2em] uppercase italic">Analyzing National Register...</span>
+          <span className="text-blue-400 text-xs font-black tracking-[0.2em] uppercase italic">Analyzing...</span>
         </div>
         <div className="space-y-6 py-2">
             {progressSteps.map((step, index) => {
@@ -307,9 +322,9 @@ const AuditWidget: React.FC = () => {
   
   if (state === AuditState.RESULTS) {
     return (
-      <div className="bg-slate-900/50 border border-slate-800 backdrop-blur-md p-10 md:p-16 max-w-2xl text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-3xl">
-        <h5 className="font-black text-4xl text-white mb-6 tracking-tight">Strategy Ready!</h5>
-        <p className="text-slate-300 text-xl mb-12 leading-relaxed font-medium">
+      <div className="bg-white/80 border border-slate-200 backdrop-blur-md p-10 md:p-16 max-w-2xl text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-3xl shadow-2xl">
+        <h5 className="font-black text-4xl text-slate-900 mb-6 tracking-tight">Strategy Ready!</h5>
+        <p className="text-slate-600 text-xl mb-12 leading-relaxed font-medium">
           Where should we send the full Go-To-Market report?
         </p>
         <form onSubmit={handleLeadSubmit} className="space-y-4 max-w-md mx-auto">
@@ -318,7 +333,7 @@ const AuditWidget: React.FC = () => {
             placeholder="Your Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-8 py-6 bg-white/5 border-2 border-white/10 rounded-[2rem] focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-white placeholder:text-slate-400"
+            className="w-full px-8 py-6 bg-white/50 border-2 border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-slate-900 placeholder:text-slate-400"
             required
           />
           <input
@@ -326,7 +341,7 @@ const AuditWidget: React.FC = () => {
             placeholder="Work Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-8 py-6 bg-white/5 border-2 border-white/10 rounded-[2rem] focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-white placeholder:text-slate-400"
+            className="w-full px-8 py-6 bg-white/50 border-2 border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-slate-900 placeholder:text-slate-400"
             pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
             title="Please enter a valid email address."
             required
@@ -336,14 +351,14 @@ const AuditWidget: React.FC = () => {
             placeholder="Your Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-8 py-6 bg-white/5 border-2 border-white/10 rounded-[2rem] focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-white placeholder:text-slate-400"
+            className="w-full px-8 py-6 bg-white/50 border-2 border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-bold text-xl text-center transition-all text-slate-900 placeholder:text-slate-400"
             pattern="[\d\s\+\(\)-]{8,}"
             title="Please enter a valid phone number."
             required
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-[2rem] transition-all shadow-2xl shadow-blue-500/30 text-xl uppercase tracking-widest"
+            className="w-full bg-slate-900 hover:bg-blue-600 text-white font-black py-6 rounded-[2rem] transition-all shadow-2xl shadow-slate-900/30 text-xl uppercase tracking-widest"
           >
             Go to Dashboard
           </button>
