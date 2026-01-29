@@ -1,42 +1,19 @@
-
 "use client";
 
 import AuditWidget from "@/components/audit-widget";
 import { Header } from "@/components/shared/header";
 import { Button } from "@/components/ui/button";
-import { Zap, ShieldCheck, CircleX, CircleCheckBig } from "lucide-react";
+import { Package, Map, DollarSign } from "lucide-react";
 import Image from 'next/image';
-import { cn } from "@/lib/utils";
 
-
-const PainPoint = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-start gap-3">
-    <CircleX className="w-5 h-5 text-rose-500 mt-1 shrink-0" />
-    <span className="text-lg text-slate-700">{children}</span>
-  </div>
-);
-
-const GainPoint = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-start gap-3">
-    <CircleCheckBig className="w-5 h-5 text-emerald-500 mt-1 shrink-0" />
-    <span className="text-lg text-slate-800 font-medium">{children}</span>
-  </div>
-);
-
-const LogicProof = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
-    <div className="glass-card p-8 text-center h-full">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-white/70 text-blue-500 rounded-2xl mb-4 border border-white/30 shadow-md">
+const EvidenceStep = ({ icon, children }: { icon: React.ReactNode, children: React.ReactNode }) => (
+    <div className="flex items-center gap-4 text-left">
+        <div className="flex-shrink-0 w-16 h-16 bg-white/60 border border-white/30 backdrop-blur-xl rounded-2xl flex items-center justify-center text-blue-500 shadow-md">
             {icon}
         </div>
-        <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
-        <p className="text-slate-600">{children}</p>
-    </div>
-);
-
-const FloatingLabel = ({ text, className }: { text: string, className?: string }) => (
-    <div className={cn("absolute p-4 rounded-full text-sm font-bold bg-white/60 text-slate-800 backdrop-blur-md border border-white/20 whitespace-nowrap shadow-lg", className)}>
-        <div className="absolute -inset-1 bg-blue-500/10 rounded-full blur-lg -z-10 animate-pulse-grow" />
-        {text}
+        <div>
+            <p className="font-bold text-lg text-slate-800">{children}</p>
+        </div>
     </div>
 );
 
@@ -60,56 +37,57 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PAIN VS GAIN SECTION */}
-        <section className="w-full max-w-6xl mx-auto py-16 md:py-24">
-             <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-                <div className="bg-rose-50/80 border border-rose-200/50 backdrop-blur-lg rounded-3xl p-8 space-y-6 text-left shadow-lg">
-                    <h2 className="text-2xl font-bold text-rose-800">The Old RTO Model (You Now)</h2>
-                    <PainPoint><b>High Risk:</b> Selling $5k courses to cold leads.</PainPoint>
-                    <PainPoint><b>Slow Cash:</b> Wait 12 months for completion payments.</PainPoint>
-                    <PainPoint><b>Commodity:</b> Competing on price with everyone else.</PainPoint>
-                </div>
-                <div className="bg-emerald-50/80 border border-emerald-200/50 backdrop-blur-lg rounded-3xl p-8 space-y-6 text-left shadow-lg">
-                    <h2 className="text-2xl font-bold text-emerald-800">The ScopeStack Model (You Tomorrow)</h2>
-                    <GainPoint><b>Zero Risk:</b> Leads pay for themselves (Tier 1).</GainPoint>
-                    <GainPoint><b>Fast Cash:</b> Get paid in 7 days (Tier 2).</GainPoint>
-                    <GainPoint><b>Monopoly:</b> Selling unique "Career Pathways."</GainPoint>
-                </div>
-            </div>
-        </section>
-
-        {/* LOGIC PROOF SECTION */}
-        <section className="w-full max-w-6xl mx-auto py-16 md:py-24">
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-4">Why RTOs use ScopeStack.ai</h2>
-            <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto">It's not magic, it's just better commercial logic.</p>
+        {/* 3-STEP EVIDENCE BAR */}
+        <section className="w-full max-w-5xl mx-auto pt-8 pb-16 md:pb-24">
             <div className="grid md:grid-cols-3 gap-8">
-                <LogicProof icon={<Zap size={24}/>} title="⚡ Speed to Market">
-                    Launch new products next week, not next year. We map the compliance for you.
-                </LogicProof>
-                <LogicProof icon={<ShieldCheck size={24}/>} title="🎯 CAC Reduction">
-                    Slash your Cost Per Lead. Sell a $97 Tier 1 product to acquire customers for free.
-                </LogicProof>
-                <LogicProof icon={<ShieldCheck size={24}/>} title="🛡️ Audit Ready">
-                    Every strategy is mapped to specific Units of Competency. ASQA-friendly unbundling.
-                </LogicProof>
+                <EvidenceStep icon={<Package className="w-8 h-8" />}>We Unbundle your Scope.</EvidenceStep>
+                <EvidenceStep icon={<Map className="w-8 h-8" />}>We Visualize the Path.</EvidenceStep>
+                <EvidenceStep icon={<DollarSign className="w-8 h-8" />}>We Automate the Upsell.</EvidenceStep>
             </div>
         </section>
-
-        {/* THE TEASE SECTION */}
-        <section className="w-full py-16 md:py-24 relative">
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-4">This isn't just a list of units.</h2>
-            <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto">It's a complete Go-To-Market strategy, delivered in seconds.</p>
-            <div className="max-w-4xl mx-auto relative">
-                <div className="relative aspect-[4/3] sm:aspect-video rounded-3xl bg-slate-100 border-2 border-slate-200 p-4 flex flex-col gap-2 filter blur-sm opacity-80">
-                    <div className="flex gap-2">
-                        <div className="w-1/4 h-20 bg-slate-200 rounded-lg"></div>
-                        <div className="w-3/4 h-20 bg-slate-200 rounded-lg"></div>
+        
+        {/* VISUAL PATHWAY SECTION */}
+        <section className="w-full max-w-6xl mx-auto py-16 md:py-24">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-4">Your students don't read PDFs. They follow paths.</h2>
+            <div className="mt-12 grid md:grid-cols-2 gap-8 items-center">
+                <div className="glass-card p-6 text-left">
+                    <h3 className="font-bold text-slate-700 mb-4 text-center">Confusing Compliance</h3>
+                    <div className="p-4 bg-slate-100/50 rounded-lg border border-slate-200 text-sm text-slate-500 font-mono shadow-inner">
+                        CPCCWHS1001 - Prepare to work safely...<br/>
+                        CPCCOM1012 - Work effectively and sustainably...<br/>
+                        CPCCOM1014 - Conduct workplace communication...<br/>
+                        CPCCOM1015 - Carry out measurements...<br/>
+                        ...and 25 more boring documents.
                     </div>
-                    <div className="w-full h-full bg-slate-200 rounded-lg"></div>
                 </div>
-                <FloatingLabel text="💰 $145k Opportunity Found" className="top-1/4 left-1/4 -translate-x-1/2" />
-                <FloatingLabel text="📉 Marketing Ad Copy Included" className="top-1/2 right-1/4 translate-x-1/2" />
-                <FloatingLabel text="🗺️ Student Visual Pathway" className="bottom-1/4 left-1/2 -translate-x-1/2" />
+                <div className="glass-card p-6 text-left">
+                    <h3 className="font-bold text-emerald-600 mb-4 text-center">Compelling Career</h3>
+                    <div className="p-4 bg-emerald-50/50 rounded-lg border border-emerald-200/80 shadow-inner">
+                        {/* Placeholder for metro map visual */}
+                        <p className="text-emerald-800 text-center font-medium">A vibrant "Metro Map" visual would go here, showing a gamified, clear path for students.</p>
+                    </div>
+                </div>
+            </div>
+            <p className="text-lg text-slate-600 mt-12 max-w-3xl mx-auto">We automatically turn your boring Training Strategy into a gamified Visual Roadmap that students actually want to finish.</p>
+        </section>
+
+        {/* STUDENT LIFETIME LOOP SECTION */}
+        <section className="w-full max-w-6xl mx-auto py-16 md:py-24">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-12">Stop paying for the same student twice.</h2>
+            <div className="grid md:grid-cols-2 gap-16 items-center">
+                <div className="text-left glass-card p-10 h-full">
+                    <h3 className="font-bold text-2xl text-slate-900 mb-4">The ScopeStack Flywheel</h3>
+                    <p className="text-slate-700 text-lg">Most RTOs sell a qualification and say goodbye. The ScopeStack Loop uses Tier 1 to pay for ads, Tier 2 to generate cash, and Tier 3 to maximize profit—all from one student.</p>
+                </div>
+                <div className="glass-card p-4">
+                    <Image
+                        src="https://raw.githubusercontent.com/mstaal1974/Brand-Guide-/main/assets/Lifetime%20skill.jpg"
+                        alt="Student Lifetime Loop"
+                        width={600}
+                        height={600}
+                        className="rounded-2xl shadow-xl"
+                    />
+                </div>
             </div>
         </section>
 
