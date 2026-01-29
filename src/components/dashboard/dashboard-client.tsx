@@ -12,6 +12,7 @@ import { RevenueCalculator } from "./RevenueCalculator";
 import { useToast } from "@/hooks/use-toast";
 import { Rocket } from "lucide-react";
 import { SavedCurriculum } from "./SavedCurriculum";
+import { SectorCard } from "./sector-card";
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -68,6 +69,18 @@ export function DashboardClient({ data }: { data: AuditData }) {
                 </div>
             </div>
           )}
+
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-black text-slate-950 tracking-tight">Sector-by-Sector Analysis</h2>
+              <p className="text-lg text-slate-500 mt-2 max-w-3xl mx-auto">A breakdown of each training package on your scope, with AI-suggested opportunities for micro-credentials and targeted upskilling.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+              {data.sector_breakdown.map((sector) => (
+                <SectorCard key={sector.sector_name} sector={sector} isLocked={!isUnlocked} />
+              ))}
+            </div>
+          </div>
 
           {data.tiers && <RevenueCalculator tiers={data.tiers} />}
 
