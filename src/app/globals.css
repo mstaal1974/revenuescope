@@ -4,50 +4,6 @@
 
 @layer base {
   :root {
-    --background: 210 100% 97%;
-    --foreground: 220 13% 10%;
-    
-    --card: 210 100% 100%;
-    --card-foreground: 220 13% 10%;
-
-    --popover: 210 100% 100%;
-    --popover-foreground: 220 13% 10%;
-
-    --primary: 225 73% 57%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 60% 94%;
-    --secondary-foreground: 220 13% 10%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 220 9% 45%;
-
-    --accent: 180 25% 25%;
-    --accent-foreground: 180 25% 95%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 210 40% 90%;
-    --input: 210 40% 90%;
-    --ring: 225 73% 57%;
-    
-    --radius: 1rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-
-    --tier-1-bg: 27 87% 96%;
-    --tier-1-fg: 25 95% 53%;
-    --tier-2-bg: 220 13% 96%;
-    --tier-2-fg: 220 13% 40%;
-    --tier-3-bg: 50 95% 96%;
-    --tier-3-fg: 45 90% 50%;
-  }
-
-  .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
@@ -66,7 +22,7 @@
     --muted: 210 10% 23%;
     --muted-foreground: 210 20% 65%;
 
-    --accent: 210 40% 98%;
+    --accent: 130 80% 50%;
     --accent-foreground: 220 13% 10%;
 
     --destructive: 0 62.8% 30.6%;
@@ -75,6 +31,8 @@
     --border: 210 10% 23%;
     --input: 210 10% 23%;
     --ring: 225 73% 57%;
+    
+    --radius: 1rem;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -95,7 +53,7 @@
     @apply border-border;
   }
   body {
-    @apply text-foreground;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -108,7 +66,7 @@
     opacity: 0;
   }
   .strategic-theme-glow {
-    background-image: radial-gradient(ellipse 30rem 20rem at 50% 0%, hsl(var(--primary) / 0.1), transparent 80%);
+    background-image: radial-gradient(ellipse 40rem 30rem at 50% -10%, hsl(var(--primary) / 0.1), transparent 80%);
   }
   .blueprint-grid-light {
     background-color: hsl(var(--background));
