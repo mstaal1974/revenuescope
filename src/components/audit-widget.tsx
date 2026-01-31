@@ -246,7 +246,7 @@ const AuditWidget: React.FC = () => {
                 <span className="text-xs font-medium text-slate-400">Or try an example:</span>
                 <button type="button" onClick={() => handleExampleClick('CPC30220')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Carpentry' (CPC30220)</button>
                 <button type="button" onClick={() => handleExampleClick('BSB50120')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Leadership' (BSB50120)</button>
-                <button type="button" onClick={() => handleExampleClick('CHC33015')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Aged Care' (CHC33015)</button>
+                <button type="button" onClick={() => handleExampleClick('CHC33021')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Certificate III in Individual Support' (CHC33021)</button>
             </div>
         )}
       </div>
@@ -334,5 +334,7 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
 
     
