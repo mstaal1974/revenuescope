@@ -10,8 +10,8 @@ export function SkillGalaxy({ data }: { data: FullAuditOutput }) {
   }
 
   const clusters = data.skill_clusters;
-  const totalUnits = clusters.reduce((acc, c) => acc + c.units_count, 0);
-  const heroCluster = clusters[0];
+  // The 'Hero' cluster should be the one with the highest demand.
+  const heroCluster = clusters.find(c => c.market_demand.toLowerCase().includes('high')) || clusters[0];
 
   return (
     <div className="w-full bg-slate-950 rounded-2xl p-8 border border-slate-800 relative overflow-hidden">
@@ -27,7 +27,7 @@ export function SkillGalaxy({ data }: { data: FullAuditOutput }) {
             Market Clusters
           </h3>
           <p className="text-slate-400 text-sm">
-            We've clustered {totalUnits} units into {clusters.length} sellable products. 
+            Based on your skills heatmap, we've identified {clusters.length} core commercial skill clusters. 
             <span className="text-green-400 font-bold"> The '{heroCluster.cluster_name}'</span> is your highest volume opportunity.
           </p>
           
@@ -35,7 +35,7 @@ export function SkillGalaxy({ data }: { data: FullAuditOutput }) {
             {clusters.map((cluster, i) => (
               <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-slate-600'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${cluster.cluster_name === heroCluster.cluster_name ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-slate-600'}`}></div>
                   <span className="text-slate-200 font-medium text-sm">{cluster.cluster_name}</span>
                 </div>
                 <span className="text-xs text-slate-500 font-mono">{cluster.units_count} Units</span>
