@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
   return (
@@ -9,13 +10,19 @@ export function Header() {
         <Link href="/">
           <Logo />
         </Link>
-        <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" className="text-primary hover:text-primary hover:bg-black/5">
-                <Link href="/admin">Admin</Link>
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Product</Link>
+          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Solutions</Link>
+          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Evidence</Link>
+          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Logs</Link>
+        </nav>
+        <div className="flex items-center gap-4">
+            <Button asChild>
+                <Link href="/">Get Free Audit</Link>
             </Button>
-            <Button asChild className="bg-white/50 backdrop-blur-md border border-white/20 text-primary hover:bg-white/80 shadow-md font-bold">
-                <a href="/">Get Started</a>
-            </Button>
+            <Avatar className="h-9 w-9 hidden sm:flex">
+              <AvatarFallback className="bg-primary/20 text-primary font-bold">U</AvatarFallback>
+            </Avatar>
         </div>
       </div>
     </header>

@@ -4,35 +4,35 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 222.2 47.4% 11.2%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 222.2 47.4% 15.2%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 222.2 47.4% 11.2%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 22.5%;
+    --ring: 217.2 91.2% 59.8%;
     
-    --radius: 1rem;
+    --radius: 0.75rem;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -54,92 +54,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  .cursor-blink {
-    animation: blink 1s step-end infinite;
-  }
-  .animate-fade-in-up {
-    animation: fade-in-up 0.5s ease-out forwards;
-    opacity: 0;
-  }
-  .strategic-theme-glow {
-    background-color: #f0f4f8;
-    background-image: radial-gradient(at 20% 20%, hsla(210,80%,90%,1) 0px, transparent 50%),
-                      radial-gradient(at 80% 20%, hsla(28,100%,84%,0.4) 0px, transparent 50%),
-                      radial-gradient(at 20% 80%, hsla(340,100%,86%,0.3) 0px, transparent 50%),
-                      radial-gradient(at 80% 80%, hsla(240,100%,80%,0.3) 0px, transparent 50%);
-  }
-  .glass-card {
-    @apply bg-white/60 backdrop-blur-xl border border-white/30 rounded-3xl shadow-lg;
-  }
-  .blueprint-grid-light {
-    background-color: hsl(var(--background));
-    background-image:
-      linear-gradient(hsla(var(--border), 0.8) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--border), 0.8) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-  .blueprint-grid-dark {
-    background-color: hsl(var(--background));
-    background-image:
-      linear-gradient(hsla(var(--border), 0.2) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--border), 0.2) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-  .blueprint-bg {
-    background-color: hsl(var(--card));
-    background-image:
-      linear-gradient(hsla(var(--border), 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--border), 0.5) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-  .dark .blueprint-bg {
-    background-color: hsl(var(--card));
-    background-image:
-      linear-gradient(hsla(var(--border), 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--border), 0.1) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .animate-pulse-grow {
-    animation: pulse-grow 2s ease-in-out infinite;
-  }
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-grow {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
   }
 }
