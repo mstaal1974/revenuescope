@@ -8,6 +8,7 @@ import { CircleX, CircleCheckBig, Zap, ShieldCheck, Target } from "lucide-react"
 import Image from 'next/image';
 import { Footer } from "@/components/shared/footer";
 import { UnbundlingChart } from "@/components/home/UnbundlingChart";
+import Link from 'next/link';
 
 
 const PainPoint = ({ children }: { children: React.ReactNode }) => (
@@ -132,6 +133,11 @@ export default function Home() {
               >
                   Start Free Audit
               </Button>
+          </div>
+          <div className="text-center mt-8">
+             <Link href="/admin" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
+                Admin Login
+             </Link>
           </div>
       </footer>
     </div>

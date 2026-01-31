@@ -28,6 +28,7 @@ export function Footer() {
       links: [
         { label: 'Contact Us', href: '#' },
         { label: 'Support', href: '#' },
+        { label: 'Admin', href: '/admin' },
       ],
     },
   ];
