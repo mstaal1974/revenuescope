@@ -34,9 +34,6 @@ const AuditWidget: React.FC = () => {
 
   const [state, setState] = useState<AuditState>(AuditState.IDLE);
   const [result, setResult] = useState<AuditResult | null>(null);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const { toast } = useToast();
   const router = useRouter();
   
@@ -199,35 +196,6 @@ const AuditWidget: React.FC = () => {
     handleAudit(undefined, { auditType: 'qual', code });
   };
 
-  const handleLeadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email && name && phone && result) {
-      try {
-        const db = getFirestore();
-        const docRef = await addDoc(collection(db, "leads"), {
-          name,
-          email,
-          phone,
-          rtoCode: result.rto_id,
-          createdAt: serverTimestamp(),
-        });
-        localStorage.setItem('leadId', docRef.id);
-        localStorage.setItem("auditData", JSON.stringify(result));
-        toast({
-          title: "Success! Your Report is Ready.",
-          description: "Redirecting you to the dashboard now.",
-        });
-        router.push('/dashboard');
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Submission Failed",
-          description: "There was a problem submitting your information. Please try again.",
-        });
-      }
-    }
-  };
-
   if (state === AuditState.IDLE) {
     return (
       <div className="w-full max-w-2xl mx-auto">
@@ -331,44 +299,25 @@ const AuditWidget: React.FC = () => {
       <div className="bg-slate-800/50 border border-slate-700 p-8 md:p-12 max-w-lg text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-lg shadow-2xl">
         <h5 className="font-black text-3xl text-white mb-4 tracking-tight">Strategy Ready!</h5>
         <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-          Where should we send the full Go-To-Market report?
+          Your Go-To-Market report is ready to be viewed.
         </p>
-        <form onSubmit={handleLeadSubmit} className="space-y-4 max-w-md mx-auto">
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-700/80 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-base text-center transition-all text-white placeholder:text-slate-400"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Work Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-700/80 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-base text-center transition-all text-white placeholder:text-slate-400"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-            title="Please enter a valid email address."
-            required
-          />
-          <input
-            type="tel"
-            placeholder="Your Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-700/80 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-base text-center transition-all text-white placeholder:text-slate-400"
-            pattern="[\\d\\s\\+\\(\\)-]{8,}"
-            title="Please enter a valid phone number."
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-md transition-all shadow-lg text-base uppercase tracking-wider"
-          >
-            Go to Dashboard
-          </button>
-        </form>
+        <button
+          onClick={() => {
+            if (result) {
+              localStorage.setItem("auditData", JSON.stringify(result));
+              router.push('/dashboard');
+            } else {
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not retrieve audit results. Please try again.",
+              });
+            }
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-md transition-all shadow-lg text-base uppercase tracking-wider"
+        >
+          Go to Dashboard
+        </button>
       </div>
     )
   }
