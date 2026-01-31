@@ -1,40 +1,53 @@
-"use client";
+'use client';
 
 import AuditWidget from "@/components/audit-widget";
 import { Header } from "@/components/shared/header";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, Box, Milestone, Repeat, DollarSign, X } from "lucide-react";
+import { CircleX, CircleCheckBig, Zap, ShieldCheck, Target } from "lucide-react";
 import Image from 'next/image';
 import { Footer } from "@/components/shared/footer";
+import { UnbundlingChart } from "@/components/home/UnbundlingChart";
 
-const EvidenceStep = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
-    <div className="bg-card p-6 rounded-lg border border-border">
-        <div className="flex items-center gap-4">
-            <div className="bg-primary/10 text-primary p-2 rounded-md">
-                {icon}
-            </div>
-            <h3 className="text-lg font-bold text-foreground">{title}</h3>
+
+const PainPoint = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-start gap-3">
+        <CircleX className="w-5 h-5 text-rose-400 mt-1 shrink-0" />
+        <span className="text-lg text-slate-300">{children}</span>
+    </div>
+)
+
+const GainPoint = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-start gap-3">
+        <CircleCheckBig className="w-5 h-5 text-emerald-400 mt-1 shrink-0" />
+        <span className="text-lg text-slate-100 font-medium">{children}</span>
+    </div>
+)
+
+const LogicProof = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
+    <div className="bg-slate-900/50 p-8 rounded-3xl border border-slate-800 text-left">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600/20 text-blue-400 rounded-2xl mb-4 border border-blue-500/20">
+            {icon}
         </div>
-        <p className="text-muted-foreground mt-2 text-sm">{children}</p>
+        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+        <p className="text-slate-400">{children}</p>
     </div>
 );
 
-const RTOModelPoint = ({ children, isOld }: { children: React.ReactNode, isOld: boolean }) => (
-    <div className="flex items-start gap-3">
-        {isOld ? <X className="w-5 h-5 text-rose-400 mt-1 shrink-0" /> : <Check className="w-5 h-5 text-emerald-400 mt-1 shrink-0" />}
-        <span className="text-sm text-muted-foreground">{children}</span>
+const FloatingLabel = ({ text, className }: { text: string, className?: string }) => (
+    <div className={cn("absolute p-4 rounded-full text-xs font-bold bg-slate-900/50 text-white backdrop-blur-sm border border-slate-700 whitespace-nowrap shadow-lg", className)}>
+        <div className="absolute -inset-1 bg-blue-500/50 rounded-full blur-lg -z-10 animate-pulse-grow"></div>
+        {text}
     </div>
 )
 
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col font-body bg-background">
+    <div className="min-h-screen flex flex-col font-body strategic-theme-glow">
       <Header />
       <main className="flex-1 flex flex-col items-center p-4 md:p-8 text-center overflow-x-hidden">
         
-        {/* HERO SECTION */}
         <section className="container mx-auto py-16 md:py-24 animate-in fade-in duration-1000">
           <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="text-left">
@@ -43,7 +56,7 @@ export default function Home() {
                     Turn One Qualification into <span className="text-primary">Three Revenue Streams.</span>
                   </h1>
                   <p className="mt-6 text-lg md:text-lg text-muted-foreground max-w-xl">
-                    Unbundle your RTO qualifications into high-margin micro-credentials. Stop paying for the same student twice and start building high-converting career pathways.
+                    Stop selling generic Diplomas to cold traffic. Paste any Qualification Code below. We will use AI to unbundle it into a high-converting 3-Tier Revenue Staircase in 30 seconds.
                   </p>
                   <div className="mt-8">
                     <AuditWidget />
@@ -51,126 +64,76 @@ export default function Home() {
                   <p className="text-xs text-muted-foreground mt-3">✓ Access analysis of immediate market's needs.</p>
               </div>
               <div className="hidden md:block">
-                  <div className="bg-card p-4 rounded-lg border border-border shadow-2xl shadow-primary/5">
-                      <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-sm font-bold text-foreground">AI Unbundling</h3>
-                          <p className="text-xs text-muted-foreground">Last 30 Days</p>
-                      </div>
-                      <div className="h-48 bg-background rounded-md flex items-end gap-2 p-2 border border-border/50">
-                          {[...Array(12)].map((_, i) => (
-                            <div key={i} className="w-full bg-primary/20 rounded-t-sm" style={{height: `${Math.random() * 80 + 10}%`}}></div>
-                          ))}
-                      </div>
-                      <div className="mt-4 p-3 bg-background rounded-md border border-border/50">
-                          <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium">BSB50120 Analysis</span>
-                              <span className="text-sm font-bold text-emerald-400">85% Match</span>
-                          </div>
-                          <div className="w-full bg-border rounded-full h-2">
-                              <div className="bg-emerald-400 h-2 rounded-full w-[85%]"></div>
-                          </div>
-                      </div>
-                  </div>
+                  <UnbundlingChart />
               </div>
           </div>
         </section>
 
-        {/* 3-STEP EVIDENCE BAR */}
-        <section className="container mx-auto py-16 md:py-24">
-            <div className="text-center mb-12">
-                 <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">3-Step Evidence to Revenue</h2>
-                 <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">Our AI-driven workflow transforms your static training packages into a dynamic revenue engine.</p>
+        <section className="w-full max-w-6xl mx-auto py-16 md:py-24">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
+                <div className="bg-rose-900/20 border border-rose-500/20 rounded-3xl p-8 space-y-6 text-left">
+                    <h2 className="text-2xl font-bold text-rose-300">The Old RTO Model (You Now)</h2>
+                    <PainPoint><b>High Risk:</b> Selling $5k courses to cold leads.</PainPoint>
+                    <PainPoint><b>Slow Cash:</b> Wait 12 months for completion payments.</PainPoint>
+                    <PainPoint><b>Commodity:</b> Competing on price with everyone else.</PainPoint>
+                </div>
+                <div className="bg-emerald-900/20 border border-emerald-500/20 rounded-3xl p-8 space-y-6 text-left">
+                    <h2 className="text-2xl font-bold text-emerald-300">The ScopeStack Model (You Tomorrow)</h2>
+                    <GainPoint><b>Zero Risk:</b> Leads pay for themselves (Tier 1).</GainPoint>
+                    <GainPoint><b>Fast Cash:</b> Get paid in 7 days (Tier 2).</GainPoint>
+                    <GainPoint><b>Monopoly:</b> Selling unique "Career Pathways."</GainPoint>
+                </div>
             </div>
+        </section>
+
+        <section className="w-full max-w-6xl mx-auto py-16 md:py-24">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">Why RTOs use ScopeStack.ai</h2>
+            <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">It's not magic, it's just better commercial logic.</p>
             <div className="grid md:grid-cols-3 gap-8">
-                <EvidenceStep icon={<Box className="w-6 h-6" />} title="Unbundle">
-                    Break down monolithic training packages into blended, marketable micro-processes students actually want.
-                </EvidenceStep>
-                <EvidenceStep icon={<Milestone className="w-6 h-6" />} title="Visualize">
-                    Map complex compliance zones into compelling visual career roadmaps that convert prospects at first sight.
-                </EvidenceStep>
-                <EvidenceStep icon={<div className="relative"><DollarSign className="w-6 h-6" /></div>} title="Automate">
-                    Generate high converting marketing collateral and sales funnels instantly with GenAI integration.
-                </EvidenceStep>
-            </div>
-        </section>
-
-        
-        {/* VISUAL PATHWAY SECTION */}
-        <section className="container mx-auto py-16 md:py-24">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">Visual Pathway: Compliance vs. Career</h2>
-                <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">Stop selling codes. Start selling futures.</p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="bg-card border border-border rounded-lg p-6">
-                    <div className="text-sm font-bold text-muted-foreground mb-4">CONFUSING COMPLIANCE (OLD)</div>
-                    <ul className="space-y-2 text-sm">
-                        <li className="bg-background border border-border p-3 rounded-md text-muted-foreground">BSBPEF501 - Manage personal and professional development</li>
-                        <li className="bg-background border border-border p-3 rounded-md text-muted-foreground">BSBCRT511 - Develop critical thinking in others</li>
-                        <li className="bg-background border border-border p-3 rounded-md text-muted-foreground opacity-70">BSBFIN501 - Manage budgets and financial plans</li>
-                        <li className="bg-background border border-border p-3 rounded-md text-muted-foreground opacity-50">BSBOPS501 - Manage business resources</li>
-                    </ul>
-                </div>
-                <div className="bg-card border-2 border-primary rounded-lg p-6 shadow-2xl shadow-primary/10">
-                     <div className="text-sm font-bold text-primary mb-4">COMPELLING CAREER (SCOPESTACK)</div>
-                     <Image src="https://raw.githubusercontent.com/mstaal1974/Brand-Guide-/main/assets/Lifetime%20skill.jpg" alt="Visual Student Pathway" width={600} height={400} className="rounded-md" />
-                </div>
-            </div>
-        </section>
-
-        {/* STUDENT LIFETIME LOOP (REVENUE LOGIC) */}
-        <section className="container mx-auto py-16 md:py-24">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="text-left">
-                    <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">Stop paying for the same student twice.</h2>
-                    <p className="text-lg text-muted-foreground mt-4">Most RTOs lose 90% of students after graduation. ScopeStack creates a continuous learning loop, mapping current units to future credentials, keeping students in your ecosystem for life.</p>
-                </div>
-                <div className="relative">
-                    <Image src="https://raw.githubusercontent.com/mstaal1974/Brand-Guide-/main/assets/Lifetime%20skill.jpg" alt="Student Lifetime Loop" width={800} height={600} className="rounded-lg" />
-                </div>
-            </div>
-        </section>
-
-        {/* PAIN VS GAIN SECTION */}
-        <section className="w-full max-w-5xl mx-auto py-16 md:py-24">
-             <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">Why Leading RTOs are Switching</h2>
-             </div>
-            <div className="grid md:grid-cols-2 gap-8 items-stretch">
-                <div className="border border-border bg-card p-8 rounded-lg text-left space-y-4">
-                    <h3 className="font-bold text-rose-400">The Old RTO Model</h3>
-                    <RTOModelPoint isOld={true}>Low margins due to high CAC and manual student support.</RTOModelPoint>
-                    <RTOModelPoint isOld={true}>One-off qualification sales with zero follow-up strategy.</RTOModelPoint>
-                    <RTOModelPoint isOld={true}>Manual marketing asset creation takes weeks or months.</RTOModelPoint>
-                </div>
-                <div className="border-2 border-primary bg-card p-8 rounded-lg text-left space-y-4 shadow-2xl shadow-primary/10">
-                     <h3 className="font-bold text-primary">The ScopeStack Model</h3>
-                     <RTOModelPoint isOld={false}>High margin unbundled micro-credentials sold at premium.</RTOModelPoint>
-                     <RTOModelPoint isOld={false}>Recurring revenue through automated student lifecycle loops.</RTOModelPoint>
-                     <RTOModelPoint isOld={false}>AI generates landing pages, emails, and ads in seconds.</RTOModelPoint>
-                </div>
+                <LogicProof icon={<Zap />} title="⚡ Speed to Market">
+                    Launch new products next week, not next year. We map the compliance for you.
+                </LogicProof>
+                <LogicProof icon={<ShieldCheck />} title="🎯 CAC Reduction">
+                    Slash your Cost Per Lead. Sell a $97 Tier 1 product to acquire customers for free.
+                </LogicProof>
+                <LogicProof icon={<ShieldCheck />} title="🛡️ Audit Ready">
+                    Every strategy is mapped to specific Units of Competency. ASQA-friendly unbundling.
+                </LogicProof>
             </div>
         </section>
         
-        {/* FINAL CTA */}
-        <section className="container mx-auto my-16">
-            <div className="bg-primary rounded-lg p-12 text-center">
-                <h2 className="text-3xl md:text-4xl font-black text-primary-foreground">Your Scope is a Goldmine.</h2>
-                <p className="text-xl text-primary-foreground/80 mt-4 mb-8 max-w-2xl mx-auto">Run a free audit today and discover how much untapped revenue is sitting in your current training packages.</p>
-                <div className="flex gap-4 justify-center">
-                    <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90 font-bold text-lg px-8 py-6 rounded-lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        Start Free Audit
-                    </Button>
-                     <Button size="lg" variant="outline" className="bg-transparent text-white border-white/50 hover:bg-white/10 hover:text-white font-bold text-lg px-8 py-6 rounded-lg">
-                        Talk to Sales
-                    </Button>
+        <section className="w-full py-16 md:py-24 relative">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">This isn't just a list of units.</h2>
+            <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">It's a complete Go-To-Market strategy, delivered in seconds.</p>
+            <div className="max-w-4xl mx-auto relative">
+                <div className="relative aspect-[4/3] sm:aspect-video rounded-3xl bg-slate-900 border-2 border-slate-800 p-4 flex flex-col gap-2 filter blur-sm opacity-60">
+                    <div className="flex gap-2">
+                        <div className="w-1/4 h-20 bg-slate-800 rounded-lg"></div>
+                        <div className="w-3/4 h-20 bg-slate-800 rounded-lg"></div>
+                    </div>
+                    <div className="w-full h-full bg-slate-800 rounded-lg"></div>
                 </div>
-                <p className="text-xs text-primary-foreground/50 mt-4">Calculate cash-positive student acquisition models.</p>
+
+                <FloatingLabel text="💰 $145k Opportunity Found" className="top-1/4 left-1/4 -translate-x-1/2" />
+                <FloatingLabel text="📉 Marketing Ad Copy Included" className="top-1/2 right-1/4 translate-x-1/2" />
+                <FloatingLabel text="🗺️ Student Visual Pathway" className="bottom-1/4 left-1/2 -translate-x-1/2" />
             </div>
         </section>
       </main>
-      <Footer />
+
+      <footer className="w-full py-16 md:py-24">
+          <div className="bg-blue-600/10 border border-blue-500/20 rounded-3xl p-12 max-w-4xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-black text-white">Your Scope of Registration is a Goldmine.</h2>
+              <p className="text-xl text-slate-300 mt-4 mb-8">Stop sitting on it.</p>
+              <Button 
+                  size="lg" 
+                  className="bg-white text-blue-600 hover:bg-slate-200 font-bold text-lg px-8 py-6 rounded-2xl shadow-lg shadow-white/10"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                  Start Free Audit
+              </Button>
+          </div>
+      </footer>
     </div>
   );
 }
-    
