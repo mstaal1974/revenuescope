@@ -10,12 +10,6 @@ export function Header() {
         <Link href="/">
           <Logo />
         </Link>
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Product</Link>
-          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Solutions</Link>
-          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Evidence</Link>
-          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Logs</Link>
-        </nav>
         <div className="flex items-center gap-4">
             <Button asChild>
                 <Link href="/">Get Free Audit</Link>
