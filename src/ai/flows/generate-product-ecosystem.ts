@@ -46,6 +46,12 @@ const prompt = ai.definePrompt({
           "Constraint": "Positioned as the 'Expert' outcome for graduates of Tier 2, combining multiple skill clusters."
         }
       },
+      "CRITICAL_MAPPING_RULE": {
+        "Directive": "The 'tiers' array MUST be a direct commercial reflection of the 'heat_map_galaxy' array. The highest heat score cluster becomes Tier 1, the next becomes Tier 2, and so on.",
+        "Tier 1": "MUST be derived from the 'HERO_CLUSTER' with the highest heat_score. Its title and marketing must reflect the cluster's name and rationale.",
+        "Tier 2": "MUST be derived from the 'TECHNICAL_CLUSTER' (or the cluster with the second-highest heat_score).",
+        "Tier 3": "MUST be derived from the 'MANAGEMENT_CLUSTER' (or the cluster with the third-highest heat_score)."
+      },
       "MARKETING_GENERATION_RULES": {
         "Tier 1 (Impulse)": "Channel must be Social Media. Headline must be 'Pattern Interrupt' (e.g., 'Stop scrolling...')",
         "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...')",
@@ -150,7 +156,7 @@ Given the RTO's full scope data and the AI-generated skills heatmap, generate th
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
-*   RTO Scope &amp; ANZSCO Data: {{{manualScopeDataset}}}
+*   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
 *   Top Performing Sector: {{{top_performing_sector}}}
 *   Skills Heatmap: {{{skills_heatmap}}}
 `
