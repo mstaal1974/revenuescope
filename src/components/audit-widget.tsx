@@ -56,16 +56,17 @@ const AuditWidget: React.FC = () => {
       });
   };
 
-  const handleAudit = async (e?: React.FormEvent) => {
+  const handleAudit = async (e?: React.FormEvent, override?: {auditType: 'qual' | 'rto', code: string}) => {
     e?.preventDefault();
     
-    const isRtoAudit = auditType === 'rto';
+    const isRtoAudit = override ? override.auditType === 'rto' : auditType === 'rto';
+    const code = override ? override.code : (isRtoAudit ? rtoCode : qualCode);
 
-    if (isRtoAudit && !rtoCode) {
+    if (isRtoAudit && !code) {
       toast({ variant: "destructive", title: "RTO Number Required", description: "Please enter an RTO number to start the audit." });
       return;
     }
-    if (!isRtoAudit && !qualCode) {
+    if (!isRtoAudit && !code) {
       toast({ variant: "destructive", title: "Qualification Code Required", description: "Please enter a qualification code to start the analysis." });
       return;
     }
@@ -101,11 +102,11 @@ const AuditWidget: React.FC = () => {
       let rtoIdForAudit: string;
 
       if (isRtoAudit) {
-        const q = query(qualificationsRef, where("rtoCode", "==", rtoCode.trim()), where("usageRecommendation", "==", "Current"));
+        const q = query(qualificationsRef, where("rtoCode", "==", code.trim()), where("usageRecommendation", "==", "Current"));
         querySnapshot = await getDocs(q);
-        rtoIdForAudit = rtoCode.trim();
+        rtoIdForAudit = code.trim();
       } else { // auditType === 'qual'
-        const q = query(qualificationsRef, where("code", "==", qualCode.trim().toUpperCase()), where("usageRecommendation", "==", "Current"));
+        const q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()), where("usageRecommendation", "==", "Current"));
         querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
             rtoIdForAudit = querySnapshot.docs[0].data().rtoCode;
@@ -115,13 +116,13 @@ const AuditWidget: React.FC = () => {
       }
 
       if (querySnapshot.empty) {
-        const identifier = isRtoAudit ? `RTO ID "${rtoCode}"` : `Qualification Code "${qualCode}"`;
+        const identifier = isRtoAudit ? `RTO ID "${code}"` : `Qualification Code "${code}"`;
         throw new Error(`${identifier} is invalid or has no 'Current' qualifications. Please check the code and try again.`);
       }
 
       const successMessage1 = isRtoAudit 
         ? `Found ${querySnapshot.size} current qualification(s) on scope.`
-        : `Successfully located qualification ${qualCode.trim().toUpperCase()}.`;
+        : `Successfully located qualification ${code.trim().toUpperCase()}.`;
       updateProgress(0, 'success', successMessage1);
       
       updateProgress(1, 'running');
@@ -191,6 +192,12 @@ const AuditWidget: React.FC = () => {
       setState(AuditState.ERROR);
     }
   };
+  
+  const handleExampleClick = (code: string) => {
+    setAuditType('qual');
+    setQualCode(code);
+    handleAudit(undefined, { auditType: 'qual', code });
+  };
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,52 +230,59 @@ const AuditWidget: React.FC = () => {
 
   if (state === AuditState.IDLE) {
     return (
-      <div className="w-full">
-        <form onSubmit={handleAudit}>
-            <Tabs defaultValue="qual" onValueChange={(value) => setAuditType(value as 'qual' | 'rto')} className="w-full">
-                <TabsList className="mb-2 bg-transparent p-0 justify-start gap-4">
-                    <TabsTrigger value="qual" className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none p-0 h-auto text-sm font-bold data-[state=active]:border-b-2 border-primary rounded-none">Single Qualification</TabsTrigger>
-                    <TabsTrigger value="rto" className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none p-0 h-auto text-sm font-bold data-[state=active]:border-b-2 border-primary rounded-none">Full Scope Audit</TabsTrigger>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2 flex items-center gap-2 mb-4">
+            <Tabs value={auditType} onValueChange={(value) => setAuditType(value as 'qual' | 'rto')} className="w-full">
+                <TabsList className="bg-transparent p-0 justify-start gap-4">
+                    <TabsTrigger value="qual" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-slate-700/50 px-4 py-2 rounded-lg text-sm font-bold data-[state=active]:shadow-none h-auto transition-all">Single Qualification</TabsTrigger>
+                    <TabsTrigger value="rto" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-slate-700/50 px-4 py-2 rounded-lg text-sm font-bold data-[state=active]:shadow-none h-auto transition-all">Full Scope Audit</TabsTrigger>
                 </TabsList>
-                
-                <div className="flex flex-col sm:flex-row gap-2 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    {auditType === 'rto' ? (
-                        <input
-                            type="text"
-                            placeholder="Enter your RTO Number (e.g., 45123)..."
-                            value={rtoCode}
-                            onChange={(e) => setRtoCode(e.target.value)}
-                            className="flex-grow pl-12 pr-4 py-3 bg-input border border-border rounded-md focus:ring-2 focus:ring-primary outline-none text-base text-foreground placeholder:text-muted-foreground"
-                        />
-                    ) : (
-                        <input
-                            type="text"
-                            placeholder="Enter Qualification Code (e.g., RII30820)..."
-                            value={qualCode}
-                            onChange={(e) => setQualCode(e.target.value)}
-                            className="flex-grow pl-12 pr-4 py-3 bg-input border border-border rounded-md focus:ring-2 focus:ring-primary outline-none text-base text-foreground placeholder:text-muted-foreground"
-                        />
-                    )}
-                    <button
-                        type="submit"
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-3 rounded-md transition-all text-base inline-flex items-center justify-center gap-2"
-                    >
-                        Audit Now
-                    </button>
-                </div>
             </Tabs>
+        </div>
+        <form onSubmit={handleAudit} className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+            {auditType === 'rto' ? (
+                <input
+                    type="text"
+                    placeholder="Enter your RTO Number (e.g., 45123)..."
+                    value={rtoCode}
+                    onChange={(e) => setRtoCode(e.target.value)}
+                    className="w-full pl-12 pr-44 py-4 bg-slate-800/80 border-2 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-base text-white placeholder:text-slate-400"
+                />
+            ) : (
+                <input
+                    type="text"
+                    placeholder="Enter Qualification Code (e.g., RII30820)..."
+                    value={qualCode}
+                    onChange={(e) => setQualCode(e.target.value)}
+                    className="w-full pl-12 pr-44 py-4 bg-slate-800/80 border-2 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-base text-white placeholder:text-slate-400"
+                />
+            )}
+            <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg transition-all text-base inline-flex items-center justify-center gap-2"
+            >
+                Reveal Revenue Strategy <Rocket className="inline-block" />
+            </button>
         </form>
+         {auditType === 'qual' && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <span className="text-xs font-medium text-slate-400">Or try an example:</span>
+                <button type="button" onClick={() => handleExampleClick('CPC30220')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Carpentry' (CPC30220)</button>
+                <button type="button" onClick={() => handleExampleClick('BSB50120')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Leadership' (BSB50120)</button>
+                <button type="button" onClick={() => handleExampleClick('CHC33015')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Aged Care' (CHC33015)</button>
+            </div>
+        )}
       </div>
     );
   }
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     return (
-      <div className="bg-card border border-border p-8 max-w-lg mx-auto rounded-lg">
+      <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
         <div className="flex items-center justify-center mb-6">
-          <Loader2 className="w-6 h-6 text-primary animate-spin" />
-           <span className="text-primary text-sm font-bold ml-2">Analyzing...</span>
+          <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+           <span className="text-blue-400 text-sm font-bold ml-2">Analyzing...</span>
         </div>
         <div className="space-y-4">
             {progressSteps.map((step, index) => {
@@ -280,14 +294,14 @@ const AuditWidget: React.FC = () => {
                 return (
                     <div key={index} className="flex items-start gap-3 transition-all duration-300 text-left">
                         <div className="w-5 h-5 shrink-0 flex items-center justify-center mt-0.5">
-                            {isRunning && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
+                            {isRunning && <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />}
                             {isSuccess && <CheckCircle className="w-4 h-4 text-emerald-400" />}
                             {isError && <XCircle className="w-4 h-4 text-rose-400" />}
-                            {isPending && <Circle className="w-4 h-4 text-muted-foreground" />}
+                            {isPending && <Circle className="w-4 h-4 text-slate-600" />}
                         </div>
                         <div className="flex-1">
-                            <p className={`font-medium text-sm text-foreground`}>{step.name}</p>
-                            {step.details && <p className={`text-xs mt-1 text-muted-foreground`}>{step.details}</p>}
+                            <p className={`font-medium text-sm text-slate-300`}>{step.name}</p>
+                            {step.details && <p className={`text-xs mt-1 text-slate-400`}>{step.details}</p>}
                         </div>
                     </div>
                 );
@@ -296,13 +310,13 @@ const AuditWidget: React.FC = () => {
         
         {state === AuditState.ERROR && (
           <div className="mt-6">
-             <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md mb-4 text-left">
-                <p className="text-destructive font-bold text-sm">An Error Occurred</p>
-                <p className="text-destructive/80 text-xs mt-1">{progressSteps.find(s => s.status === 'error')?.details}</p>
+             <div className="bg-rose-900/50 border border-rose-500/30 p-3 rounded-md mb-4 text-left">
+                <p className="text-rose-300 font-bold text-sm">An Error Occurred</p>
+                <p className="text-rose-400/80 text-xs mt-1">{progressSteps.find(s => s.status === 'error')?.details}</p>
              </div>
             <button
               onClick={() => setState(AuditState.IDLE)}
-              className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold py-2 px-4 rounded-md transition-all text-sm"
+              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md transition-all text-sm"
             >
               Try Again
             </button>
@@ -314,9 +328,9 @@ const AuditWidget: React.FC = () => {
   
   if (state === AuditState.RESULTS) {
     return (
-      <div className="bg-card border border-border p-8 md:p-12 max-w-lg text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-lg shadow-2xl">
-        <h5 className="font-black text-3xl text-foreground mb-4 tracking-tight">Strategy Ready!</h5>
-        <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
+      <div className="bg-slate-800/50 border border-slate-700 p-8 md:p-12 max-w-lg text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-lg shadow-2xl">
+        <h5 className="font-black text-3xl text-white mb-4 tracking-tight">Strategy Ready!</h5>
+        <p className="text-slate-400 text-lg mb-8 leading-relaxed">
           Where should we send the full Go-To-Market report?
         </p>
         <form onSubmit={handleLeadSubmit} className="space-y-4 max-w-md mx-auto">
@@ -325,7 +339,7 @@ const AuditWidget: React.FC = () => {
             placeholder="Your Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 bg-input border border-border rounded-md focus:ring-2 focus:ring-primary outline-none font-bold text-base text-center transition-all text-foreground placeholder:text-muted-foreground"
+            className="w-full px-4 py-3 bg-slate-700/80 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-base text-center transition-all text-white placeholder:text-slate-400"
             required
           />
           <input
@@ -333,7 +347,7 @@ const AuditWidget: React.FC = () => {
             placeholder="Work Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-input border border-border rounded-md focus:ring-2 focus:ring-primary outline-none font-bold text-base text-center transition-all text-foreground placeholder:text-muted-foreground"
+            className="w-full px-4 py-3 bg-slate-700/80 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-base text-center transition-all text-white placeholder:text-slate-400"
             pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
             title="Please enter a valid email address."
             required
@@ -343,14 +357,14 @@ const AuditWidget: React.FC = () => {
             placeholder="Your Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-3 bg-input border border-border rounded-md focus:ring-2 focus:ring-primary outline-none font-bold text-base text-center transition-all text-foreground placeholder:text-muted-foreground"
+            className="w-full px-4 py-3 bg-slate-700/80 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 outline-none font-bold text-base text-center transition-all text-white placeholder:text-slate-400"
             pattern="[\\d\\s\\+\\(\\)-]{8,}"
             title="Please enter a valid phone number."
             required
           />
           <button
             type="submit"
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-4 rounded-md transition-all shadow-lg text-base uppercase tracking-wider"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-md transition-all shadow-lg text-base uppercase tracking-wider"
           >
             Go to Dashboard
           </button>
