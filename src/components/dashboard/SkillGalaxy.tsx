@@ -23,6 +23,25 @@ export function SkillGalaxy({ data }: { data: FullAuditOutput }) {
 
   if (clusters.length === 0) return null;
 
+  const handleLinkToTier = (index: number) => {
+    // Only link the first 3 clusters to the 3 tiers
+    if (index > 2) return; 
+    
+    const tierId = `tier-${index + 1}`;
+    const element = document.getElementById(tierId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add a temporary highlight effect
+        element.style.transition = 'box-shadow 0.3s ease-in-out';
+        element.style.boxShadow = '0 0 0 4px hsl(var(--primary))';
+        setTimeout(() => {
+            element.style.boxShadow = '';
+        }, 1500);
+    }
+  };
+
+
   return (
     <div className="w-full bg-slate-950 rounded-2xl p-8 border border-slate-800 overflow-hidden relative">
       
@@ -117,7 +136,10 @@ export function SkillGalaxy({ data }: { data: FullAuditOutput }) {
                 {/* Action Footer */}
                 <div className="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center opacity-60 group-hover:opacity-100 transition-opacity">
                   <span className="text-xs text-slate-500">Suggested Price: $495+</span>
-                  <button className="text-xs text-white flex items-center gap-1 hover:gap-2 transition-all">
+                  <button 
+                    onClick={() => handleLinkToTier(i)}
+                    className="text-xs text-white flex items-center gap-1 hover:gap-2 transition-all"
+                  >
                     View Strategy <ArrowRight size={12} />
                   </button>
                 </div>

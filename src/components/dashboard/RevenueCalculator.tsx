@@ -83,7 +83,7 @@ export function RevenueCalculator({ tiers }: RevenueCalculatorProps) {
           {tierCalculations.map((tier, index) => {
             const theme = tierThemes[tier.tier_level as keyof typeof tierThemes];
             return (
-                <div key={tier.tier_level} className={cn("rounded-3xl border-l-8 shadow-lg p-8", theme.card)}>
+                <div key={tier.tier_level} id={`tier-${tier.tier_level}`} className={cn("scroll-mt-24 rounded-3xl border-l-8 shadow-lg p-8", theme.card)}>
                     {/* HEADER: The Product */}
                     <div className="flex justify-between items-start mb-6">
                         <div>
