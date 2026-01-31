@@ -25,7 +25,7 @@ const prompt = ai.definePrompt({
     prompt: `{
     "SYSTEM_INSTRUCTION": {
       "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",
-      "TASK": "Unbundle the user's input Qualification into a 3-Tier Revenue Staircase. You must invent specific products and calculate their financial leverage.",
+      "TASK": "Unbundle the user's input Qualification into a 3-Tier Revenue Staircase AND a 'Skill Pathway'. You must invent specific products and calculate their financial leverage.",
       "TIER_RULES": {
         "TIER_1": {
           "Goal": "Acquisition (Lead Magnet)",
@@ -50,6 +50,12 @@ const prompt = ai.definePrompt({
         "Tier 1 (Impulse)": "Channel must be Social Media. Headline must be 'Pattern Interrupt' (e.g., 'Stop scrolling...').",
         "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...').",
         "Tier 3 (Trust)": "Channel must be Email/SMS. Headline must be 'Career Growth'."
+      },
+      "SKILL_PATHWAY_RULES": {
+        "TASK": "Analyze the units from the top performing sector and group them into a sequential 'Skill Pathway' of 3 to 5 steps.",
+        "LOGIC": "For each stage, identify the Primary Marketable Skill (not the Unit Title).",
+        "ICONOGRAPHY": "Assign a relevant icon for each skill. Choose from: 'HardHat', 'Drill', 'Hammer', 'Shield', 'Award'.",
+        "STATUS": "The first step MUST have status 'unlocked', all subsequent steps must be 'locked'."
       },
       "OUTPUT_FORMAT": "Strict Raw JSON Only. No preamble or markdown.",
       "JSON_STRUCTURE": {
@@ -121,12 +127,21 @@ const prompt = ai.definePrompt({
                 "email_subject": "String (The subject line to sell this product)"
             }
           }
+        ],
+        "skill_pathway": [
+          {
+            "step": 1,
+            "skill_name": "Site Safety & Entry",
+            "unit_code_ref": "CPCCWHS1001",
+            "icon": "HardHat",
+            "status": "unlocked"
+          }
         ]
       }
     }
   }
 
-Given the following RTO data, generate the 3-Tier Revenue Staircase. Pick the most representative qualification from the RTO's scope in the top performing sector to unbundle and create the 3 tiers from.
+Given the following RTO data, generate the 3-Tier Revenue Staircase and the Skill Pathway. Pick the most representative qualification from the RTO's scope in the top performing sector to unbundle and create the 3 tiers and pathway from.
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
