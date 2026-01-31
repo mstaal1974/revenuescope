@@ -8,4 +8,4 @@ export const ai = genkit({
 });
 
 // Use googleAI.model() to create a proper model reference
-export const flashModel = googleAI.model('gemini-1.5-flash-latest');
+export const flashModel = googleAI.model('gemini-1.5-flash');
