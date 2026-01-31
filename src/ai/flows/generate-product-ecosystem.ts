@@ -24,8 +24,8 @@ const prompt = ai.definePrompt({
     model: flashModel,
     prompt: `{
     "SYSTEM_INSTRUCTION": {
-      "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",
-      "TASK": "Analyze the provided skills heatmap and RTO scope to design a full product ecosystem. You will create a 3-Tier Revenue Staircase of concrete products AND a 'Skill Cluster' map that identifies strategic pathways.",
+      "ROLE": "You are the Chief Commercial Officer for a top-tier RTO and a Workforce Architect. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",
+      "TASK": "Analyze the provided skills heatmap and RTO scope to design a full product ecosystem. You will create a 3-Tier Revenue Staircase of concrete products AND a 'Heat Map Galaxy' that identifies strategic pathways based on market demand.",
       "TIER_RULES": {
         "TIER_1": {
           "Goal": "Acquisition (Lead Magnet)",
@@ -47,13 +47,17 @@ const prompt = ai.definePrompt({
         }
       },
       "MARKETING_GENERATION_RULES": {
-        "Tier 1 (Impulse)": "Channel must be Social Media. Headline must be 'Pattern Interrupt' (e.g., 'Stop scrolling...').",
-        "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...').",
+        "Tier 1 (Impulse)": "Channel must be Social Media. Headline must be 'Pattern Interrupt' (e.g., 'Stop scrolling...')",
+        "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...')",
         "Tier 3 (Trust)": "Channel must be Email/SMS. Headline must be 'Career Growth'."
       },
-      "SKILL_CLUSTER_RULES": {
-        "TASK": "Analyze all skills in the provided skills_heatmap. Group complementary skills into 3-5 distinct 'Commercial Skill Clusters'. These clusters form the basis for creating new micro-credential pathways.",
-        "LOGIC": "The 'Hero' Cluster must contain the highest-demand skills from the heatmap, representing your primary acquisition product. Group other related skills into 'Technical' and 'Management/Growth' clusters to build out clear up-sell pathways."
+      "WORKFORCE_ARCHITECT_RULES": {
+        "TASK": "Analyze the provided skills_heatmap. Identify which skills are 'Hot' (high job vacancy rates/salary premiums). Group these skills into 3 distinct 'Commercial Skill Clusters' based on 'Job Role Synergy', not just textbook topics. Inside each cluster, sequence the skills into a logical 'Micro-Pathway' from Foundation to Mastery.",
+        "CLUSTER_TYPES": {
+            "HERO_CLUSTER": "Must contain the highest-demand skills from the heatmap. This is your high-volume, low-friction acquisition product.",
+            "TECHNICAL_CLUSTER": "Contains the core hands-on trade skills for employment.",
+            "MANAGEMENT_CLUSTER": "Contains supervision/admin skills for career growth."
+        }
       },
       "OUTPUT_FORMAT": "Strict Raw JSON Only. No preamble or markdown.",
       "JSON_STRUCTURE": {
@@ -126,24 +130,27 @@ const prompt = ai.definePrompt({
             }
           }
         ],
-        "skill_clusters": [
+        "heat_map_galaxy": [
           {
-            "cluster_name": "Site Entry & Safety Ticket",
-            "market_demand": "High (Top Seller)",
-            "units_count": 3,
-            "primary_skills": ["White Card", "PPE", "Hazard Mgmt"],
-            "commercial_value": "Acquisition Tool (Low friction, high volume)"
+            "cluster_name": "Digital Site Supervisor",
+            "heat_score": 95,
+            "rationale": "High demand for supervisors who can use iPads/Construction software.",
+            "pathway_steps": [
+              {"step": "Foundation", "skill": "Digital Reporting", "unit": "BSBTEC...", "type": "Micro"},
+              {"step": "Core", "skill": "Team Leadership", "unit": "BSBLDR...", "type": "Skill Set"},
+              {"step": "Mastery", "skill": "Project Mgmt", "unit": "BSBPMG...", "type": "Micro"}
+            ]
           }
         ]
       }
     }
   }
 
-Given the RTO's full scope data and the AI-generated skills heatmap, generate the 3-Tier Revenue Staircase and Skill Clusters. The product strategy should be holistic and based on the most commercially viable opportunities across the entire skills heatmap, not just one qualification.
+Given the RTO's full scope data and the AI-generated skills heatmap, generate the 3-Tier Revenue Staircase and the Heat Map Galaxy. The product strategy should be holistic and based on the most commercially viable opportunities across the entire skills heatmap, not just one qualification.
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
-*   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
+*   RTO Scope &amp; ANZSCO Data: {{{manualScopeDataset}}}
 *   Top Performing Sector: {{{top_performing_sector}}}
 *   Skills Heatmap: {{{skills_heatmap}}}
 `

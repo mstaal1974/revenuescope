@@ -138,19 +138,26 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
 ]);
 export type Tier = z.infer<typeof TierSchema>;
 
-const SkillClusterSchema = z.object({
-  cluster_name: z.string(),
-  market_demand: z.string(),
-  units_count: z.number(),
-  primary_skills: z.array(z.string()),
-  commercial_value: z.string()
+const PathwayStepSchema = z.object({
+  step: z.string(),
+  skill: z.string(),
+  unit: z.string(),
+  type: z.string(),
 });
+
+const HeatMapGalaxyItemSchema = z.object({
+  cluster_name: z.string(),
+  heat_score: z.number(),
+  rationale: z.string(),
+  pathway_steps: z.array(PathwayStepSchema),
+});
+
 
 // Main output schema for Stage 3
 export const RevenueStaircaseSchema = z.object({
   strategy_summary: z.string(),
   tiers: z.array(TierSchema).length(3),
-  skill_clusters: z.array(SkillClusterSchema),
+  heat_map_galaxy: z.array(HeatMapGalaxyItemSchema),
 });
 export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
 

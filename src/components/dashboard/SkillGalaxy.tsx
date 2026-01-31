@@ -1,94 +1,132 @@
 'use client';
 
 import React from 'react';
-import { Target, Shield, Hammer, Briefcase, Zap } from 'lucide-react';
+import { Flame, ArrowRight, Activity } from 'lucide-react';
 import type { FullAuditOutput } from '@/ai/types';
+import { cn } from '@/lib/utils';
 
 export function SkillGalaxy({ data }: { data: FullAuditOutput }) {
-  if (!data || !data.skill_clusters || data.skill_clusters.length === 0) {
+  if (!data || !data.heat_map_galaxy) {
+    // Fallback for old data structure, prompts user to re-run audit
+    if ((data as any).skill_clusters && (data as any).skill_clusters.length > 0) {
+      return (
+        <div className="text-white p-4 bg-slate-800 rounded-lg border border-slate-700">
+          Legacy 'Skill Cluster' data found. Please re-run the audit to see the new 'Heat Map &amp; Pathways' visualization.
+        </div>
+      );
+    }
     return null;
   }
 
-  const clusters = data.skill_clusters;
-  // The 'Hero' cluster should be the one with the highest demand.
-  const heroCluster = clusters.find(c => c.market_demand.toLowerCase().includes('high')) || clusters[0];
+  // Sort by Heat Score (Hottest first) - create a copy to avoid mutation
+  const clusters = [...data.heat_map_galaxy].sort((a, b) => b.heat_score - a.heat_score);
+
+  if (clusters.length === 0) return null;
 
   return (
-    <div className="w-full bg-slate-950 rounded-2xl p-8 border border-slate-800 relative overflow-hidden">
+    <div className="w-full bg-slate-950 rounded-2xl p-8 border border-slate-800 overflow-hidden relative">
       
-      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl"></div>
-      
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+      {/* Dynamic Background Gradient based on Top Heat Score */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-400 to-blue-500"></div>
+
+      <div className="flex flex-col gap-8">
         
-        {/* LEFT: The Commercial Logic */}
-        <div className="w-full md:w-1/3 space-y-4">
-          <h3 className="text-white font-bold text-xl flex items-center gap-2">
-            <Target className="text-blue-500" />
-            Market Clusters
-          </h3>
-          <p className="text-slate-400 text-sm">
-            Based on your skills heatmap, we've identified {clusters.length} core commercial skill clusters. 
-            <span className="text-green-400 font-bold"> The '{heroCluster.cluster_name}'</span> is your highest volume opportunity.
-          </p>
-          
-          <div className="space-y-2 mt-4">
-            {clusters.map((cluster, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${cluster.cluster_name === heroCluster.cluster_name ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-slate-600'}`}></div>
-                  <span className="text-slate-200 font-medium text-sm">{cluster.cluster_name}</span>
+        {/* HEADER: Market Context */}
+        <div className="flex justify-between items-end">
+          <div>
+            <h3 className="text-white font-bold text-xl flex items-center gap-2">
+              <Flame className="text-orange-500 fill-orange-500" />
+              Skills Heat Map &amp; Pathways
+            </h3>
+            <p className="text-slate-400 text-sm mt-1 max-w-xl">
+              We analyzed current job vacancies to cluster your units into 
+              <span className="text-orange-400 font-bold"> High-Demand Micro-Pathways</span>.
+            </p>
+          </div>
+          <div className="text-right hidden md:block">
+            <div className="text-xs font-mono text-slate-500 uppercase">Highest Demand Cluster</div>
+            <div className="text-orange-400 font-bold text-lg">{clusters[0].cluster_name} ({clusters[0].heat_score}%)</div>
+          </div>
+        </div>
+
+        {/* THE GALAXY GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {clusters.map((cluster, i) => {
+            // Dynamic Styles based on Heat Score
+            const isHot = cluster.heat_score > 85;
+            
+            const borderColor = isHot ? 'border-orange-500/50' : 'border-blue-500/30';
+            const shadow = isHot ? 'shadow-[0_0_30px_rgba(249,115,22,0.15)]' : '';
+            
+            return (
+              <div key={i} className={cn(`
+                relative bg-slate-900/50 rounded-xl border ${borderColor} ${shadow} 
+                p-6 hover:bg-slate-900 transition-all group
+              `)}>
+                
+                {/* Heat Badge */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className={cn(`
+                    px-2 py-1 rounded text-xs font-bold uppercase flex items-center gap-1`,
+                    isHot ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'
+                  )}>
+                    <Activity size={12} />
+                    {isHot ? 'High Demand' : 'Steady Demand'}
+                  </div>
+                  <span className="text-slate-500 font-mono text-xs">{cluster.heat_score}% Match</span>
                 </div>
-                <span className="text-xs text-slate-500 font-mono">{cluster.units_count} Units</span>
+
+                {/* Cluster Title */}
+                <h4 className="text-white font-bold text-lg mb-2 group-hover:text-blue-200 transition-colors">
+                  {cluster.cluster_name}
+                </h4>
+                <p className="text-slate-400 text-xs mb-6 leading-relaxed">
+                  {cluster.rationale}
+                </p>
+
+                {/* The Micro-Pathway (Visual Steps) */}
+                <div className="space-y-3 relative">
+                  {/* Vertical Line Connector */}
+                  <div className="absolute left-3 top-2 bottom-4 w-0.5 bg-slate-800 group-hover:bg-slate-700 transition-colors"></div>
+
+                  {cluster.pathway_steps.map((step, idx) => (
+                    <div key={idx} className="relative z-10 flex items-center gap-3">
+                      
+                      {/* Step Node */}
+                      <div className={cn(`
+                        w-6 h-6 rounded-full border-2 flex items-center justify-center bg-slate-950`,
+                        idx === 0 ? 'border-green-500 text-green-500' : 'border-slate-600 text-slate-500'
+                      )}>
+                        <span className="text-[10px] font-bold">{idx + 1}</span>
+                      </div>
+
+                      {/* Step Detail */}
+                      <div className="flex-1 p-2 rounded bg-slate-800/50 border border-slate-700/50">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-200 text-xs font-medium">{step.skill}</span>
+                          <span className="text-[9px] text-slate-500 uppercase border border-slate-700 px-1 rounded">
+                            {step.type}
+                          </span>
+                        </div>
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action Footer */}
+                <div className="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs text-slate-500">Suggested Price: $495+</span>
+                  <button className="text-xs text-white flex items-center gap-1 hover:gap-2 transition-all">
+                    View Strategy <ArrowRight size={12} />
+                  </button>
+                </div>
+
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* RIGHT: The Galaxy Visualization */}
-        <div className="w-full md:w-2/3 h-[300px] relative flex items-center justify-center">
-          
-          {/* ORBIT RINGS */}
-          <div className="absolute w-64 h-64 border border-slate-800 rounded-full opacity-30"></div>
-          <div className="absolute w-48 h-48 border border-slate-800 rounded-full opacity-30"></div>
-
-          {/* CENTRAL HUB (The Qual) */}
-          <div className="absolute bg-slate-900 w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center z-20 shadow-2xl">
-            <div className="text-center">
-               <Briefcase size={20} className="mx-auto text-slate-400 mb-1" />
-               <span className="text-[10px] font-bold text-slate-500 uppercase">The Full</span>
-               <span className="block text-xs font-bold text-white">Qual</span>
-            </div>
-          </div>
-
-          {/* SATELLITE 1: The HERO Product (Top Right) */}
-          <div className="absolute top-4 right-12 animate-pulse">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-700 rounded-full flex flex-col items-center justify-center shadow-lg shadow-green-900/50 z-30 border-2 border-green-400">
-                <Zap size={20} className="text-white mb-1" />
-                <span className="text-[9px] font-bold text-white uppercase tracking-wider">Top Seller</span>
-              </div>
-              {/* Connector Line */}
-              <div className="absolute top-10 right-10 w-20 h-[2px] bg-green-500/30 origin-right rotate-45 -z-10"></div>
-            </div>
-          </div>
-
-          {/* SATELLITE 2: Technical (Bottom) */}
-          <div className="absolute bottom-2">
-            <div className="w-16 h-16 bg-slate-800 rounded-full flex flex-col items-center justify-center border border-slate-600 hover:bg-slate-700 transition-colors z-30">
-              <Hammer size={18} className="text-blue-400 mb-1" />
-              <span className="text-[9px] font-bold text-slate-300">Skills</span>
-            </div>
-          </div>
-
-          {/* SATELLITE 3: Management (Top Left) */}
-          <div className="absolute top-10 left-12">
-            <div className="w-14 h-14 bg-slate-800 rounded-full flex flex-col items-center justify-center border border-slate-600 hover:bg-slate-700 transition-colors z-30">
-              <Shield size={16} className="text-purple-400 mb-1" />
-              <span className="text-[8px] font-bold text-slate-300">Admin</span>
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
   );
