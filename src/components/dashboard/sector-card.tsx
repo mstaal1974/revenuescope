@@ -61,6 +61,14 @@ export function SectorCard({ sector }: SectorCardProps) {
     const revenueCardBg = isBusiness 
         ? 'bg-gradient-to-br from-primary to-indigo-600'
         : 'bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700';
+    
+    const yieldText = (() => {
+        const match = sector.financial_opportunity.assumptions.find(a => a.includes("yield"))?.match(/\$([0-9,]+)/);
+        if (match && match[0]) {
+            return `${match[0]}/unit`;
+        }
+        return '$150/unit';
+    })();
 
     return (
         <section className="bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
@@ -118,7 +126,7 @@ export function SectorCard({ sector }: SectorCardProps) {
                         </div>
                         <div className="flex items-center gap-1">
                             <Wallet className="h-4 w-4" />
-                            <span>{sector.financial_opportunity.assumptions.find(a => a.includes("yield"))?.match(/\\$([0-9,]+)/)?.[0]}/unit` || '$150/unit'}</span>
+                            <span>{yieldText}</span>
                         </div>
                     </div>
                 </div>
