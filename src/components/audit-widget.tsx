@@ -103,18 +103,26 @@ const AuditWidget: React.FC = () => {
         querySnapshot = await getDocs(q);
         rtoIdForAudit = code.trim();
       } else { // auditType === 'qual'
-        const q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()), where("usageRecommendation", "==", "Current"));
+        // First, try to find a 'Current' qualification
+        let q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()), where("usageRecommendation", "==", "Current"));
         querySnapshot = await getDocs(q);
+
+        // If no 'Current' qual found, broaden the search to any recommendation status
+        if (querySnapshot.empty) {
+          q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()));
+          querySnapshot = await getDocs(q);
+        }
+        
         if (!querySnapshot.empty) {
             rtoIdForAudit = querySnapshot.docs[0].data().rtoCode;
         } else {
-            rtoIdForAudit = 'N/A'; // Will throw error below
+            rtoIdForAudit = 'N/A'; // This will cause the check below to fail if still empty
         }
       }
 
       if (querySnapshot.empty) {
         const identifier = isRtoAudit ? `RTO ID "${code}"` : `Qualification Code "${code}"`;
-        throw new Error(`${identifier} is invalid or has no 'Current' qualifications. Please check the code and try again.`);
+        throw new Error(`${identifier} is invalid or could not be found in our dataset. Please check the code and try again.`);
       }
 
       const successMessage1 = isRtoAudit 
@@ -326,3 +334,5 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
+
+    
