@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Suspense, useState, useEffect } from 'react';
@@ -34,15 +35,15 @@ function DashboardPageContent() {
 
   const ErrorCard = ({title, message}: {title: string, message: string}) => (
     <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-12 border border-slate-200">
+        <Card className="max-w-md w-full bg-card rounded-[2.5rem] shadow-2xl p-12 border border-border">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-2xl font-black">
+                <CardTitle className="flex items-center gap-2 text-2xl font-black text-foreground">
                     <AlertTriangle className="text-rose-500" />
                     {title}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p className="text-slate-500">{message}</p>
+                <p className="text-muted-foreground">{message}</p>
                 <Button asChild className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl">
                   <Link href="/">Start New Audit</Link>
                 </Button>
@@ -54,8 +55,8 @@ function DashboardPageContent() {
   if (loading) {
     return (
         <div className="flex-1 flex flex-col items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="mt-4 text-slate-500 font-medium">Loading Dashboard...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground font-medium">Loading Dashboard...</p>
         </div>
     );
   }
@@ -73,13 +74,13 @@ function DashboardPageContent() {
 
 export default function DashboardPage() {
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50 font-body">
+        <div className="min-h-screen flex flex-col bg-background font-body">
             <Header />
             <main className="flex-1 flex flex-col py-8 md:py-16">
               <Suspense fallback={
                 <div className="flex-1 flex flex-col items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <p className="mt-4 text-slate-500 font-medium">Loading...</p>
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="mt-4 text-muted-foreground font-medium">Loading...</p>
                 </div>
               }>
                 <DashboardPageContent />
