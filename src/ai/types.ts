@@ -205,6 +205,7 @@ export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;
 // From generate-learning-outcomes.ts
 export const LearningOutcomesInputSchema = z.object({
   course_title: z.string(),
+  relevant_skills: z.array(z.string()).optional().describe("A list of relevant skills from a skills heatmap to help guide outcome generation."),
 });
 export type LearningOutcomesInput = z.infer<typeof LearningOutcomesInputSchema>;
 
