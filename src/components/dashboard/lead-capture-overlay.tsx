@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -47,8 +46,8 @@ export function LeadCaptureOverlay({ onUnlock, data }: LeadCaptureOverlayProps) 
   };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center p-8 bg-white/40 backdrop-blur-3xl z-50">
-      <div className="bg-white p-10 md:p-16 rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.3)] border border-slate-100 max-w-xl text-center relative overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center p-8 bg-white/40 backdrop-blur-3xl z-50 overflow-y-auto">
+      <div className="bg-white p-10 md:p-16 rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.3)] border border-slate-100 max-w-xl text-center relative">
         <div className="bg-blue-600 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-blue-600/40">
           <Lock className="w-12 h-12 text-white" />
         </div>
