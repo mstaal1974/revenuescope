@@ -68,7 +68,7 @@ export function RevenueCalculator({ tiers }: RevenueCalculatorProps) {
   return (
     <Card className="mt-16 bg-transparent border-none shadow-none">
       <CardHeader className="text-center p-0 mb-12">
-        <CardTitle className="text-4xl font-black text-slate-950 tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Commercial Product Stack</CardTitle>
+        <CardTitle className="text-4xl font-black text-white tracking-tight underline decoration-blue-500/20 decoration-8 underline-offset-8 mb-2">Commercial Product Stack</CardTitle>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Unbundled from Top Performing Sector</p>
       </CardHeader>
       <CardContent className="p-0">
