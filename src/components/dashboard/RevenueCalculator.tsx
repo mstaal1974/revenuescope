@@ -72,7 +72,14 @@ export function RevenueCalculator({ tiers }: RevenueCalculatorProps) {
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Unbundled from Top Performing Sector</p>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="space-y-8 mb-12">
+        <div className="bg-slate-900 text-white p-8 rounded-2xl flex justify-between items-center shadow-2xl mb-12">
+          <h4 className="text-2xl font-black tracking-tight">Total Estimated Annual Revenue</h4>
+          <p className="text-4xl font-black text-emerald-400">
+            ${totalRevenue.toLocaleString()}
+          </p>
+        </div>
+
+        <div className="space-y-8">
           {tierCalculations.map((tier, index) => {
             const theme = tierThemes[tier.tier_level as keyof typeof tierThemes];
             return (
@@ -167,13 +174,6 @@ export function RevenueCalculator({ tiers }: RevenueCalculatorProps) {
                 </div>
             )
         })}
-        </div>
-
-        <div className="bg-slate-900 text-white p-8 rounded-2xl flex justify-between items-center shadow-2xl">
-          <h4 className="text-2xl font-black tracking-tight">Total Estimated Annual Revenue</h4>
-          <p className="text-4xl font-black text-emerald-400">
-            ${totalRevenue.toLocaleString()}
-          </p>
         </div>
       </CardContent>
     </Card>
