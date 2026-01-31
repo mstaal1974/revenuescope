@@ -17,7 +17,9 @@ import { useToast } from '@/hooks/use-toast';
 
 function CourseBuilderContent() {
   const searchParams = useSearchParams();
-  const [courseTitle, setCourseTitle] = useState(searchParams.get('title') || '');
+  const titleFromParams = searchParams.get('title');
+
+  const [courseTitle, setCourseTitle] = useState('');
   const [learningOutcomes, setLearningOutcomes] = useState('');
   const [isOutcomesLoading, setIsOutcomesLoading] = useState(false);
   const [result, setResult] = useState<CourseTimelineOutput | null>(null);
@@ -30,14 +32,11 @@ function CourseBuilderContent() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const titleFromParams = searchParams.get('title');
-    // If there's a title in the URL, we fetch the learning outcomes.
-    // We also update the courseTitle state in case it was empty on initial render.
     if (titleFromParams) {
       setCourseTitle(titleFromParams);
-      setLearningOutcomes(''); // Clear previous outcomes
-      setResult(null); // Clear previous results
-      setIsSaved(false); // Reset saved state
+      setLearningOutcomes(''); 
+      setResult(null);
+      setIsSaved(false);
       
       const fetchOutcomes = async () => {
         setIsOutcomesLoading(true);
@@ -52,7 +51,7 @@ function CourseBuilderContent() {
       };
       fetchOutcomes();
     }
-  }, [searchParams]);
+  }, [titleFromParams]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
