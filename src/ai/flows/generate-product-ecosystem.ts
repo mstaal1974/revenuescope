@@ -25,7 +25,7 @@ const prompt = ai.definePrompt({
     prompt: `{
     "SYSTEM_INSTRUCTION": {
       "ROLE": "You are the Chief Commercial Officer for a top-tier RTO. You are an expert in 'Value-Based Pricing', 'Stackable Microcredentials', and 'Revenue Velocity'.",
-      "TASK": "Unbundle the user's input Qualification into a 3-Tier Revenue Staircase AND a 'Skill Pathway'. You must invent specific products and calculate their financial leverage.",
+      "TASK": "Unbundle the user's input Qualification into a 3-Tier Revenue Staircase AND a 'Skill Cluster' map. You must invent specific products and calculate their financial leverage.",
       "TIER_RULES": {
         "TIER_1": {
           "Goal": "Acquisition (Lead Magnet)",
@@ -51,11 +51,9 @@ const prompt = ai.definePrompt({
         "Tier 2 (Intent)": "Channel must be Search/Job Sites. Headline must be 'Outcome Driven' (e.g., 'Get the Job...').",
         "Tier 3 (Trust)": "Channel must be Email/SMS. Headline must be 'Career Growth'."
       },
-      "SKILL_PATHWAY_RULES": {
-        "TASK": "Analyze the units from the top performing sector and group them into a sequential 'Skill Pathway' of 3 to 5 steps.",
-        "LOGIC": "For each stage, identify the Primary Marketable Skill (not the Unit Title).",
-        "ICONOGRAPHY": "Assign a relevant icon for each skill. Choose from: 'HardHat', 'Drill', 'Hammer', 'Shield', 'Award'.",
-        "STATUS": "The first step MUST have status 'unlocked', all subsequent steps must be 'locked'."
+      "SKILL_CLUSTER_RULES": {
+        "TASK": "Analyze the units in this qualification and group them into 3 distinct 'Commercial Skill Clusters'. The 'Hero' Cluster should contain the highest-demand skills. The 'Technical' Cluster should contain core hands-on trade skills. The 'Management' Cluster should contain supervision/admin skills.",
+        "LOGIC": "For each cluster, identify the marketable skill, not just the unit titles."
       },
       "OUTPUT_FORMAT": "Strict Raw JSON Only. No preamble or markdown.",
       "JSON_STRUCTURE": {
@@ -128,13 +126,13 @@ const prompt = ai.definePrompt({
             }
           }
         ],
-        "skill_pathway": [
+        "skill_clusters": [
           {
-            "step": 1,
-            "skill_name": "Site Safety & Entry",
-            "unit_code_ref": "CPCCWHS1001",
-            "icon": "HardHat",
-            "status": "unlocked"
+            "cluster_name": "Site Entry & Safety Ticket",
+            "market_demand": "High (Top Seller)",
+            "units_count": 3,
+            "primary_skills": ["White Card", "PPE", "Hazard Mgmt"],
+            "commercial_value": "Acquisition Tool (Low friction, high volume)"
           }
         ]
       }

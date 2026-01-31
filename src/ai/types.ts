@@ -138,19 +138,19 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
 ]);
 export type Tier = z.infer<typeof TierSchema>;
 
-const SkillPathwayNodeSchema = z.object({
-    step: z.number(),
-    skill_name: z.string(),
-    unit_code_ref: z.string(),
-    icon: z.string(),
-    status: z.enum(['unlocked', 'locked']),
+const SkillClusterSchema = z.object({
+  cluster_name: z.string(),
+  market_demand: z.string(),
+  units_count: z.number(),
+  primary_skills: z.array(z.string()),
+  commercial_value: z.string()
 });
 
 // Main output schema for Stage 3
 export const RevenueStaircaseSchema = z.object({
   strategy_summary: z.string(),
   tiers: z.array(TierSchema).length(3),
-  skill_pathway: z.array(SkillPathwayNodeSchema),
+  skill_clusters: z.array(SkillClusterSchema),
 });
 export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
 

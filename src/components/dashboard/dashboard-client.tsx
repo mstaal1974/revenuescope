@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Rocket, Sparkles } from "lucide-react";
 import { SavedCurriculum } from "./SavedCurriculum";
 import { SectorCard } from "./sector-card";
-import SkillRoadmap from "./SkillRoadmap";
+import { SkillGalaxy } from "./SkillGalaxy";
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -49,7 +49,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
           <OccupationAnalysis data={data.occupation_analysis} />
 
           <div className="mt-12">
-            <SkillRoadmap data={data} />
+            <SkillGalaxy data={data} />
           </div>
 
         </div>
