@@ -14,6 +14,8 @@ import { Rocket, Sparkles } from "lucide-react";
 import { SavedCurriculum } from "./SavedCurriculum";
 import { SectorCard } from "./sector-card";
 import { SkillGalaxy } from "./SkillGalaxy";
+import { SkillsHeatmap } from "./skills-heatmap";
+
 
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -73,6 +75,10 @@ export function DashboardClient({ data }: { data: AuditData }) {
             </div>
           )}
 
+          <div className="mb-16">
+            <SkillsHeatmap data={data.skills_heatmap} />
+          </div>
+          
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
