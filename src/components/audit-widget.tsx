@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -191,7 +192,7 @@ const AuditWidget: React.FC = () => {
       console.error(err);
       let message = err instanceof Error ? err.message : "An unknown error occurred.";
       if (message.includes("API key was reported as leaked")) {
-        message = "Your Gemini API key has been disabled by Google for security reasons. Please generate a new key in Google AI Studio, add it to your .env.local file, and restart the application.";
+        message = "SECURITY ALERT: Your Gemini API key has been disabled by Google because it was publicly exposed. To fix this: 1. Create a new API key in Google AI Studio. 2. Create a file named '.env.local' in your project root. 3. Add `GEMINI_API_KEY=YOUR_NEW_KEY` to it.";
       }
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
       if (runningStepIndex !== -1) {
