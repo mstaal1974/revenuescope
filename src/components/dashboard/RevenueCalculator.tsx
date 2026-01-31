@@ -125,7 +125,7 @@ export function RevenueCalculator({ tiers }: RevenueCalculatorProps) {
                                       type="number"
                                       value={tier.learners}
                                       onChange={(e) => handleInputChange(index, e)}
-                                      className="w-28 h-10 text-lg font-bold bg-white"
+                                      className="w-28 h-10 text-lg font-bold bg-white text-slate-900"
                                       max={tier.tier_level === 1 ? 2000 : tier.tier_level === 2 ? 500 : 100}
                                   />
                               </div>
