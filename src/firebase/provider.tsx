@@ -7,6 +7,20 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 import { firebaseConfig } from "./config";
 import { FirebaseErrorListener } from "@/components/FirebaseErrorListener";
 
+// Validate Firebase configuration
+if (
+  !firebaseConfig.apiKey ||
+  !firebaseConfig.authDomain ||
+  !firebaseConfig.projectId
+) {
+  // Throwing an error is appropriate here as the app cannot function without Firebase config.
+  // This will be caught by Next.js's error overlay in development.
+  throw new Error(
+    "Firebase configuration is missing or incomplete. Please ensure all NEXT_PUBLIC_FIREBASE_* variables are set in your .env.local file. You can use the .env file as a template."
+  );
+}
+
+
 // Initialize Firebase at the module level. This ensures it's done once.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);

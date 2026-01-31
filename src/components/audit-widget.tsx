@@ -189,7 +189,10 @@ const AuditWidget: React.FC = () => {
 
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : "An unknown error occurred.";
+      let message = err instanceof Error ? err.message : "An unknown error occurred.";
+      if (message.includes("API key was reported as leaked")) {
+        message = "Your Gemini API key has been disabled by Google for security reasons. Please generate a new key in Google AI Studio, add it to your .env.local file, and restart the application.";
+      }
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
       if (runningStepIndex !== -1) {
           updateProgress(runningStepIndex, 'error', message);
