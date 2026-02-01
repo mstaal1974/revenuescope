@@ -3,7 +3,7 @@
  * @fileOverview This file defines a flow for generating a visual course timeline.
  */
 
-import { ai, flashModel } from '@/ai/genkit';
+import { ai, auditModel } from '@/ai/genkit';
 import { getCourseTimelinePrompt } from '@/lib/ai-prompts';
 import {
   CourseTimelineInputSchema,
@@ -28,7 +28,7 @@ const generateCourseTimelineFlow = ai.defineFlow(
     const prompt = getCourseTimelinePrompt(course_title, learning_outcomes);
 
     const { output } = await ai.generate({
-      model: flashModel,
+      model: auditModel,
       prompt: prompt,
       output: { schema: CourseTimelineOutputSchema },
     });

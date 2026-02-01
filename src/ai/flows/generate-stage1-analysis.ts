@@ -3,7 +3,7 @@
  * @fileOverview This file defines the first stage of the audit, generating high-level sector and occupation analysis.
  */
 
-import { ai, flashModel } from '@/ai/genkit';
+import { ai, auditModel } from '@/ai/genkit';
 import { FullAuditInputSchema, Stage1OutputSchema, type FullAuditInput, type Stage1Output } from '@/ai/types';
 
 export async function generateStage1Analysis(
@@ -16,7 +16,7 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
-  model: flashModel,
+  model: auditModel,
   prompt: `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
 **Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau ofStatistics (ABS) as the primary source for quantitative data.**

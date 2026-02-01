@@ -3,7 +3,7 @@
  * @fileOverview This file defines a flow for generating a marketable, non-accredited micro-credential from a formal Unit of Competency.
  */
 
-import { ai, flashModel } from '@/ai/genkit';
+import { ai, auditModel } from '@/ai/genkit';
 import {
   MicrocredentialInputSchema,
   MicrocredentialOutputSchema,
@@ -20,7 +20,7 @@ export async function generateMicrocredential(
 const prompt = ai.definePrompt({
     name: 'microcredentialPrompt',
     input: { schema: MicrocredentialInputSchema },
-    model: flashModel,
+    model: auditModel,
     prompt: `
 **CORE DIRECTIVE:**
 You are prohibited from simply treating a "Unit of Competency" (e.g., *BSBOPS301*) as a Microcredential.
