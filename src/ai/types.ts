@@ -18,13 +18,13 @@ const ExecutiveSummarySchema = z.object({
 });
 
 const FinancialOpportunitySchema = z.object({
-  serviceable_learners_estimate: z.number(),
-  competition_intensity_label: z.string(),
-  competition_intensity_index: z.number(),
-  provider_capacity_cap: z.number(),
-  final_learner_estimate: z.number(),
-  realistic_annual_revenue: z.string(),
-  assumptions: z.array(z.string()),
+  serviceable_learners_estimate: z.number().default(0),
+  competition_intensity_label: z.string().default("N/A"),
+  competition_intensity_index: z.number().default(0.1),
+  provider_capacity_cap: z.number().default(2000),
+  final_learner_estimate: z.number().default(0),
+  realistic_annual_revenue: z.string().default("$0 AUD"),
+  assumptions: z.array(z.string()).default(["Default assumptions used due to incomplete AI data."]),
 });
 
 const SectorBreakdownSchema = z.object({
