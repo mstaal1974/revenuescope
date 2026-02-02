@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { Header } from "@/components/shared/header";
 import { type AuditData, type Sector, runGenerateSectorCampaignKitAction, type SectorCampaignKitOutput, runStage3Action, type RevenueStaircaseInput, type RevenueStaircaseOutput } from "@/app/actions";
@@ -25,6 +25,10 @@ function SectorAnalysisContent() {
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Editable state for financial modeling
+  const [editableLearners, setEditableLearners] = useState(0);
+  const [editableYield, setEditableYield] = useState(0);
 
   useEffect(() => {
     if (!sectorName) {
@@ -55,6 +59,10 @@ function SectorAnalysisContent() {
           return;
         }
         setSectorData(foundSector);
+
+        // Initialize editable state
+        setEditableLearners(foundSector.financial_opportunity.final_learner_estimate);
+        setEditableYield(foundSector.financial_opportunity.average_course_yield);
 
         const campaignKitInput = { sector: foundSector };
         const ecosystemInput: RevenueStaircaseInput = {
@@ -98,6 +106,49 @@ function SectorAnalysisContent() {
 
   }, [sectorName]);
 
+  const originalRoi = useMemo(() => {
+    if (!sectorData) return 0;
+    const revenueString = sectorData.financial_opportunity.realistic_annual_revenue.replace(/[^0-9.-]+/g,"");
+    return parseFloat(revenueString);
+  }, [sectorData]);
+
+  const displayCampaignKit = useMemo(() => {
+    if (!campaignKitData || !sectorData) return null;
+
+    const newRoi = editableLearners * editableYield;
+    const scalingFactor = originalRoi > 0 ? newRoi / originalRoi : 0;
+    
+    const newProjection = campaignKitData.financial_impact.growth_projection.map(p => ({
+        ...p,
+        value: Math.round(p.value * scalingFactor),
+    }));
+
+    const newFiveYearProjection = campaignKitData.financial_impact.five_year_growth_projection?.map(p => ({
+        ...p,
+        value: Math.round(p.value * scalingFactor),
+    }));
+
+    const newMonthlyLeads = editableLearners > 0 ? (editableLearners / 12) : 0;
+    const monthlyLeadsString = newMonthlyLeads > 1000 
+      ? `${(newMonthlyLeads / 1000).toFixed(1)}k` 
+      : Math.round(newMonthlyLeads).toString();
+
+    return {
+      ...campaignKitData,
+      financial_impact: {
+        ...campaignKitData.financial_impact,
+        estimated_annual_roi: `$${newRoi.toLocaleString()}`,
+        growth_projection: newProjection,
+        five_year_growth_projection: newFiveYearProjection,
+      },
+      kpi_metrics: {
+          ...campaignKitData.kpi_metrics,
+          monthly_lead_volume: monthlyLeadsString,
+      }
+    };
+  }, [campaignKitData, sectorData, editableLearners, editableYield, originalRoi]);
+
+
   const ErrorCard = ({title, message}: {title: string, message: string}) => (
     <div className="flex-1 flex items-center justify-center p-4">
         <Card className="max-w-md w-full bg-card rounded-[2.5rem] shadow-2xl p-12 border border-border">
@@ -130,13 +181,13 @@ function SectorAnalysisContent() {
     );
   }
 
-  if (error && !campaignKitData) {
+  if (error && !displayCampaignKit) {
     return <ErrorCard title="Error Generating Campaign Kit" message={error} />;
   }
   
-  if (sectorData && campaignKitData) {
-    const kpi = campaignKitData.kpi_metrics;
-    const strategy = campaignKitData.the_strategy;
+  if (sectorData && displayCampaignKit) {
+    const kpi = displayCampaignKit.kpi_metrics;
+    const strategy = displayCampaignKit.the_strategy;
 
     return (
         <div className='container mx-auto p-4 md:p-8 space-y-24'>
@@ -159,7 +210,13 @@ function SectorAnalysisContent() {
             </header>
 
             {/* Main Content */}
-            <FinancialImpactDashboard data={campaignKitData.financial_impact} />
+            <FinancialImpactDashboard 
+                data={displayCampaignKit.financial_impact} 
+                learners={editableLearners}
+                setLearners={setEditableLearners}
+                avgYield={editableYield}
+                setAvgYield={setEditableYield}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KpiCard title="CAC Reduction" value={kpi.cac_reduction_value} subValue={kpi.cac_reduction_percentage} description="Per acquisition" />
@@ -192,7 +249,7 @@ function SectorAnalysisContent() {
                 </CardContent>
             </Card>
 
-            {campaignKitData.skills_to_product_strategy && (
+            {displayCampaignKit.skills_to_product_strategy && (
               <Card className='bg-slate-900 border-slate-800 text-white rounded-3xl p-8 md:p-12'>
                 <CardHeader className='p-0 mb-6'>
                   <CardTitle className='text-3xl font-bold flex items-center gap-3'>
@@ -207,7 +264,7 @@ function SectorAnalysisContent() {
                   <div className="space-y-4">
                     <h4 className="font-bold text-slate-200">Suggested Short Courses</h4>
                     <div className="space-y-3">
-                      {campaignKitData.skills_to_product_strategy.suggested_short_courses.map((course, i) => (
+                      {displayCampaignKit.skills_to_product_strategy.suggested_short_courses.map((course, i) => (
                         <div key={i} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                           <h5 className="font-bold text-white">{course.title}</h5>
                           <p className="text-sm text-slate-400 mt-1">{course.description}</p>
@@ -224,7 +281,7 @@ function SectorAnalysisContent() {
                   </div>
                   <div className="space-y-4">
                     <h4 className="font-bold text-slate-200">Suggested Skill Packages</h4>
-                    {campaignKitData.skills_to_product_strategy.suggested_skill_packages.map((pkg, i) => (
+                    {displayCampaignKit.skills_to_product_strategy.suggested_skill_packages.map((pkg, i) => (
                       <div key={i} className="bg-gradient-to-br from-blue-500/10 to-transparent p-6 rounded-2xl border border-blue-500/30">
                         <h5 className="font-bold text-blue-300 text-lg">{pkg.package_title}</h5>
                         <p className="text-sm text-slate-300 mt-1 mb-4">{pkg.package_description}</p>

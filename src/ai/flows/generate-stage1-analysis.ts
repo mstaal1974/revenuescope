@@ -55,7 +55,8 @@ Cap learner volumes based on realistic SME delivery constraints (staffing, asses
 \`Final Learners = MIN(Effective Learners, Provider Capacity Cap)\`
 
 **STEP 4 — Calculate Realistic Annual Revenue:**
-\`Realistic Annual Revenue = Final Learners × Average Course Yield\` (Assume an average yield of $150 AUD per course if not otherwise specified).
+Set a default \`average_course_yield\` of 150.
+\`Realistic Annual Revenue = Final Learners × average_course_yield\`. You MUST output this as a numeric value in the \`average_course_yield\` field.
 
 
 **MANDATORY AI COURSE LOGIC**
@@ -141,6 +142,7 @@ You must calculate the \`business_multipliers\` object using the following 4 rec
         "competition_intensity_index": 0.1,
         "provider_capacity_cap": 2000,
         "final_learner_estimate": 2000,
+        "average_course_yield": 150,
         "realistic_annual_revenue": "$900,000 AUD",
         "assumptions": ["Low reach due to market saturation.", "Assumes $150 average course yield."]
       },
