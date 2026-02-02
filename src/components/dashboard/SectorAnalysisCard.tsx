@@ -5,6 +5,7 @@ import { Info, Users, Link as LinkIcon, Sparkles, TrendingDown, RefreshCw, Crown
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SectorAnalysisCardProps {
   sector: Sector;
@@ -33,7 +34,8 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
           icon: <TrendingDown size={24} />,
           color: "text-emerald-400",
           bg: "bg-emerald-400/10",
-          border: "border-emerald-400/20"
+          border: "border-emerald-400/20",
+          tooltip: "CAC Offset stands for 'Customer Acquisition Cost Offset'. It calculates how many advertising leads are paid for by the sale of one low-cost Tier 1 product, effectively making customer acquisition free."
         },
         {
           title: "Student LTV",
@@ -42,7 +44,8 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
           icon: <RefreshCw size={24} />,
           color: "text-blue-400",
           bg: "bg-blue-400/10",
-          border: "border-blue-400/20"
+          border: "border-blue-400/20",
+          tooltip: "Student LTV stands for 'Lifetime Value'. It projects the total revenue a single student generates by progressing through your 3-Tier product staircase, from a low-cost entry product to a full qualification."
         },
         {
           title: "Positioning",
@@ -51,7 +54,8 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
           icon: <Crown size={24} />,
           color: "text-amber-400",
           bg: "bg-amber-400/10",
-          border: "border-amber-400/20"
+          border: "border-amber-400/20",
+          tooltip: "Positioning analyzes your market competition. 'Category King' means you have very few competitors and can dominate the niche. 'High Competition' means the market is saturated and you need to specialize."
         },
         {
           title: "B2B Scale",
@@ -60,7 +64,8 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
           icon: <Building2 size={24} />,
           color: "text-violet-400",
           bg: "bg-violet-400/10",
-          border: "border-violet-400/20"
+          border: "border-violet-400/20",
+          tooltip: "B2B Scale assesses the potential for bulk corporate sales. It analyzes your qualifications for compliance or liability keywords (like 'WHS', 'Safety', 'Lead') that are attractive to businesses for workforce training."
         }
       ];
 
@@ -73,29 +78,38 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
 
             <div className="p-6 space-y-8 flex-grow">
                 <section>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {cards.map((card, index) => (
-                            <div key={index} className={cn(`p-4 rounded-xl border ${card.border} bg-slate-900/50 backdrop-blur-sm`)}>
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className={cn(`p-2 rounded-lg`, card.bg, card.color)}>
-                                        {card.icon}
-                                    </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <h4 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.title}</h4>
-                                    <div className={cn(
-                                        `text-xl font-bold`,
-                                        hasMultipliers ? 'text-white' : 'text-amber-400 text-base'
-                                    )}>
-                                        {card.value}
-                                    </div>
-                                    <p className="text-slate-500 text-xs leading-relaxed mt-2 border-t border-slate-800 pt-2">
-                                        {card.subtext}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <TooltipProvider>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {cards.map((card, index) => (
+                                <Tooltip key={index}>
+                                    <TooltipTrigger asChild>
+                                        <div className={cn(`p-4 rounded-xl border ${card.border} bg-slate-900/50 backdrop-blur-sm cursor-help`)}>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className={cn(`p-2 rounded-lg`, card.bg, card.color)}>
+                                                    {card.icon}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h4 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.title}</h4>
+                                                <div className={cn(
+                                                    `text-xl font-bold`,
+                                                    hasMultipliers ? 'text-white' : 'text-amber-400 text-base'
+                                                )}>
+                                                    {card.value}
+                                                </div>
+                                                <p className="text-slate-500 text-xs leading-relaxed mt-2 border-t border-slate-800 pt-2">
+                                                    {card.subtext}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs text-center" side="top" align="center">
+                                        <p>{card.tooltip}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                        </div>
+                    </TooltipProvider>
                 </section>
                 
                 <section>
