@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -10,6 +8,7 @@ import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestam
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
 
 type AuditResult = FullAuditOutput;
@@ -39,6 +38,7 @@ const AuditWidget: React.FC = () => {
   const router = useRouter();
   
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
+  const [progress, setProgress] = useState(0);
 
   const updateProgress = (stepIndex: number, status: ProgressStep['status'], details?: string) => {
       setProgressSteps(prev => {
@@ -50,6 +50,9 @@ const AuditWidget: React.FC = () => {
                   newSteps[i].status = 'pending';
               }
           }
+          const completedSteps = newSteps.filter(s => s.status === 'success').length;
+          const progressPercentage = (completedSteps / newSteps.length) * 100;
+          setProgress(progressPercentage);
           return newSteps;
       });
   };
@@ -89,6 +92,7 @@ const AuditWidget: React.FC = () => {
     
     const steps = isRtoAudit ? initialProgressRTO : initialProgressQual;
     setProgressSteps(steps);
+    setProgress(0);
     setState(AuditState.PROCESSING);
 
     try {
@@ -260,10 +264,16 @@ const AuditWidget: React.FC = () => {
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     return (
       <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
-        <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center justify-center mb-4">
           <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
            <span className="text-blue-400 text-sm font-bold ml-2">Analyzing...</span>
         </div>
+        
+        <div className="space-y-2 mb-6">
+            <Progress value={progress} className="w-full h-2 [&>div]:bg-blue-500" />
+            <p className="text-xs text-slate-400 font-medium text-right">{Math.round(progress)}% Complete</p>
+        </div>
+
         <div className="space-y-4">
             {progressSteps.map((step, index) => {
                 const isRunning = step.status === 'running';
@@ -338,7 +348,3 @@ const AuditWidget: React.FC = () => {
 };
 
 export default AuditWidget;
-
-    
-
-    
