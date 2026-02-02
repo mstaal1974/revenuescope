@@ -12,14 +12,16 @@ interface SectorAnalysisCardProps {
 
 export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) {
 
+    const hasMultipliers = !!sector.business_multipliers;
+
     const multipliers = sector.business_multipliers || {
-        marketing_cac_label: "N/A",
-        marketing_cac_subtext: "Re-run audit for data.",
-        retention_ltv_value: "N/A",
-        retention_ltv_subtext: "Re-run audit for data.",
-        strategic_positioning: "N/A",
-        strategic_positioning_subtext: "Re-run audit for data.",
-        b2b_scale_potential: "N/A",
+        marketing_cac_label: "Re-run Audit",
+        marketing_cac_subtext: "To calculate CAC Offset.",
+        retention_ltv_value: "Re-run Audit",
+        retention_ltv_subtext: "To calculate Student LTV.",
+        strategic_positioning: "Re-run Audit",
+        strategic_positioning_subtext: "To calculate Positioning.",
+        b2b_scale_potential: "Re-run Audit",
         b2b_scale_rating: 0,
     };
 
@@ -54,7 +56,7 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
         {
           title: "B2B Scale",
           value: multipliers.b2b_scale_potential,
-          subtext: "Optimized for bulk corporate procurement.",
+          subtext: hasMultipliers ? "Optimized for bulk corporate procurement." : "To calculate B2B Scale.",
           icon: <Building2 size={24} />,
           color: "text-violet-400",
           bg: "bg-violet-400/10",
@@ -81,7 +83,10 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
                                 </div>
                                 <div className="space-y-1">
                                     <h4 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.title}</h4>
-                                    <div className={cn(`text-xl font-bold text-white`)}>
+                                    <div className={cn(
+                                        `text-xl font-bold`,
+                                        hasMultipliers ? 'text-white' : 'text-amber-400 text-base'
+                                    )}>
                                         {card.value}
                                     </div>
                                     <p className="text-slate-500 text-xs leading-relaxed mt-2 border-t border-slate-800 pt-2">
