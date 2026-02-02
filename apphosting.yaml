@@ -6,4 +6,4 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
   # Increase the timeout for long-running AI operations.
-  timeoutSeconds: 180
+  timeoutSeconds: 600
