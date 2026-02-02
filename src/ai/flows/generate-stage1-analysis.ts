@@ -58,6 +58,13 @@ Cap learner volumes based on realistic SME delivery constraints (staffing, asses
 \`Realistic Annual Revenue = Final Learners × Average Course Yield\` (Assume an average yield of $150 AUD per course if not otherwise specified).
 
 
+**MANDATORY AI COURSE LOGIC**
+For every sector, you MUST generate 2-3 innovative, AI-related micro-credential course titles for the \`suggested_ai_courses\` array.
+1.  **Identify the Pain:** For a common job role in the sector, what is the most hated administrative, creative, or repetitive task? (e.g., Site Reports, Client Emails, Menu Planning, Lesson Plans).
+2.  **Apply a Tool:** Select a specific, accessible AI tool (e.g., ChatGPT, Microsoft Copilot, Otter.ai, Canva Magic) that solves this pain.
+3.  **Create the Title:** Title the course based on the *result*, not the technology (e.g., "AI for Rapid Site Reporting" not "Intro to ChatGPT").
+4.  **Constraint:** The suggestions must be "Blue Collar / Frontline Friendly" (No technical background required). Do NOT suggest "General AI" or "Coding".
+
 **Task: High-Level Sector & Occupation Analysis**
 
 Your overall task is to act as a **Strategic Growth Director** and **Labour Market Data Scientist** to generate a single raw JSON object containing three top-level keys: \`executive_summary\`, \`sector_breakdown\`, and \`occupation_analysis\`.
@@ -67,7 +74,7 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     *   \`top_performing_sector\`: A string identifying the best sector.
     *   \`strategic_advice\`: A string with your main recommendation.
 
-2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\`. The properties for market health and competition intensity must be flattened. For each sector, also generate a list of 2-3 innovative, AI-related micro-credential course titles that could be developed. These should be stored in a \`suggested_ai_courses\` array. For each sector, you MUST generate the \`business_multipliers\` object using the MANDATORY BUSINESS MULTIPLIER LOGIC below.
+2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\`. The properties for market health and competition intensity must be flattened. For each sector, you MUST use the **MANDATORY AI COURSE LOGIC** to generate the \`suggested_ai_courses\` array. For each sector, you MUST generate the \`business_multipliers\` object using the MANDATORY BUSINESS MULTIPLIER LOGIC below.
 
 3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
 
