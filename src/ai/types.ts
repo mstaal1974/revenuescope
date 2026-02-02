@@ -200,6 +200,7 @@ export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
 // It's a merge of all the stage outputs.
 export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(RevenueStaircaseSchema).extend({
     rto_id: z.string(),
+    rto_name: z.string().optional(),
     manualScopeDataset: z.string().optional(),
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
