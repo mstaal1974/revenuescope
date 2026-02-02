@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { CircleX, CircleCheckBig, Zap, ShieldCheck, Target } from "lucide-react";
 import Image from 'next/image';
 import { Footer } from "@/components/shared/footer";
-import { UnbundlingChart } from "@/components/home/UnbundlingChart";
 import Link from 'next/link';
 
 
@@ -50,22 +49,19 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center p-4 md:p-8 text-center overflow-x-hidden">
         
         <section className="container mx-auto py-16 md:py-24 animate-in fade-in duration-1000">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="text-left">
+          <div className="grid gap-12 items-center">
+              <div className="text-center">
                   <div className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-4">POWERED BY GEMINI AI</div>
                   <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
                     Turn One Qualification into <span className="text-primary">Three Revenue Streams.</span>
                   </h1>
-                  <p className="mt-6 text-lg md:text-lg text-muted-foreground max-w-xl">
+                  <p className="mt-6 text-lg md:text-lg text-muted-foreground max-w-xl mx-auto">
                     Stop selling generic Diplomas to cold traffic. Paste any Qualification Code below. We will use AI to unbundle it into a high-converting 3-Tier Revenue Staircase in 30 seconds.
                   </p>
                   <div className="mt-8">
                     <AuditWidget />
                   </div>
                   <p className="text-xs text-muted-foreground mt-3">✓ Access analysis of immediate market's needs.</p>
-              </div>
-              <div className="hidden md:block">
-                  <UnbundlingChart />
               </div>
           </div>
         </section>

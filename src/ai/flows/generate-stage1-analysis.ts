@@ -66,7 +66,7 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     *   \`top_performing_sector\`: A string identifying the best sector.
     *   \`strategic_advice\`: A string with your main recommendation.
 
-2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\` for each sector. The properties for market health and competition intensity must be flattened. For each sector, also generate a list of 2-3 innovative, AI-related micro-credential course titles that could be developed. These should be stored in a \`suggested_ai_courses\` array.
+2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\`. The properties for market health and competition intensity must be flattened. For each sector, also generate a list of 2-3 innovative, AI-related micro-credential course titles that could be developed. These should be stored in a \`suggested_ai_courses\` array. You must also generate the \`business_multipliers\` object for each sector.
 
 3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
 
@@ -99,6 +99,12 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
         "final_learner_estimate": 2000,
         "realistic_annual_revenue": "$900,000 AUD",
         "assumptions": ["Low reach due to market saturation.", "Assumes $150 average course yield."]
+      },
+      "business_multipliers": {
+        "marketing_cac_label": "High - Requires significant brand spend to stand out in a crowded market.",
+        "retention_ltv_potential": "Medium - Clear pathway from Certificate IV to Diploma and Advanced Diploma.",
+        "strategic_positioning": "Commodity Player - Competing primarily on price and location.",
+        "b2b_scale_potential": "High - Strong demand for corporate training in leadership and management."
       },
       "recommended_actions": ["Develop niche micro-credentials for specific software skills."],
       "suggested_ai_courses": ["AI for Business Process Automation", "Generative AI for Marketing Content"]

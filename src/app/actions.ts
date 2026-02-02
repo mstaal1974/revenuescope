@@ -6,6 +6,7 @@ import { generateProductEcosystem } from "@/ai/flows/generate-product-ecosystem"
 import { generateMicrocredential } from "@/ai/flows/generate-microcredential";
 import { generateCourseTimeline } from "@/ai/flows/generate-course-timeline";
 import { generateLearningOutcomes } from "@/ai/flows/generate-learning-outcomes";
+import { generateSectorCampaignKit } from "@/ai/flows/generate-sector-campaign-kit";
 
 import { 
   type FullAuditInput, 
@@ -19,7 +20,9 @@ import {
   type CourseTimelineInput,
   type CourseTimelineOutput,
   type LearningOutcomesInput,
-  type LearningOutcomesOutput
+  type LearningOutcomesOutput,
+  type SectorCampaignKitInput,
+  type SectorCampaignKitOutput
 } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
@@ -47,6 +50,10 @@ export type LearningOutcomesActionResult =
 
 export type CourseTimelineActionResult =
   | { ok: true; result: CourseTimelineOutput }
+  | { ok: false; error: string };
+
+export type SectorCampaignKitActionResult =
+  | { ok: true; result: SectorCampaignKitOutput }
   | { ok: false; error: string };
 
 
@@ -162,6 +169,24 @@ export async function runGenerateCourseTimelineAction(
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateCourseTimelineAction failed:", e);
+    return { ok: false, error: message };
+  }
+}
+
+// SECTOR CAMPAIGN KIT ACTION
+export async function runGenerateSectorCampaignKitAction(
+  input: SectorCampaignKitInput
+): Promise<SectorCampaignKitActionResult> {
+  try {
+    checkApiKey();
+    if (!input.sector) {
+      throw new Error("Sector data is required.");
+    }
+    const result = await generateSectorCampaignKit(input);
+    return { ok: true, result };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("runGenerateSectorCampaignKitAction failed:", e);
     return { ok: false, error: message };
   }
 }

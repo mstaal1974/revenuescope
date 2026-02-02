@@ -27,6 +27,13 @@ const FinancialOpportunitySchema = z.object({
   assumptions: z.array(z.string()).default(["Default assumptions used due to incomplete AI data."]),
 });
 
+const BusinessMultipliersSchema = z.object({
+  marketing_cac_label: z.string().describe("e.g. 'High - Requires brand spend'"),
+  retention_ltv_potential: z.string().describe("e.g. 'Medium - Upsell to Diploma'"),
+  strategic_positioning: z.string().describe("e.g. 'Niche Specialist'"),
+  b2b_scale_potential: z.string().describe("e.g. 'High - Corporate training packages'"),
+});
+
 const SectorBreakdownSchema = z.object({
   sector_name: z.string(),
   qualification_count: z.number(),
@@ -34,9 +41,12 @@ const SectorBreakdownSchema = z.object({
   market_health_trend_direction: z.string(),
   market_health_avg_industry_wage: z.string(),
   financial_opportunity: FinancialOpportunitySchema,
+  business_multipliers: BusinessMultipliersSchema.optional(),
   recommended_actions: z.array(z.string()),
   suggested_ai_courses: z.array(z.string()).default([]),
 });
+export type Sector = z.infer<typeof SectorBreakdownSchema>;
+
 
 const OccupationAnalysisItemSchema = z.object({
   occupation_name: z.string(),
@@ -248,3 +258,33 @@ export const CourseTimelineOutputSchema = z.object({
   modules: z.array(CourseModuleSchema),
 });
 export type CourseTimelineOutput = z.infer<typeof CourseTimelineOutputSchema>;
+
+
+// From generate-sector-campaign-kit.ts
+export const SectorCampaignKitInputSchema = z.object({
+    sector: SectorBreakdownSchema,
+});
+export type SectorCampaignKitInput = z.infer<typeof SectorCampaignKitInputSchema>;
+
+export const SectorCampaignKitOutputSchema = z.object({
+    financial_impact: z.object({
+        business_revenue_multiplier: z.string(),
+        estimated_annual_roi: z.string(),
+        annual_roi_percentage: z.string(),
+        growth_projection: z.array(z.object({ name: z.string(), value: z.number() })),
+    }),
+    kpi_metrics: z.object({
+        cac_reduction_value: z.string(),
+        cac_reduction_percentage: z.string(),
+        ltv_expansion_multiplier: z.string(),
+        authority_index_score: z.number(),
+        monthly_lead_volume: z.string(),
+    }),
+    the_strategy: z.object({
+        primary_logic: z.string(),
+        market_pivot: z.string(),
+        target_audience: z.string(),
+        key_selling_points: z.array(z.string()),
+    }),
+});
+export type SectorCampaignKitOutput = z.infer<typeof SectorCampaignKitOutputSchema>;
