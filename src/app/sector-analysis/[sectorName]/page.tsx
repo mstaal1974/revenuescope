@@ -7,11 +7,11 @@ import { type AuditData, type Sector, runGenerateSectorCampaignKitAction, type S
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, CheckCircle, Layers, Zap } from 'lucide-react';
+import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, CheckCircle, Layers } from 'lucide-react';
 import FinancialImpactDashboard from '@/components/sector-analysis/FinancialImpactDashboard';
 import KpiCard from '@/components/sector-analysis/KpiCard';
-import { SkillsHeatmap } from '@/components/dashboard/skills-heatmap';
 import RevenueGrowthEngine from '@/components/dashboard/RevenueGrowthEngine';
+import SkillPathways from '@/components/sector-analysis/SkillPathways';
 
 
 function SectorAnalysisContent() {
@@ -243,27 +243,17 @@ function SectorAnalysisContent() {
               </Card>
             )}
 
-            {fullAuditData?.skills_heatmap && (
-                <section>
-                     <div className="text-left mb-12">
-                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] border border-slate-700">
-                             <Zap size={12} />
-                             Context: Overall RTO Skills Demand
-                         </div>
-                         <h3 className="text-3xl font-black text-white tracking-tight mt-4">Scope-Wide Skills Heatmap</h3>
-                         <p className="text-slate-400 mt-2 max-w-3xl">This heatmap analyzes every skill within your entire scope to identify what employers are hiring for right now. Use this as context for your sector-specific strategy.</p>
-                     </div>
-                    <SkillsHeatmap data={fullAuditData.skills_heatmap} />
-                </section>
+            {pathwayData ? (
+                 <SkillPathways data={pathwayData} />
+            ) : (
+                error && <ErrorCard title="Pathway Generation Failed" message={error} />
             )}
 
             {pathwayData ? (
                  <section>
                      <RevenueGrowthEngine data={pathwayData} />
                  </section>
-            ) : (
-                error && <ErrorCard title="Pathway Generation Failed" message={error} />
-            )}
+            ) : null }
 
         </div>
     );

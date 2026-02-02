@@ -121,6 +121,12 @@ const MarketingPlaybookSchema = z.object({
     email_subject: z.string().describe("The subject line to sell this product"),
 });
 
+const IncludedUnitSchema = z.object({
+  name: z.string().describe("The name of the skill or unit."),
+  type: z.string().describe("The type, e.g., 'MICRO', 'SKILL SET', 'PATHWAY'."),
+});
+
+
 // Discriminated union for Tiers
 export const TierSchema = z.discriminatedUnion('tier_level', [
     z.object({
@@ -128,6 +134,9 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
         title: z.string(),
         format: z.string(),
         price: z.number(),
+        demand_level: z.string().describe("e.g. 'High Demand', 'Steady Demand'"),
+        match_percentage: z.number().describe("The match percentage, e.g., 98"),
+        included_units: z.array(IncludedUnitSchema),
         commercial_leverage: CommercialLeverageTier1Schema,
         marketing_hook: z.string(),
         marketing_playbook: MarketingPlaybookSchema,
@@ -137,6 +146,9 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
         title: z.string(),
         format: z.string(),
         price: z.number(),
+        demand_level: z.string(),
+        match_percentage: z.number(),
+        included_units: z.array(IncludedUnitSchema),
         commercial_leverage: CommercialLeverageTier2Schema,
         marketing_hook: z.string(),
         marketing_playbook: MarketingPlaybookSchema,
@@ -146,6 +158,9 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
         title: z.string(),
         format: z.string(),
         price: z.number(),
+        demand_level: z.string(),
+        match_percentage: z.number(),
+        included_units: z.array(IncludedUnitSchema),
         commercial_leverage: CommercialLeverageTier3Schema,
         marketing_hook: z.string(),
         marketing_playbook: MarketingPlaybookSchema,
@@ -170,6 +185,10 @@ const ClusterPathwaySchema = z.object({
 // Main output schema for Stage 3
 export const RevenueStaircaseSchema = z.object({
   strategy_summary: z.string(),
+  highest_demand_cluster: z.object({
+    name: z.string().describe("The title of the highest demand cluster, taken from one of the tiers."),
+    match_percentage: z.number().describe("The match percentage of the highest demand cluster."),
+  }),
   tiers: z.array(TierSchema).length(3),
   cluster_pathways: z.array(ClusterPathwaySchema).describe("The yield stacking and automation pathway derived from the 3 tiers."),
 });
