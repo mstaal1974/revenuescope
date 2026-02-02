@@ -21,7 +21,6 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
             </div>
 
             <div className="p-6 space-y-8 flex-grow">
-                {sector.business_multipliers && (
                 <section>
                     <div className="flex items-center gap-2 mb-4">
                         <Sparkles className="text-primary text-lg" />
@@ -69,7 +68,6 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
                         </div>
                     </div>
                 </section>
-                )}
                 
                 <section>
                     <h3 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500 mb-4">Market Health</h3>
