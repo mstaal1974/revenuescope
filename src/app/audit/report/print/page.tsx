@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import type { FullAuditOutput } from '@/ai/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, TrendingUp, TrendingDown, RefreshCw, Clock, Wallet, CheckCircle, BarChart, FileText, Loader2, AlertTriangle } from 'lucide-react';
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download, TrendingUp, TrendingDown, RefreshCw, Clock, Loader2, AlertTriangle, FileText } from 'lucide-react';
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { BoardBriefingPDF } from '@/components/reports/BoardBriefingPDF';
 
 const KeyMetricCard = ({ icon, title, value, subtext }: { icon: React.ReactNode, title: string, value: string, subtext: string }) => (
   <div className="bg-slate-50 p-4 rounded-lg">
@@ -22,8 +23,10 @@ export default function PrintReportPage() {
   const [data, setData] = useState<FullAuditOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     try {
       const dataString = localStorage.getItem("auditData");
       if (!dataString) {
@@ -38,10 +41,6 @@ export default function PrintReportPage() {
       setLoading(false);
     }
   }, []);
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   if (loading) {
     return (
@@ -67,7 +66,6 @@ export default function PrintReportPage() {
     );
   }
 
-  // --- Data Calculations ---
   const standardRevenue = data.tiers[2].price;
   const clusteredRevenue = data.tiers[0].price + data.tiers[1].price + data.tiers[2].price;
   const revenueUplift = clusteredRevenue - standardRevenue;
@@ -91,14 +89,37 @@ export default function PrintReportPage() {
   const rtoName = data.rto_name || 'Your RTO';
   const gtmPlaybook = data.tiers[0].marketing_playbook;
 
-  return (
-    <div className="bg-slate-100 font-serif">
-      <Button onClick={handlePrint} className="no-print fixed bottom-8 right-8 z-50 shadow-lg" size="lg">
-        <Download className="mr-2 h-5 w-5" />
-        Download as PDF
-      </Button>
+  // Data mapping for BoardBriefingPDF
+  const pdfData = {
+    qualCode: data.tiers[2].title.split(' ')[0], // Try to extract the code
+    revenueUplift: revenueUplift,
+    cacOffset: cacOffset,
+    clusterCount: 3,
+    clusters: data.tiers.map(t => ({ name: t.title, revenue: t.price }))
+  };
 
-      {/* PAGE 1 */}
+  return (
+    <div className="bg-slate-100 font-serif min-h-screen">
+      <div className="no-print fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+        {isClient && (
+          <PDFDownloadLink 
+            document={<BoardBriefingPDF data={pdfData} />} 
+            fileName={`Board_Briefing_${qualTitle}.pdf`}
+          >
+            {({ loading }) => (
+              <Button disabled={loading} size="lg" className="shadow-xl bg-slate-900 hover:bg-slate-800">
+                <FileText className="mr-2 h-5 w-5 text-blue-400" />
+                {loading ? 'Preparing Briefing...' : 'Download Briefing PDF'}
+              </Button>
+            )}
+          </PDFDownloadLink>
+        )}
+        <Button onClick={() => window.print()} className="shadow-lg" variant="outline" size="lg">
+          <Download className="mr-2 h-5 w-5" />
+          Print View (Browser)
+        </Button>
+      </div>
+
       <div className="print-page">
         <div className="print-container">
           <header className="flex justify-between items-center pb-4 border-b border-slate-200">
@@ -141,7 +162,7 @@ export default function PrintReportPage() {
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="name" />
                             <YAxis unit="$" />
-                            <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                            <RechartsTooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
                             <Bar dataKey="value" fill="#2563eb" />
                         </RechartsBarChart>
                     </ResponsiveContainer>
@@ -155,7 +176,6 @@ export default function PrintReportPage() {
         </div>
       </div>
 
-      {/* PAGE 2 */}
       <div className="print-page">
         <div className="print-container">
           <header className="flex justify-between items-center pb-4 border-b border-slate-200">
@@ -184,11 +204,8 @@ export default function PrintReportPage() {
 
             <section className="no-break mt-8">
               <h2 className="text-lg font-bold text-slate-800 mb-4 uppercase tracking-wider">Go-to-Market Playbook (Tier 1 Example)</h2>
-              <Card className="bg-white">
-                <CardHeader>
-                  <CardTitle className="text-base">Playbook: "{data.tiers[0].title}"</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-6">
+                <div className="text-sm space-y-4">
                   <div className="flex gap-4">
                     <div className="w-1/2 bg-slate-50 p-3 rounded-md">
                       <h4 className="font-semibold text-slate-600 mb-1">Target Audience</h4>
@@ -203,8 +220,8 @@ export default function PrintReportPage() {
                     <h4 className="font-semibold text-slate-600 mb-1">Core Message Hook</h4>
                     <p className="text-slate-500 italic">"{gtmPlaybook.ad_headline} {gtmPlaybook.ad_body_copy}"</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </section>
           </main>
 
