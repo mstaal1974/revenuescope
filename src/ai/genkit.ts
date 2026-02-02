@@ -10,5 +10,6 @@ export const ai = genkit({
   ],
 });
 
-// Use googleAI.model() to create a proper model reference
-export const auditModel = googleAI.model('gemini-2.5-pro');
+// Use a direct model reference to ensure clarity and consistency.
+// This ensures we are always using the specified Gemini 2.5 Pro model.
+export const auditModel = 'googleai/gemini-2.5-pro';
