@@ -3,8 +3,10 @@
 import type { AuditData } from "@/app/actions";
 import { SkillsHeatmap } from "./skills-heatmap";
 import SectorAnalysis from "./SectorAnalysis";
-import { Sparkles } from "lucide-react";
+import { Sparkles, FileText } from "lucide-react";
 import RevenueGrowthEngine from "./RevenueGrowthEngine";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 
 export function DashboardClient({ data }: { data: AuditData }) {
@@ -21,11 +23,19 @@ export function DashboardClient({ data }: { data: AuditData }) {
                 <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
                 <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Market Intelligence Dashboard</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 shadow-xl">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-                    <Sparkles className="text-white h-3 w-3" />
-                </div>
-                <span className="text-[11px] font-bold text-slate-300 tracking-wide">Powered by Gemini 2.5 Pro</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 shadow-xl">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                      <Sparkles className="text-white h-3 w-3" />
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-300 tracking-wide">Powered by Gemini 2.5 Pro</span>
+              </div>
+               <Button asChild>
+                  <Link href="/audit/report/print">
+                      <FileText className="mr-2 h-4 w-4" />
+                      View Report
+                  </Link>
+              </Button>
             </div>
           </div>
         </div>
