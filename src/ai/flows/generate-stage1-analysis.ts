@@ -16,6 +16,7 @@ export async function generateStage1Analysis(
 const prompt = ai.definePrompt({
   name: 'stage1AnalysisPrompt',
   input: { schema: FullAuditInputSchema },
+  output: { schema: Stage1OutputSchema },
   model: auditModel,
   prompt: `You are "Strategic Growth Director v5.0," an expert in Australian vocational education economics, RTO strategy, and workforce market modelling. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
@@ -173,32 +174,15 @@ const generateStage1AnalysisFlow = ai.defineFlow(
   {
     name: 'generateStage1AnalysisFlow',
     inputSchema: FullAuditInputSchema,
-    // outputSchema: Stage1OutputSchema,
+    outputSchema: Stage1OutputSchema,
   },
   async (input) => {
-    const response = await prompt(input);
-    const rawText = response.text;
-
-    if (!rawText) {
-      throw new Error("AI generation for Stage 1 returned no text output.");
+    const { output } = await prompt(input);
+    if (!output) {
+      throw new Error(
+        'AI returned no structured output for Stage 1 generation.'
+      );
     }
-    
-    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-    let parsedJson: any;
-
-    try {
-        parsedJson = JSON.parse(cleanJson);
-    } catch (e) {
-        console.error("Failed to parse JSON from AI for Stage 1:", e, "\nRaw text:", rawText);
-        throw new Error("AI returned malformed JSON for Stage 1 analysis.");
-    }
-    
-    const validationResult = Stage1OutputSchema.safeParse(parsedJson);
-    if (validationResult.success) {
-      return validationResult.data;
-    }
-
-    console.error("AI output for Stage 1 failed validation.", validationResult.error);
-    throw new Error(`AI output for Stage 1 failed validation: ${validationResult.error.message}`);
+    return output;
   }
 );

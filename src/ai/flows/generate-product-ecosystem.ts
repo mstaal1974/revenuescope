@@ -21,6 +21,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
+    output: { schema: RevenueStaircaseSchema },
     model: auditModel,
     prompt: `{
     "SYSTEM_INSTRUCTION": {
@@ -167,32 +168,15 @@ const generateProductEcosystemFlow = ai.defineFlow(
   {
     name: 'generateRevenueStaircaseFlow',
     inputSchema: RevenueStaircaseInputSchema,
-    // outputSchema: RevenueStaircaseSchema,
+    outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
-    const response = await prompt(input);
-    const rawText = response.text;
+    const { output } = await prompt(input);
 
-    if (!rawText) {
-      throw new Error('AI returned no text output for Revenue Staircase generation.');
+    if (!output) {
+      throw new Error('AI returned no structured output for Revenue Staircase generation.');
     }
     
-    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-    let parsedJson: any;
-
-    try {
-        parsedJson = JSON.parse(cleanJson);
-    } catch (e) {
-        console.error("Failed to parse JSON from AI for Revenue Staircase:", e, "\nRaw text:", rawText);
-        throw new Error("AI returned malformed JSON for Revenue Staircase generation.");
-    }
-    
-    const validationResult = RevenueStaircaseSchema.safeParse(parsedJson);
-    if (validationResult.success) {
-      return validationResult.data;
-    }
-    
-    console.error("AI output for Revenue Staircase failed validation.", validationResult.error);
-    throw new Error(`AI output for Revenue Staircase failed validation: ${validationResult.error.message}`);
+    return output;
   }
 );

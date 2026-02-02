@@ -16,6 +16,7 @@ export async function generateSkillsHeatmap(
 const prompt = ai.definePrompt({
   name: 'skillsHeatmapPrompt',
   input: { schema: FullAuditInputSchema },
+  output: { schema: SkillsHeatmapOutputSchema },
   model: auditModel,
   prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
 
@@ -66,66 +67,15 @@ const generateSkillsHeatmapFlow = ai.defineFlow(
   {
     name: 'generateSkillsHeatmapFlow',
     inputSchema: FullAuditInputSchema,
-    // outputSchema: SkillsHeatmapOutputSchema, // REMOVED
+    outputSchema: SkillsHeatmapOutputSchema,
   },
   async (input) => {
-    const response = await prompt(input);
-    const rawText = response.text;
-
-    if (!rawText) {
-      throw new Error('AI returned no text output for Skills Heatmap.');
+    const { output } = await prompt(input);
+    if (!output) {
+      throw new Error(
+        'AI returned no structured output for Skills Heatmap generation.'
+      );
     }
-    
-    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-    let parsedJson: any;
-
-    try {
-        parsedJson = JSON.parse(cleanJson);
-    } catch (e) {
-        console.error("Failed to parse JSON from AI for Skills Heatmap:", e, "\nRaw text:", rawText);
-        throw new Error("AI returned malformed JSON for Skills Heatmap.");
-    }
-
-    const validationResult = SkillsHeatmapOutputSchema.safeParse(parsedJson);
-    
-    if (validationResult.success) {
-      return validationResult.data;
-    }
-
-    console.warn("AI output for skills heatmap failed Zod validation. Attempting to recover.", validationResult.error);
-    
-    const rawData = parsedJson as any;
-    let flatSkillList: { skill_name: string, demand_level: string }[] = [];
-
-    if (Array.isArray(rawData)) {
-        rawData.forEach(item => {
-            if (item && Array.isArray(item.skills)) {
-                item.skills.forEach((skill: any) => {
-                    if (skill && typeof skill.skill_name === 'string' && typeof skill.demand_level === 'string') {
-                        flatSkillList.push(skill);
-                    }
-                });
-            }
-        });
-    } else if (rawData && Array.isArray(rawData.skills_heatmap)) {
-         rawData.skills_heatmap.forEach((item: any) => {
-             if (item && Array.isArray(item.skills)) {
-                item.skills.forEach((skill: any) => {
-                    if (skill && typeof skill.skill_name === 'string' && typeof skill.demand_level === 'string') {
-                        flatSkillList.push(skill);
-                    }
-                });
-            } else if (item && typeof item.skill_name === 'string' && typeof item.demand_level === 'string') {
-                flatSkillList.push(item);
-            }
-         });
-    }
-
-    if (flatSkillList.length > 0) {
-        console.log(`Successfully recovered ${flatSkillList.length} skills from malformed AI output.`);
-        return { skills_heatmap: flatSkillList };
-    }
-
-    throw new Error(`AI output for Skills Heatmap failed validation and could not be recovered. Error: ${validationResult.error.message}`);
+    return output;
   }
 );
