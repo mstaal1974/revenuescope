@@ -4,10 +4,10 @@ import { Suspense, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Header } from "@/components/shared/header";
 import { type AuditData, type Sector, runGenerateSectorCampaignKitAction, type SectorCampaignKitOutput } from "@/app/actions";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, CheckCircle, Layers } from 'lucide-react';
 import FinancialImpactDashboard from '@/components/sector-analysis/FinancialImpactDashboard';
 import KpiCard from '@/components/sector-analysis/KpiCard';
 
@@ -157,6 +157,59 @@ function SectorAnalysisContent() {
                     </div>
                 </CardContent>
             </Card>
+
+            {campaignKitData.skills_to_product_strategy && (
+              <Card className='mt-12 bg-slate-900 border-slate-800 text-white rounded-3xl p-8 md:p-12'>
+                <CardHeader className='p-0 mb-6'>
+                  <CardTitle className='text-3xl font-bold flex items-center gap-3'>
+                    <Layers className='text-teal-400'/>
+                    Skills-to-Product Strategy
+                  </CardTitle>
+                  <CardDescription className='text-slate-400 mt-1'>
+                    Turn your scope into marketable short courses and skills packages.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='p-0 grid lg:grid-cols-2 gap-8'>
+                  {/* Suggested Short Courses */}
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-slate-200">Suggested Short Courses</h4>
+                    <div className="space-y-3">
+                      {campaignKitData.skills_to_product_strategy.suggested_short_courses.map((course, i) => (
+                        <div key={i} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                          <h5 className="font-bold text-white">{course.title}</h5>
+                          <p className="text-sm text-slate-400 mt-1">{course.description}</p>
+                          <div className="mt-3 pt-3 border-t border-slate-700/50 flex flex-wrap gap-2">
+                            {course.derived_from_units.map(unit => (
+                              <span key={unit} className="text-xs font-mono bg-slate-700 text-slate-300 px-2 py-0.5 rounded">
+                                {unit}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Suggested Skill Packages */}
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-slate-200">Suggested Skill Packages</h4>
+                    {campaignKitData.skills_to_product_strategy.suggested_skill_packages.map((pkg, i) => (
+                      <div key={i} className="bg-gradient-to-br from-blue-500/10 to-transparent p-6 rounded-2xl border border-blue-500/30">
+                        <h5 className="font-bold text-blue-300 text-lg">{pkg.package_title}</h5>
+                        <p className="text-sm text-slate-300 mt-1 mb-4">{pkg.package_description}</p>
+                        <div className="space-y-2">
+                          <h6 className="text-xs font-bold uppercase text-slate-400">Includes:</h6>
+                          <ul className="list-disc list-inside text-sm text-slate-300 space-y-1">
+                            {pkg.included_courses.map(courseTitle => (
+                              <li key={courseTitle}>{courseTitle}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
         </div>
     );

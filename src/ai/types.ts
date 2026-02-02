@@ -271,6 +271,18 @@ export const SectorCampaignKitInputSchema = z.object({
 });
 export type SectorCampaignKitInput = z.infer<typeof SectorCampaignKitInputSchema>;
 
+const SuggestedShortCourseSchema = z.object({
+  title: z.string().describe("The marketable title of the short course."),
+  description: z.string().describe("A brief description of who this course is for and what it delivers."),
+  derived_from_units: z.array(z.string()).describe("A list of Unit of Competency codes it's derived from."),
+});
+
+const SuggestedSkillPackageSchema = z.object({
+  package_title: z.string().describe("The commercial title for the skills package, e.g., 'Construction Site Supervisor Starter Kit'."),
+  package_description: z.string().describe("A summary of the value proposition for this package."),
+  included_courses: z.array(z.string()).describe("An array of titles of the short courses included in this package."),
+});
+
 export const SectorCampaignKitOutputSchema = z.object({
     financial_impact: z.object({
         business_revenue_multiplier: z.string(),
@@ -290,6 +302,10 @@ export const SectorCampaignKitOutputSchema = z.object({
         market_pivot: z.string(),
         target_audience: z.string(),
         key_selling_points: z.array(z.string()),
+    }),
+    skills_to_product_strategy: z.object({
+      suggested_short_courses: z.array(SuggestedShortCourseSchema),
+      suggested_skill_packages: z.array(SuggestedSkillPackageSchema),
     }),
 });
 export type SectorCampaignKitOutput = z.infer<typeof SectorCampaignKitOutputSchema>;
