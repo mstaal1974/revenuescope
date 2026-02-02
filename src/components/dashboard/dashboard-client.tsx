@@ -1,10 +1,10 @@
 "use client";
 
 import type { AuditData } from "@/app/actions";
-import { SkillGalaxy } from "./SkillGalaxy";
 import { SkillsHeatmap } from "./skills-heatmap";
 import SectorAnalysis from "./SectorAnalysis";
 import { Sparkles } from "lucide-react";
+import RevenueGrowthEngine from "./RevenueGrowthEngine";
 
 
 export function DashboardClient({ data }: { data: AuditData }) {
@@ -46,7 +46,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
             <SectorAnalysis sectors={data.sector_breakdown} />
         </div>
 
-        <SkillGalaxy data={data} />
+        <RevenueGrowthEngine data={data} />
       </div>
 
     </div>

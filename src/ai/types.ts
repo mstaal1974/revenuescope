@@ -153,18 +153,16 @@ export const TierSchema = z.discriminatedUnion('tier_level', [
 ]);
 export type Tier = z.infer<typeof TierSchema>;
 
-const PathwayStepSchema = z.object({
-  step: z.string(),
-  skill: z.string(),
-  unit: z.string(),
-  type: z.string(),
+const AutomationActionSchema = z.object({
+    delay: z.string().describe("The trigger delay for the automation, e.g., 'On Completion' or '7 Days Post-Completion'."),
+    message_hook: z.string().describe("The marketing message or email subject line for the automation."),
+    upsell_product: z.string().describe("The title of the next product in the pathway being sold."),
 });
 
-const HeatMapGalaxyItemSchema = z.object({
-  cluster_name: z.string(),
-  heat_score: z.number(),
-  rationale: z.string(),
-  pathway_steps: z.array(PathwayStepSchema),
+const ClusterPathwaySchema = z.object({
+  current_stage: z.string().describe("The title of the product for this stage of the pathway, taken directly from the 'tiers' array."),
+  stage_revenue: z.number().describe("The price of the product for this stage, taken directly from the 'tiers' array."),
+  automation_action: AutomationActionSchema.optional().describe("The automated marketing action to upsell to the next stage. This should be null for the final stage."),
 });
 
 
@@ -172,7 +170,7 @@ const HeatMapGalaxyItemSchema = z.object({
 export const RevenueStaircaseSchema = z.object({
   strategy_summary: z.string(),
   tiers: z.array(TierSchema).length(3),
-  heat_map_galaxy: z.array(HeatMapGalaxyItemSchema),
+  cluster_pathways: z.array(ClusterPathwaySchema).describe("The yield stacking and automation pathway derived from the 3 tiers."),
 });
 export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
 
