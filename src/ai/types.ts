@@ -28,11 +28,16 @@ const FinancialOpportunitySchema = z.object({
 });
 
 const BusinessMultipliersSchema = z.object({
-  marketing_cac_label: z.string().describe("e.g. 'High - Requires brand spend'"),
-  retention_ltv_potential: z.string().describe("e.g. 'Medium - Upsell to Diploma'"),
-  strategic_positioning: z.string().describe("e.g. 'Niche Specialist'"),
-  b2b_scale_potential: z.string().describe("e.g. 'High - Corporate training packages'"),
+  marketing_cac_label: z.string().describe("The marketing CAC analysis, e.g., '-24% CAC'"),
+  marketing_cac_subtext: z.string().describe("A short explanation for the CAC value."),
+  retention_ltv_value: z.string().describe("The estimated increase in LTV, e.g., '+$2,400 LTV'"),
+  retention_ltv_subtext: z.string().describe("A short explanation for the LTV value, e.g., 'Upsell Prob: 85%'"),
+  strategic_positioning: z.string().describe("A short, powerful label for the RTO's market position, e.g., 'Category King' or 'Niche Specialist'"),
+  strategic_positioning_subtext: z.string().describe("A short explanation for the positioning."),
+  b2b_scale_potential: z.string().describe("e.g., 'High', 'Medium', 'Low'"),
+  b2b_scale_rating: z.number().min(0).max(100).describe("A 0-100 rating for B2B scale potential, used for a progress bar."),
 });
+
 
 const SectorBreakdownSchema = z.object({
   sector_name: z.string(),

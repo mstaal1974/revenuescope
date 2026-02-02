@@ -1,25 +1,14 @@
 'use client';
 
 import type { Sector } from "@/ai/types";
-import { DollarSign, TrendingUp, Info, Users, ShieldCheck, Link as LinkIcon, Sparkles, TrendingDown, Building, Wallet } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Info, Users, ShieldCheck, Link as LinkIcon, Sparkles, TrendingDown, Building, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
+import { Progress } from "@/components/ui/progress";
 
 interface SectorAnalysisCardProps {
   sector: Sector;
 }
-
-const MultiplierInfo = ({ icon, title, value, subtext, trendIcon }: { icon?: React.ReactNode, title: string, value: string, subtext?: string, trendIcon?: React.ReactNode }) => (
-    <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
-        <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] uppercase font-bold text-slate-400">{title}</span>
-            {trendIcon}
-        </div>
-        <div className="text-sm font-bold text-white">{value}</div>
-        {subtext && <div className="text-[9px] text-slate-500 mt-1 leading-tight">{subtext}</div>}
-    </div>
-);
 
 
 export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) {
@@ -39,28 +28,45 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
                         <h3 className="text-[10px] uppercase tracking-widest font-bold text-primary">Gemini Business Multipliers</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                       <MultiplierInfo 
-                            title="Marketing CAC" 
-                            value={sector.business_multipliers.marketing_cac_label.split(' ')[0]} 
-                            subtext={sector.business_multipliers.marketing_cac_label.substring(sector.business_multipliers.marketing_cac_label.indexOf(' ') + 1)}
-                            trendIcon={<TrendingDown className="text-emerald-500 text-sm" />}
-                        />
-                         <MultiplierInfo 
-                            title="Retention LTV" 
-                            value={sector.business_multipliers.retention_ltv_potential.split(' ')[0]} 
-                            subtext={sector.business_multipliers.retention_ltv_potential.substring(sector.business_multipliers.retention_ltv_potential.indexOf(' ') + 1)}
-                            trendIcon={<TrendingUp className="text-emerald-500 text-sm" />}
-                        />
-                        <MultiplierInfo 
-                            title="Positioning" 
-                            value={sector.business_multipliers.strategic_positioning}
-                            trendIcon={<ShieldCheck className="text-amber-400 text-sm" />}
-                        />
-                         <MultiplierInfo 
-                            title="B2B Scale" 
-                            value={sector.business_multipliers.b2b_scale_potential}
-                            trendIcon={<Building className="text-primary text-sm" />}
-                        />
+                       {/* Marketing CAC */}
+                       <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-[9px] uppercase font-bold text-slate-400">Marketing</span>
+                                <TrendingDown className="text-emerald-500 text-sm" />
+                            </div>
+                            <div className="text-sm font-bold text-white">{sector.business_multipliers.marketing_cac_label}</div>
+                            <div className="text-[9px] text-slate-500 mt-1 leading-tight">{sector.business_multipliers.marketing_cac_subtext}</div>
+                        </div>
+
+                        {/* Retention LTV */}
+                        <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-[9px] uppercase font-bold text-slate-400">Retention</span>
+                            </div>
+                            <div className="text-sm font-bold text-white">{sector.business_multipliers.retention_ltv_value}</div>
+                            <div className="text-[9px] text-slate-500 mt-1 leading-tight">{sector.business_multipliers.retention_ltv_subtext}</div>
+                        </div>
+
+                        {/* Positioning */}
+                        <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-[9px] uppercase font-bold text-slate-400">Positioning</span>
+                                <ShieldCheck className="text-amber-400 text-sm" />
+                            </div>
+                            <div className="text-sm font-bold text-white">{sector.business_multipliers.strategic_positioning}</div>
+                            <div className="text-[9px] text-slate-500 mt-1 leading-tight">{sector.business_multipliers.strategic_positioning_subtext}</div>
+                        </div>
+
+                        {/* B2B Scale */}
+                         <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-[9px] uppercase font-bold text-slate-400">B2B Scale</span>
+                                <span className="text-[9px] font-bold text-white">{sector.business_multipliers.b2b_scale_potential}</span>
+                            </div>
+                             <div className="flex items-center gap-1.5 mt-2.5">
+                                <Progress value={sector.business_multipliers.b2b_scale_rating} className="h-1.5 [&>div]:bg-primary" />
+                            </div>
+                        </div>
                     </div>
                 </section>
                 )}
