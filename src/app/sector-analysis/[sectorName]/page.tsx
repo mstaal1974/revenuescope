@@ -11,7 +11,7 @@ import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, Check
 import FinancialImpactDashboard from '@/components/sector-analysis/FinancialImpactDashboard';
 import KpiCard from '@/components/sector-analysis/KpiCard';
 import { SkillsHeatmap } from '@/components/dashboard/skills-heatmap';
-import { RevenueGrowthEngine } from '@/components/dashboard/RevenueGrowthEngine';
+import RevenueGrowthEngine from '@/components/dashboard/RevenueGrowthEngine';
 
 
 function SectorAnalysisContent() {
