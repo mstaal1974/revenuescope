@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import type { FullAuditOutput } from '@/ai/types';
 import { Button } from '@/components/ui/button';
-import { Download, TrendingUp, TrendingDown, RefreshCw, Clock, Loader2, AlertTriangle, FileText } from 'lucide-react';
+import { Download, TrendingUp, TrendingDown, RefreshCw, Clock, Loader2, AlertTriangle } from 'lucide-react';
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { BoardBriefingPDF } from '@/components/reports/BoardBriefingPDF';
+import DownloadBriefingButton from '@/components/reports/DownloadBriefingButton';
 
 const KeyMetricCard = ({ icon, title, value, subtext }: { icon: React.ReactNode, title: string, value: string, subtext: string }) => (
   <div className="bg-slate-50 p-4 rounded-lg">
@@ -23,10 +22,8 @@ export default function PrintReportPage() {
   const [data, setData] = useState<FullAuditOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
     try {
       const dataString = localStorage.getItem("auditData");
       if (!dataString) {
@@ -89,9 +86,9 @@ export default function PrintReportPage() {
   const rtoName = data.rto_name || 'Your RTO';
   const gtmPlaybook = data.tiers[0].marketing_playbook;
 
-  // Data mapping for BoardBriefingPDF
+  // Data mapping for BoardBriefingPDF via DownloadButton
   const pdfData = {
-    qualCode: data.tiers[2].title.split(' ')[0], // Try to extract the code
+    qualCode: data.tiers[2].title.split(' ')[0], 
     revenueUplift: revenueUplift,
     cacOffset: cacOffset,
     clusterCount: 3,
@@ -100,23 +97,11 @@ export default function PrintReportPage() {
 
   return (
     <div className="bg-slate-100 font-serif min-h-screen">
-      <div className="no-print fixed bottom-8 right-8 z-50 flex flex-col gap-3">
-        {isClient && (
-          <PDFDownloadLink 
-            document={<BoardBriefingPDF data={pdfData} />} 
-            fileName={`Board_Briefing_${qualTitle}.pdf`}
-          >
-            {({ loading }) => (
-              <Button disabled={loading} size="lg" className="shadow-xl bg-slate-900 hover:bg-slate-800">
-                <FileText className="mr-2 h-5 w-5 text-blue-400" />
-                {loading ? 'Preparing Briefing...' : 'Download Briefing PDF'}
-              </Button>
-            )}
-          </PDFDownloadLink>
-        )}
-        <Button onClick={() => window.print()} className="shadow-lg" variant="outline" size="lg">
+      <div className="no-print fixed bottom-8 right-8 z-50 flex flex-col gap-3 min-w-[300px]">
+        <DownloadBriefingButton strategyData={pdfData} />
+        <Button onClick={() => window.print()} className="shadow-lg bg-white text-slate-900 hover:bg-slate-50 border-slate-200" variant="outline" size="lg">
           <Download className="mr-2 h-5 w-5" />
-          Print View (Browser)
+          Print Preview (Browser)
         </Button>
       </div>
 

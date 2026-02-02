@@ -85,7 +85,7 @@ export const BoardBriefingPDF: React.FC<{ data: PDFData }> = ({ data }) => (
       <Text style={styles.h2}>Projected Revenue Architecture</Text>
       <View style={{height: 150, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', borderBottomWidth: 1, borderBottomColor: '#CBD5E1', paddingBottom: 5}}>
         <View style={{alignItems: 'center'}}>
-          <Text style={{fontSize: 9, marginBottom: 5}}>${(data.clusters[2]?.revenue / 1000).toFixed(0)}k</Text>
+          <Text style={{fontSize: 9, marginBottom: 5}}>${(data.clusters[2]?.revenue / 1000).toFixed(0) || '0'}k</Text>
           <View style={{width: 60, height: 80, backgroundColor: '#CBD5E1'}} />
           <Text style={{fontSize: 8, marginTop: 5}}>Standard</Text>
         </View>
