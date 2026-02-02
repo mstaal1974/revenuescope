@@ -17,9 +17,13 @@ const chartConfig = {
 
 interface GrowthProjectionChartProps {
     data: { name: string; value: number }[];
+    yAxisFormatter?: (value: any) => string;
 }
 
-export default function GrowthProjectionChart({ data }: GrowthProjectionChartProps) {
+export default function GrowthProjectionChart({ data, yAxisFormatter }: GrowthProjectionChartProps) {
+  const defaultFormatter = (value: any) => `$${Number(value) / 1000}k`;
+  const formatter = yAxisFormatter || defaultFormatter;
+
   return (
     <ChartContainer config={chartConfig} className="w-full h-full">
       <AreaChart
@@ -45,7 +49,7 @@ export default function GrowthProjectionChart({ data }: GrowthProjectionChartPro
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tickFormatter={(value) => `$${Number(value) / 1000}k`}
+            tickFormatter={formatter}
             className="text-xs fill-slate-500"
         />
         <ChartTooltip

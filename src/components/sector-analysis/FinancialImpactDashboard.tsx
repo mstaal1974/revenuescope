@@ -4,12 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { type SectorCampaignKitOutput } from "@/ai/types";
 import GrowthProjectionChart from "./GrowthProjectionChart";
 import { Info } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface FinancialImpactDashboardProps {
     data: SectorCampaignKitOutput['financial_impact'];
 }
 
 export default function FinancialImpactDashboard({ data }: FinancialImpactDashboardProps) {
+
+    // Ensure data exists before rendering, especially the new five_year_growth_projection
+    if (!data.growth_projection) {
+        return (
+            <Card className="bg-slate-900 border-slate-800 text-white rounded-3xl p-8 shadow-2xl shadow-black/20">
+                <CardHeader>
+                    <CardTitle>Financial Impact Dashboard</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>Growth projection data is not available. Please re-run the audit.</p>
+                </CardContent>
+            </Card>
+        )
+    }
+    
     return (
         <Card className="bg-slate-900 border-slate-800 text-white rounded-3xl p-8 shadow-2xl shadow-black/20">
             <CardHeader className="p-0 mb-6 flex flex-row items-center justify-between">
@@ -34,10 +50,28 @@ export default function FinancialImpactDashboard({ data }: FinancialImpactDashbo
                     </div>
                 </div>
                 <div>
-                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Growth Projection (12 Months)</h4>
-                    <div className="h-[200px] w-full">
-                       <GrowthProjectionChart data={data.growth_projection} />
-                    </div>
+                     <Tabs defaultValue="12m" className="w-full">
+                        <div className="flex justify-between items-center mb-2">
+                             <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Growth Projection</h4>
+                             <TabsList>
+                                <TabsTrigger value="12m">12 Months</TabsTrigger>
+                                {data.five_year_growth_projection && <TabsTrigger value="5y">5 Years</TabsTrigger>}
+                            </TabsList>
+                        </div>
+                       
+                        <TabsContent value="12m">
+                             <div className="h-[200px] w-full">
+                                <GrowthProjectionChart data={data.growth_projection} yAxisFormatter={(value) => `$${Number(value) / 1000}k`} />
+                             </div>
+                        </TabsContent>
+                         {data.five_year_growth_projection && (
+                            <TabsContent value="5y">
+                                <div className="h-[200px] w-full">
+                                    <GrowthProjectionChart data={data.five_year_growth_projection} yAxisFormatter={(value) => `$${(Number(value) / 1000000).toFixed(1)}m`} />
+                                </div>
+                            </TabsContent>
+                         )}
+                    </Tabs>
                 </div>
             </CardContent>
         </Card>

@@ -308,6 +308,7 @@ export const SectorCampaignKitOutputSchema = z.object({
         estimated_annual_roi: z.string(),
         annual_roi_percentage: z.string(),
         growth_projection: z.array(z.object({ name: z.string(), value: z.number() })),
+        five_year_growth_projection: z.array(z.object({ name: z.string(), value: z.number() })).optional(),
     }),
     kpi_metrics: z.object({
         cac_reduction_value: z.string(),

@@ -41,6 +41,7 @@ You are "ScopeStack AI v3.0", a Chief Commercial Officer and Workforce Architect
     *   **estimated_annual_roi:** This should be the same as the \`realistic_annual_revenue\` from the input.
     *   **annual_roi_percentage:** Calculate a plausible YoY growth percentage based on market trend direction. "Growing" should be positive (e.g., "+15%"). "Stable" should be low (e.g., "+2%").
     *   **growth_projection:** Generate an array of 4 objects for a 12-month line graph. Each object must have \`name\` (e.g., "Q1", "Q2") and \`value\` (a number representing projected revenue for that quarter). The trend should be logical (e.g., starting lower and growing).
+    *   **five_year_growth_projection:** Generate an array of 5 objects for a 5-year line graph. Each object must have \`name\` (e.g., "Year 1", "Year 2") and \`value\` (a plausible annual revenue projection, showing logical year-on-year growth based on the \`annual_roi_percentage\`).
 
 2.  **KPI Metrics:**
     *   **cac_reduction_value:** Estimate the dollar value saved on Customer Acquisition Cost by using a Tier 1 product strategy. Saturated markets have higher CAC, so the reduction is greater. Provide as a negative dollar string (e.g., "-$420").
@@ -71,6 +72,13 @@ You are "ScopeStack AI v3.0", a Chief Commercial Officer and Workforce Architect
       { "name": "Q2", "value": 1200000 },
       { "name": "Q3", "value": 950000 },
       { "name": "Q4", "value": 1330000 }
+    ],
+    "five_year_growth_projection": [
+        { "name": "Year 1", "value": 4280000 },
+        { "name": "Year 2", "value": 5221600 },
+        { "name": "Year 3", "value": 6370352 },
+        { "name": "Year 4", "value": 7771830 },
+        { "name": "Year 5", "value": 9481632 }
     ]
   },
   "kpi_metrics": {
