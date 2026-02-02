@@ -1,9 +1,8 @@
 'use client';
 
 import type { Sector } from "@/ai/types";
-import { Briefcase, DollarSign, TrendingUp, Info, Zap, Users, ShieldCheck, Scale, Library, Link as LinkIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { DollarSign, TrendingUp, Info, Users, ShieldCheck, Link as LinkIcon, Sparkles, TrendingDown, Building, Wallet } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 
@@ -11,102 +10,134 @@ interface SectorAnalysisCardProps {
   sector: Sector;
 }
 
-const SectorIcon = ({ sectorName }: { sectorName: string }) => {
-    const lowerCaseName = sectorName.toLowerCase();
-    if (lowerCaseName.includes('business')) return <Briefcase className="h-6 w-6" />;
-    if (lowerCaseName.includes('health') || lowerCaseName.includes('care')) return <Zap className="h-6 w-6" />;
-    return <Library className="h-6 w-6" />;
-};
-
-const MultiplierInfo = ({ icon, title, value }: { icon: React.ReactNode, title: string, value?: string }) => (
-    <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-        <div className="flex items-center gap-2 mb-1">
-            {icon}
-            <h4 className="text-xs font-bold text-slate-400">{title}</h4>
+const MultiplierInfo = ({ icon, title, value, subtext, trendIcon }: { icon?: React.ReactNode, title: string, value: string, subtext?: string, trendIcon?: React.ReactNode }) => (
+    <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
+        <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] uppercase font-bold text-slate-400">{title}</span>
+            {trendIcon}
         </div>
-        <p className="text-sm text-slate-200 font-medium">{value || 'N/A'}</p>
+        <div className="text-sm font-bold text-white">{value}</div>
+        {subtext && <div className="text-[9px] text-slate-500 mt-1 leading-tight">{subtext}</div>}
     </div>
 );
 
+
 export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) {
-    const isBusiness = sector.sector_name.toLowerCase().includes('business');
-    const accentText = isBusiness ? 'text-primary' : 'text-rose-400';
-    const accentBg = isBusiness ? 'bg-primary/10' : 'bg-rose-500/10';
 
     return (
-        <Card className="bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
-            <CardHeader className="p-6 flex flex-col md:flex-row gap-4 items-start justify-between border-b border-slate-800">
-                <div className="flex items-center gap-4">
-                    <div className={cn("p-3 rounded-xl", accentBg, accentText)}>
-                        <SectorIcon sectorName={sector.sector_name} />
+        <div className="flex flex-col bg-slate-900/50 border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl shadow-black/20 h-full">
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
+                <h2 className="text-xl font-bold text-white">{sector.sector_name}</h2>
+                <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full border border-primary/20">{sector.qualification_count} Quals</span>
+            </div>
+
+            <div className="p-6 space-y-8 flex-grow">
+                {sector.business_multipliers && (
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <Sparkles className="text-primary text-lg" />
+                        <h3 className="text-[10px] uppercase tracking-widest font-bold text-primary">Gemini Business Multipliers</h3>
                     </div>
-                    <div>
-                        <CardTitle className="text-xl font-bold text-white">{sector.sector_name}</CardTitle>
-                        <CardDescription className={cn("text-xs font-medium px-2 py-0.5 rounded-full inline-block mt-1", accentBg, accentText)}>
-                            {sector.qualification_count} Active Qualifications
-                        </CardDescription>
+                    <div className="grid grid-cols-2 gap-3">
+                       <MultiplierInfo 
+                            title="Marketing CAC" 
+                            value={sector.business_multipliers.marketing_cac_label.split(' ')[0]} 
+                            subtext={sector.business_multipliers.marketing_cac_label.substring(sector.business_multipliers.marketing_cac_label.indexOf(' ') + 1)}
+                            trendIcon={<TrendingDown className="text-emerald-500 text-sm" />}
+                        />
+                         <MultiplierInfo 
+                            title="Retention LTV" 
+                            value={sector.business_multipliers.retention_ltv_potential.split(' ')[0]} 
+                            subtext={sector.business_multipliers.retention_ltv_potential.substring(sector.business_multipliers.retention_ltv_potential.indexOf(' ') + 1)}
+                            trendIcon={<TrendingUp className="text-emerald-500 text-sm" />}
+                        />
+                        <MultiplierInfo 
+                            title="Positioning" 
+                            value={sector.business_multipliers.strategic_positioning}
+                            trendIcon={<ShieldCheck className="text-amber-400 text-sm" />}
+                        />
+                         <MultiplierInfo 
+                            title="B2B Scale" 
+                            value={sector.business_multipliers.b2b_scale_potential}
+                            trendIcon={<Building className="text-primary text-sm" />}
+                        />
                     </div>
-                </div>
-                <Button asChild className="bg-white text-blue-600 hover:bg-slate-200 font-bold shadow-md w-full md:w-auto">
-                    <Link href={`/sector-analysis/${encodeURIComponent(sector.sector_name)}`}>
-                        <LinkIcon size={16} className="mr-2"/> View Campaign Kit
+                </section>
+                )}
+                
+                <section>
+                    <h3 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500 mb-4">Market Health</h3>
+                    <div className="grid grid-cols-3 gap-2 bg-slate-800/20 p-4 rounded-lg">
+                        <div className="text-center border-r border-slate-700/50">
+                            <div className="text-emerald-500 font-bold text-lg">{sector.market_health_demand_level}</div>
+                            <div className="text-[9px] uppercase text-slate-500">Demand</div>
+                        </div>
+                        <div className="text-center border-r border-slate-700/50">
+                            <div className="text-blue-400 font-bold text-lg">{sector.market_health_trend_direction}</div>
+                            <div className="text-[9px] uppercase text-slate-500">Growth</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-white font-bold text-lg">{sector.market_health_avg_industry_wage}</div>
+                            <div className="text-[9px] uppercase text-slate-500">Avg Wage</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500 mb-4">Realistic Financial Opportunity</h3>
+                    <div className="flex items-center justify-around bg-slate-800/20 p-4 rounded-lg border border-primary/10">
+                        <div className="flex items-center gap-3">
+                            <Wallet className="text-primary text-2xl" />
+                            <div>
+                                <div className="text-xl font-bold text-white">{sector.financial_opportunity.realistic_annual_revenue}</div>
+                                <div className="text-[9px] uppercase text-slate-500">Est. Revenue</div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Users className="text-primary text-2xl" />
+                            <div>
+                                <div className="text-xl font-bold text-white">{sector.financial_opportunity.final_learner_estimate}</div>
+                                <div className="text-[9px] uppercase text-slate-500">Est. Learners</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                {sector.financial_opportunity.assumptions && sector.financial_opportunity.assumptions.length > 0 && (
+                    <section>
+                        <h3 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500 mb-3">Model Assumptions</h3>
+                        <ul className="space-y-3">
+                            {sector.financial_opportunity.assumptions.map((assumption, index) => (
+                                <li key={index} className="flex gap-3 text-xs text-slate-300">
+                                    <Info className="text-blue-400 text-sm mt-0.5 shrink-0" />
+                                    {assumption}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
+                {sector.suggested_ai_courses && sector.suggested_ai_courses.length > 0 && (
+                    <section>
+                        <h3 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500 mb-3">Suggested AI Courses</h3>
+                        <div className="space-y-2">
+                             {sector.suggested_ai_courses.map((course, index) => (
+                                <div key={index} className="p-3 rounded-lg bg-slate-800 flex items-center gap-3 border border-transparent hover:border-primary/30 transition-all cursor-pointer">
+                                    <Sparkles className="text-primary" size={16} />
+                                    <span className="text-xs font-medium text-white">{course}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+            </div>
+             <div className="p-4 bg-slate-900 mt-auto">
+                 <Button asChild className="w-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
+                     <Link href={`/sector-analysis/${encodeURIComponent(sector.sector_name)}`}>
+                        <LinkIcon size={16} className="mr-2"/> View Full Campaign Kit
                     </Link>
                 </Button>
-            </CardHeader>
-            <CardContent className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Column 1: Business Multipliers */}
-                <div className="space-y-3">
-                    <h3 className="font-bold text-slate-300 text-sm mb-2">Business Multipliers</h3>
-                    {sector.business_multipliers && (
-                        <>
-                            <MultiplierInfo icon={<DollarSign size={14} className="text-green-400"/>} title="Marketing CAC" value={sector.business_multipliers.marketing_cac_label} />
-                            <MultiplierInfo icon={<TrendingUp size={14} className="text-blue-400"/>} title="Retention / LTV" value={sector.business_multipliers.retention_ltv_potential} />
-                            <MultiplierInfo icon={<ShieldCheck size={14} className="text-purple-400"/>} title="Positioning" value={sector.business_multipliers.strategic_positioning} />
-                            <MultiplierInfo icon={<Scale size={14} className="text-orange-400"/>} title="B2B Scale Potential" value={sector.business_multipliers.b2b_scale_potential} />
-                        </>
-                    )}
-                </div>
-
-                {/* Column 2: Market & Financials */}
-                <div className="space-y-3">
-                    <h3 className="font-bold text-slate-300 text-sm mb-2">Market &amp; Financials</h3>
-                    <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 grid grid-cols-3 gap-2 text-center">
-                        <div>
-                            <p className="text-xs text-slate-400 font-bold">DEMAND</p>
-                            <p className="text-sm font-bold text-emerald-400">{sector.market_health_demand_level}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-400 font-bold">GROWTH</p>
-                            <p className="text-sm font-bold text-white">{sector.market_health_trend_direction}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-400 font-bold">AVG WAGE</p>
-                            <p className="text-sm font-bold text-white">{sector.market_health_avg_industry_wage}</p>
-                        </div>
-                    </div>
-                     <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                        <p className="text-xs text-slate-400 font-bold mb-1">Realistic Financial Opportunity</p>
-                        <div className="flex items-center justify-between">
-                            <span className="text-lg font-black text-green-400">{sector.financial_opportunity.realistic_annual_revenue}</span>
-                            <span className="text-sm text-slate-300 font-medium flex items-center gap-1"><Users size={14}/> {sector.financial_opportunity.final_learner_estimate} learners</span>
-                        </div>
-                     </div>
-                </div>
-
-                {/* Column 3: AI Opportunities */}
-                <div className="space-y-3">
-                    <h3 className="font-bold text-slate-300 text-sm mb-2">Suggested AI Courses</h3>
-                    <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 space-y-2 h-full">
-                        {sector.suggested_ai_courses.map((course, index) => (
-                             <div key={index} className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                                <p className="text-sm text-slate-300">{course}</p>
-                             </div>
-                        ))}
-                    </div>
-                </div>
-
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

@@ -31,9 +31,21 @@ export function DashboardClient({ data }: { data: AuditData }) {
         </div>
       </div>
 
-      <div className="p-8 md:px-16 space-y-16">
+      <div className="p-8 md:px-16 space-y-24">
         <SkillsHeatmap data={data.skills_heatmap} />
-        <SectorAnalysis sectors={data.sector_breakdown} />
+
+        <div>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
+                Sector Analysis with <span className="text-primary">Business Multipliers</span>
+              </h2>
+              <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+                A breakdown of each training package on your scope, with AI-suggested opportunities and strategic multipliers.
+              </p>
+            </div>
+            <SectorAnalysis sectors={data.sector_breakdown} />
+        </div>
+
         <SkillGalaxy data={data} />
       </div>
 
