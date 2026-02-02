@@ -1,17 +1,56 @@
 'use client';
 
 import type { Sector } from "@/ai/types";
-import { Info, Users, ShieldCheck, Link as LinkIcon, Sparkles, TrendingDown, Building, Wallet } from "lucide-react";
+import { Info, Users, Link as LinkIcon, Sparkles, TrendingDown, RefreshCw, Crown, Building2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
-import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface SectorAnalysisCardProps {
   sector: Sector;
 }
 
-
 export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) {
+
+    const multipliers = sector.business_multipliers;
+    const cards = multipliers ? [
+        {
+          title: "CAC Offset",
+          value: multipliers.marketing_cac_label,
+          subtext: multipliers.marketing_cac_subtext,
+          icon: <TrendingDown size={24} />,
+          color: "text-emerald-400",
+          bg: "bg-emerald-400/10",
+          border: "border-emerald-400/20"
+        },
+        {
+          title: "Student LTV",
+          value: multipliers.retention_ltv_value,
+          subtext: multipliers.retention_ltv_subtext,
+          icon: <RefreshCw size={24} />,
+          color: "text-blue-400",
+          bg: "bg-blue-400/10",
+          border: "border-blue-400/20"
+        },
+        {
+          title: "Positioning",
+          value: multipliers.strategic_positioning,
+          subtext: multipliers.strategic_positioning_subtext,
+          icon: <Crown size={24} />,
+          color: "text-amber-400",
+          bg: "bg-amber-400/10",
+          border: "border-amber-400/20"
+        },
+        {
+          title: "B2B Scale",
+          value: multipliers.b2b_scale_potential,
+          subtext: "Optimized for bulk corporate procurement.",
+          icon: <Building2 size={24} />,
+          color: "text-violet-400",
+          bg: "bg-violet-400/10",
+          border: "border-violet-400/20"
+        }
+      ] : [];
 
     return (
         <div className="flex flex-col bg-slate-900/50 border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl shadow-black/20 h-full">
@@ -21,52 +60,27 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
             </div>
 
             <div className="p-6 space-y-8 flex-grow">
-                {sector.business_multipliers && (
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <Sparkles className="text-primary text-lg" />
-                            <h3 className="text-[10px] uppercase tracking-widest font-bold text-primary">Gemini Business Multipliers</h3>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                        {/* Marketing CAC */}
-                        <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[9px] uppercase font-bold text-slate-400">Marketing</span>
-                                    <TrendingDown className="text-emerald-500 text-sm" />
+                {multipliers && (
+                     <section>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {cards.map((card, index) => (
+                                <div key={index} className={cn(`p-4 rounded-xl border ${card.border} bg-slate-900/50 backdrop-blur-sm`)}>
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className={cn(`p-2 rounded-lg`, card.bg, card.color)}>
+                                            {card.icon}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.title}</h4>
+                                        <div className={cn(`text-xl font-bold text-white`)}>
+                                            {card.value}
+                                        </div>
+                                        <p className="text-slate-500 text-xs leading-relaxed mt-2 border-t border-slate-800 pt-2">
+                                            {card.subtext}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="text-sm font-bold text-white">{sector.business_multipliers.marketing_cac_label}</div>
-                                <div className="text-[9px] text-slate-500 mt-1 leading-tight">{sector.business_multipliers.marketing_cac_subtext}</div>
-                            </div>
-
-                            {/* Retention LTV */}
-                            <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[9px] uppercase font-bold text-slate-400">Retention</span>
-                                </div>
-                                <div className="text-sm font-bold text-white">{sector.business_multipliers.retention_ltv_value}</div>
-                                <div className="text-[9px] text-slate-500 mt-1 leading-tight">{sector.business_multipliers.retention_ltv_subtext}</div>
-                            </div>
-
-                            {/* Positioning */}
-                            <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[9px] uppercase font-bold text-slate-400">Positioning</span>
-                                    <ShieldCheck className="text-amber-400 text-sm" />
-                                </div>
-                                <div className="text-sm font-bold text-white">{sector.business_multipliers.strategic_positioning}</div>
-                                <div className="text-[9px] text-slate-500 mt-1 leading-tight">{sector.business_multipliers.strategic_positioning_subtext}</div>
-                            </div>
-
-                            {/* B2B Scale */}
-                            <div className="bg-blue-600/5 p-3 rounded-xl border border-blue-500/10">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[9px] uppercase font-bold text-slate-400">B2B Scale</span>
-                                    <span className="text-[9px] font-bold text-white">{sector.business_multipliers.b2b_scale_potential}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 mt-2.5">
-                                    <Progress value={sector.business_multipliers.b2b_scale_rating} className="h-1.5 [&>div]:bg-primary" />
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </section>
                 )}
