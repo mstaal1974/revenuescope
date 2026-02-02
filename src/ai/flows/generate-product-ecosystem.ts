@@ -21,7 +21,8 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
-    output: { schema: RevenueStaircaseSchema },
+    // The 'output' schema is removed to prevent the nesting depth error.
+    // We will parse the JSON from the text response manually.
     model: auditModel,
     prompt: `{
     "SYSTEM_INSTRUCTION": {
@@ -128,12 +129,27 @@ const generateProductEcosystemFlow = ai.defineFlow(
     outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    // Call the prompt and get the raw text response
+    const response = await prompt(input);
+    const textOutput = response.text;
 
-    if (!output) {
-      throw new Error("AI returned no structured output for Revenue Staircase generation.");
+    if (!textOutput) {
+      throw new Error("AI returned no text output for Revenue Staircase generation.");
     }
     
-    return output;
+    try {
+        // Clean the response to ensure it's valid JSON before parsing
+        const startIndex = textOutput.indexOf('{');
+        const endIndex = textOutput.lastIndexOf('}') + 1;
+        const jsonString = textOutput.substring(startIndex, endIndex);
+
+        const parsedJson = JSON.parse(jsonString);
+        // Validate the parsed JSON against our Zod schema
+        return RevenueStaircaseSchema.parse(parsedJson);
+    } catch (e) {
+        console.error("Failed to parse JSON from AI response:", textOutput);
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        throw new Error(`AI returned malformed JSON for Revenue Staircase generation: ${errorMessage}`);
+    }
   }
 );
