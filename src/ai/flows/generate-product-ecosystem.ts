@@ -100,8 +100,50 @@ const prompt = ai.definePrompt({
               "email_subject": "string - The subject line to sell this product"
             }
           },
-          { "tier_level": 2, "...": "Follow the same structure as Tier 1, but for a Tier 2 product." },
-          { "tier_level": 3, "...": "Follow the same structure as Tier 1, but for a Tier 3 product." }
+          {
+            "tier_level": 2,
+            "title": "string - The marketable title of the Tier 2 product.",
+            "format": "string - e.g., 'Blended, 3-day workshop'",
+            "price": "number - e.g., 697",
+            "commercial_leverage": {
+                "speed_to_revenue": "string - e.g., '7 Days vs 12 Months'",
+                "employer_urgency": "string - e.g., 'Mandatory for Site Entry'",
+                "margin_health": "string - e.g., 'High - Low Assessment Overhead'"
+            },
+            "marketing_hook": "string - A short marketing hook for Tier 2.",
+            "marketing_playbook": {
+              "target_audience": "string - e.g., 'Aspiring Pathology Collectors'",
+              "pain_point": "string - e.g., 'Need the qualification to get hired?'",
+              "channel": "string - e.g., 'Seek/LinkedIn'",
+              "ad_creative_visual": "string - e.g., 'Professional in a lab coat, smiling confidently'",
+              "ad_headline": "string - Get Certified as a Pathology Collector",
+              "ad_body_copy": "string - 2 sentences of ad copy expanding on the hook",
+              "hashtags": "string - e.g., '#PathologyJobs #HealthcareCareers'",
+              "email_subject": "string - The subject line to sell this product"
+            }
+          },
+          {
+            "tier_level": 3,
+            "title": "string - The marketable title of the Tier 3 product.",
+            "format": "string - e.g., 'Online with work placement, 12 months'",
+            "price": "number - e.g., 3997",
+            "commercial_leverage": {
+                "conversion_probability": "string - e.g., 'High (Warm Leads from Tier 2)'",
+                "marketing_cost": "string - e.g., '$0 - Internal Upsell'",
+                "ltv_impact": "string - e.g., 'Doubles Customer Value'"
+            },
+            "marketing_hook": "string - A short marketing hook for Tier 3.",
+            "marketing_playbook": {
+              "target_audience": "string - e.g., 'Graduates of the Tier 2 course'",
+              "pain_point": "string - e.g., 'Ready to become a senior technician?'",
+              "channel": "string - e.g., 'Email/SMS'",
+              "ad_creative_visual": "string - e.g., 'A team leader managing a lab'",
+              "ad_headline": "string - Become a Senior Pathology Expert",
+              "ad_body_copy": "string - 2 sentences of ad copy expanding on the hook",
+              "hashtags": "string - e.g., '#PathologyLeader #MedTech'",
+              "email_subject": "string - The subject line to sell this product"
+            }
+          }
         ],
         "cluster_pathways": [
           {
