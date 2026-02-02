@@ -12,8 +12,18 @@ interface SectorAnalysisCardProps {
 
 export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) {
 
-    const multipliers = sector.business_multipliers;
-    const cards = multipliers ? [
+    const multipliers = sector.business_multipliers || {
+        marketing_cac_label: "N/A",
+        marketing_cac_subtext: "Re-run audit for data.",
+        retention_ltv_value: "N/A",
+        retention_ltv_subtext: "Re-run audit for data.",
+        strategic_positioning: "N/A",
+        strategic_positioning_subtext: "Re-run audit for data.",
+        b2b_scale_potential: "N/A",
+        b2b_scale_rating: 0,
+    };
+
+    const cards = [
         {
           title: "CAC Offset",
           value: multipliers.marketing_cac_label,
@@ -50,7 +60,7 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
           bg: "bg-violet-400/10",
           border: "border-violet-400/20"
         }
-      ] : [];
+      ];
 
     return (
         <div className="flex flex-col bg-slate-900/50 border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl shadow-black/20 h-full">
@@ -60,30 +70,28 @@ export default function SectorAnalysisCard({ sector }: SectorAnalysisCardProps) 
             </div>
 
             <div className="p-6 space-y-8 flex-grow">
-                {multipliers && (
-                     <section>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {cards.map((card, index) => (
-                                <div key={index} className={cn(`p-4 rounded-xl border ${card.border} bg-slate-900/50 backdrop-blur-sm`)}>
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className={cn(`p-2 rounded-lg`, card.bg, card.color)}>
-                                            {card.icon}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h4 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.title}</h4>
-                                        <div className={cn(`text-xl font-bold text-white`)}>
-                                            {card.value}
-                                        </div>
-                                        <p className="text-slate-500 text-xs leading-relaxed mt-2 border-t border-slate-800 pt-2">
-                                            {card.subtext}
-                                        </p>
+                <section>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {cards.map((card, index) => (
+                            <div key={index} className={cn(`p-4 rounded-xl border ${card.border} bg-slate-900/50 backdrop-blur-sm`)}>
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className={cn(`p-2 rounded-lg`, card.bg, card.color)}>
+                                        {card.icon}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                                <div className="space-y-1">
+                                    <h4 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.title}</h4>
+                                    <div className={cn(`text-xl font-bold text-white`)}>
+                                        {card.value}
+                                    </div>
+                                    <p className="text-slate-500 text-xs leading-relaxed mt-2 border-t border-slate-800 pt-2">
+                                        {card.subtext}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
                 
                 <section>
                     <h3 className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500 mb-4">Market Health</h3>

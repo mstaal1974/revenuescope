@@ -46,7 +46,7 @@ const SectorBreakdownSchema = z.object({
   market_health_trend_direction: z.string(),
   market_health_avg_industry_wage: z.string(),
   financial_opportunity: FinancialOpportunitySchema,
-  business_multipliers: BusinessMultipliersSchema,
+  business_multipliers: BusinessMultipliersSchema.optional(),
   recommended_actions: z.array(z.string()),
   suggested_ai_courses: z.array(z.string()).default([]),
 });
