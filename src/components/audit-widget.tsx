@@ -183,6 +183,7 @@ const AuditWidget: React.FC = () => {
       updateProgress(5, 'running');
       const fullAuditResult: AuditResult = {
         rto_id: baseAuditInput.rtoId,
+        manualScopeDataset: baseAuditInput.manualScopeDataset,
         ...stage1Result,
         ...stage2Result,
         ...stage3Result,

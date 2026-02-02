@@ -179,7 +179,8 @@ export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
 // This is the final, fully-parsed schema that the application uses internally.
 // It's a merge of all the stage outputs.
 export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(RevenueStaircaseSchema).extend({
-    rto_id: z.string()
+    rto_id: z.string(),
+    manualScopeDataset: z.string().optional(),
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
 

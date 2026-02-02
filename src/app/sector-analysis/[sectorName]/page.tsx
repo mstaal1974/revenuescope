@@ -3,13 +3,16 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Header } from "@/components/shared/header";
-import { type AuditData, type Sector, runGenerateSectorCampaignKitAction, type SectorCampaignKitOutput } from "@/app/actions";
+import { type AuditData, type Sector, runGenerateSectorCampaignKitAction, type SectorCampaignKitOutput, runStage3Action, type RevenueStaircaseInput, type RevenueStaircaseOutput } from "@/app/actions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, CheckCircle, Layers } from 'lucide-react';
+import { AlertTriangle, Loader2, ArrowLeft, Briefcase, Sparkles, Download, CheckCircle, Layers, Zap } from 'lucide-react';
 import FinancialImpactDashboard from '@/components/sector-analysis/FinancialImpactDashboard';
 import KpiCard from '@/components/sector-analysis/KpiCard';
+import { SkillsHeatmap } from '@/components/dashboard/skills-heatmap';
+import { RevenueGrowthEngine } from '@/components/dashboard/RevenueGrowthEngine';
+
 
 function SectorAnalysisContent() {
   const params = useParams();
@@ -17,6 +20,9 @@ function SectorAnalysisContent() {
   
   const [sectorData, setSectorData] = useState<Sector | null>(null);
   const [campaignKitData, setCampaignKitData] = useState<SectorCampaignKitOutput | null>(null);
+  const [pathwayData, setPathwayData] = useState<RevenueStaircaseOutput | null>(null);
+  const [fullAuditData, setFullAuditData] = useState<AuditData | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,41 +33,69 @@ function SectorAnalysisContent() {
       return;
     }
 
-    const dataString = localStorage.getItem("auditData");
-    if (!dataString) {
-      setError("No audit data found. Please start a new audit from the homepage.");
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      const parsedData: AuditData = JSON.parse(dataString);
-      const foundSector = parsedData.sector_breakdown.find(s => s.sector_name === sectorName);
-      
-      if (!foundSector) {
-        setError(`Sector "${sectorName}" not found in the audit data.`);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      const dataString = localStorage.getItem("auditData");
+      if (!dataString) {
+        setError("No audit data found. Please start a new audit from the homepage.");
         setLoading(false);
         return;
       }
-      setSectorData(foundSector);
-
-      const generateKit = async () => {
-        const response = await runGenerateSectorCampaignKitAction({ sector: foundSector });
-        if (response.ok) {
-          setCampaignKitData(response.result);
-        } else {
-          setError(response.error);
+      
+      try {
+        const parsedData: AuditData = JSON.parse(dataString);
+        setFullAuditData(parsedData);
+        const foundSector = parsedData.sector_breakdown.find(s => s.sector_name === sectorName);
+        
+        if (!foundSector) {
+          setError(`Sector "${sectorName}" not found in the audit data.`);
+          setLoading(false);
+          return;
         }
+        setSectorData(foundSector);
+
+        const campaignKitInput = { sector: foundSector };
+        const ecosystemInput: RevenueStaircaseInput = {
+          rtoId: parsedData.rto_id,
+          manualScopeDataset: parsedData.manualScopeDataset,
+          skills_heatmap: parsedData.skills_heatmap,
+          top_performing_sector: sectorName,
+        };
+
+        const [campaignKitResponse, ecosystemResponse] = await Promise.all([
+          runGenerateSectorCampaignKitAction(campaignKitInput),
+          runStage3Action(ecosystemInput)
+        ]);
+
+        let errors: string[] = [];
+        if (campaignKitResponse.ok) {
+          setCampaignKitData(campaignKitResponse.result);
+        } else {
+          errors.push(`Campaign Kit generation failed: ${campaignKitResponse.error}`);
+        }
+
+        if (ecosystemResponse.ok) {
+          setPathwayData(ecosystemResponse.result);
+        } else {
+          errors.push(`Revenue Pathway generation failed: ${ecosystemResponse.error}`);
+        }
+        
+        if(errors.length > 0) {
+            setError(errors.join('\n'));
+        }
+
+      } catch (e) {
+        console.error("Failed to process data:", e);
+        setError("There was an issue processing the audit data. It might be corrupted. Please try again.");
+      } finally {
         setLoading(false);
-      };
+      }
+    };
 
-      generateKit();
+    fetchData();
 
-    } catch (e) {
-      console.error("Failed to process data:", e);
-      setError("There was an issue processing the audit data. It might be corrupted. Please try again.");
-      setLoading(false);
-    }
   }, [sectorName]);
 
   const ErrorCard = ({title, message}: {title: string, message: string}) => (
@@ -74,7 +108,7 @@ function SectorAnalysisContent() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p className="text-muted-foreground">{message}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{message}</p>
                 <Button asChild className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black px-8 py-5 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl">
                   <Link href="/dashboard">Back to Dashboard</Link>
                 </Button>
@@ -96,7 +130,7 @@ function SectorAnalysisContent() {
     );
   }
 
-  if (error) {
+  if (error && !campaignKitData) {
     return <ErrorCard title="Error Generating Campaign Kit" message={error} />;
   }
   
@@ -105,9 +139,9 @@ function SectorAnalysisContent() {
     const strategy = campaignKitData.the_strategy;
 
     return (
-        <div className='container mx-auto p-4 md:p-8'>
+        <div className='container mx-auto p-4 md:p-8 space-y-24'>
             {/* Header */}
-            <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12'>
+            <header className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
                 <div>
                     <Button asChild variant="ghost" className='mb-4 pl-0 text-slate-400 hover:text-white'>
                         <Link href="/dashboard"><ArrowLeft size={16} className='mr-2' /> Back to Main Dashboard</Link>
@@ -122,12 +156,12 @@ function SectorAnalysisContent() {
                     <Download size={16} className='mr-2'/>
                     Export Kit
                 </Button>
-            </div>
+            </header>
 
             {/* Main Content */}
             <FinancialImpactDashboard data={campaignKitData.financial_impact} />
 
-            <div className="my-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KpiCard title="CAC Reduction" value={kpi.cac_reduction_value} subValue={kpi.cac_reduction_percentage} description="Per acquisition" />
                 <KpiCard title="LTV Expansion" value={kpi.ltv_expansion_multiplier} subValue="Projected" description="Lifetime value growth" />
                 <KpiCard title="Authority Index" value={`${kpi.authority_index_score}/100`} subValue="Industry leader positioning" isGauge={true} gaugeValue={kpi.authority_index_score} />
@@ -159,7 +193,7 @@ function SectorAnalysisContent() {
             </Card>
 
             {campaignKitData.skills_to_product_strategy && (
-              <Card className='mt-12 bg-slate-900 border-slate-800 text-white rounded-3xl p-8 md:p-12'>
+              <Card className='bg-slate-900 border-slate-800 text-white rounded-3xl p-8 md:p-12'>
                 <CardHeader className='p-0 mb-6'>
                   <CardTitle className='text-3xl font-bold flex items-center gap-3'>
                     <Layers className='text-teal-400'/>
@@ -170,7 +204,6 @@ function SectorAnalysisContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className='p-0 grid lg:grid-cols-2 gap-8'>
-                  {/* Suggested Short Courses */}
                   <div className="space-y-4">
                     <h4 className="font-bold text-slate-200">Suggested Short Courses</h4>
                     <div className="space-y-3">
@@ -189,7 +222,6 @@ function SectorAnalysisContent() {
                       ))}
                     </div>
                   </div>
-                  {/* Suggested Skill Packages */}
                   <div className="space-y-4">
                     <h4 className="font-bold text-slate-200">Suggested Skill Packages</h4>
                     {campaignKitData.skills_to_product_strategy.suggested_skill_packages.map((pkg, i) => (
@@ -209,6 +241,28 @@ function SectorAnalysisContent() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {fullAuditData?.skills_heatmap && (
+                <section>
+                     <div className="text-left mb-12">
+                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] border border-slate-700">
+                             <Zap size={12} />
+                             Context: Overall RTO Skills Demand
+                         </div>
+                         <h3 className="text-3xl font-black text-white tracking-tight mt-4">Scope-Wide Skills Heatmap</h3>
+                         <p className="text-slate-400 mt-2 max-w-3xl">This heatmap analyzes every skill within your entire scope to identify what employers are hiring for right now. Use this as context for your sector-specific strategy.</p>
+                     </div>
+                    <SkillsHeatmap data={fullAuditData.skills_heatmap} />
+                </section>
+            )}
+
+            {pathwayData ? (
+                 <section>
+                     <RevenueGrowthEngine data={pathwayData} />
+                 </section>
+            ) : (
+                error && <ErrorCard title="Pathway Generation Failed" message={error} />
             )}
 
         </div>
