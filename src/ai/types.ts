@@ -157,6 +157,7 @@ const AutomationActionSchema = z.object({
     delay: z.string().describe("The trigger delay for the automation, e.g., 'On Completion' or '7 Days Post-Completion'."),
     message_hook: z.string().describe("The marketing message or email subject line for the automation."),
     upsell_product: z.string().describe("The title of the next product in the pathway being sold."),
+    conversion_rate: z.number().min(0).max(100).describe("The estimated conversion rate for this upsell action, e.g., 92."),
 });
 
 const ClusterPathwaySchema = z.object({

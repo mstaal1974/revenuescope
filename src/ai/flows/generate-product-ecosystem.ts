@@ -60,12 +60,12 @@ const prompt = ai.definePrompt({
           "STEP_1": {
             "current_stage": "Use the 'title' from the generated Tier 1 product.",
             "stage_revenue": "Use the 'price' from the generated Tier 1 product.",
-            "automation_action": "Create an action to upsell to Tier 2. Set delay to 'On Completion'. 'message_hook' should be an enticing email subject line. 'upsell_product' must be the title of the Tier 2 product."
+            "automation_action": "Create an action to upsell to Tier 2. Set delay to 'On Completion'. 'message_hook' should be an enticing email subject line. 'upsell_product' must be the title of the Tier 2 product. Add a plausible 'conversion_rate' number, e.g., 92."
           },
           "STEP_2": {
             "current_stage": "Use the 'title' from the generated Tier 2 product.",
             "stage_revenue": "Use the 'price' from the generated Tier 2 product.",
-            "automation_action": "Create an action to upsell to Tier 3. Set delay to '7 Days Post-Completion'. 'message_hook' should focus on career mastery. 'upsell_product' must be the title of the Tier 3 product."
+            "automation_action": "Create an action to upsell to Tier 3. Set delay to '7 Days Post-Completion'. 'message_hook' should focus on career mastery. 'upsell_product' must be the title of the Tier 3 product. Add a plausible 'conversion_rate' number, e.g., 78."
           },
           "STEP_3": {
             "current_stage": "Use the 'title' from the generated Tier 3 product.",
@@ -152,7 +152,8 @@ const prompt = ai.definePrompt({
             "automation_action": {
               "delay": "On Completion",
               "message_hook": "Your next step to a $100k career...",
-              "upsell_product": "Tier 2 Product Title"
+              "upsell_product": "Tier 2 Product Title",
+              "conversion_rate": 92
             }
           },
           {
@@ -161,7 +162,8 @@ const prompt = ai.definePrompt({
             "automation_action": {
               "delay": "7 Days Post-Completion",
               "message_hook": "Become a team leader with our Diploma...",
-              "upsell_product": "Tier 3 Product Title"
+              "upsell_product": "Tier 3 Product Title",
+              "conversion_rate": 78
             }
           },
           {

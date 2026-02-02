@@ -1,7 +1,18 @@
 'use client';
 
-import { TrendingUp, ArrowRight, Mail, MessageSquare, CheckCircle, DollarSign, ArrowDown } from 'lucide-react';
+import {
+  TrendingUp,
+  ArrowRight,
+  MessageSquare,
+  CheckCircle,
+  Wallet,
+  ArrowDown,
+  RefreshCw,
+  Clock,
+  BarChart2
+} from 'lucide-react';
 import type { RevenueStaircaseOutput } from '@/ai/types';
+import { Progress } from '@/components/ui/progress';
 
 interface RevenueGrowthEngineProps {
   data: RevenueStaircaseOutput;
@@ -9,186 +20,187 @@ interface RevenueGrowthEngineProps {
 
 export default function RevenueGrowthEngine({ data }: RevenueGrowthEngineProps) {
   const pathways = data?.cluster_pathways || [];
-  const standardRevenue = 3500; // Example standard diploma price
-  
-  // Calculate total revenue from all stages if pathways exist
-  const clusteredRevenue = pathways.length > 0
-    ? pathways.reduce((acc, step) => acc + step.stage_revenue, 0)
-    : 0;
-    
-  const uplift = clusteredRevenue - standardRevenue;
+  const standardRevenue = 1495;
 
   if (pathways.length === 0) {
     return (
-        <div className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-            <h2 className="text-white font-bold text-2xl">Commercial Growth Engine</h2>
-            <p className="text-slate-400 mt-2">Data for the Growth Engine is not available. This can happen with older audit reports. Please try re-running the audit to generate the automated upsell pathway.</p>
-        </div>
+      <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center">
+        <h2 className="text-white font-bold text-2xl">Commercial Growth Engine</h2>
+        <p className="text-slate-400 mt-2">Data for the Growth Engine is not available. Please re-run the audit to generate the automated upsell pathway.</p>
+      </div>
     );
   }
 
-  return (
-    <div className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-8 shadow-2xl overflow-hidden relative">
-      
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl -z-10"></div>
+  const clusteredRevenue = pathways.reduce((acc, step) => acc + step.stage_revenue, 0);
+  const totalRevenueUplift = clusteredRevenue - standardRevenue;
+  const ltvMultiplier = standardRevenue > 0 ? (clusteredRevenue / standardRevenue).toFixed(1) : 0;
 
-      <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-slate-800 pb-6">
-        <div>
-          <h2 className="text-white font-bold text-2xl flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 rounded-lg">
-              <TrendingUp className="text-emerald-400" size={24} />
+  const tierColors = {
+    1: 'bg-emerald-500',
+    2: 'bg-blue-500',
+    3: 'bg-violet-500'
+  };
+  const tierBgColors = {
+    1: 'bg-emerald-500/20',
+    2: 'bg-blue-500/20',
+    3: 'bg-violet-500/20'
+  };
+  const tierTextColors = {
+    1: 'text-emerald-400',
+    2: 'text-blue-400',
+    3: 'text-violet-400'
+  };
+   const tierBorderColors = {
+    1: 'border-emerald-500/30 group-hover:border-emerald-500/60',
+    2: 'border-blue-500/30 group-hover:border-blue-500/60',
+    3: 'border-violet-500/30 group-hover:border-violet-500/60'
+  };
+
+  return (
+    <div className="w-full bg-slate-900/50 border border-slate-700/50 rounded-3xl shadow-2xl overflow-hidden">
+      <header className="p-8 border-b border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg text-primary">
+              <TrendingUp />
             </div>
-            Commercial Growth Engine
-          </h2>
-          <p className="text-slate-400 text-sm mt-2 max-w-lg">
-            By unbundling this qualification, you unlock hidden revenue at every stage of the student lifecycle.
+            <h1 className="text-2xl font-bold tracking-tight text-white">ScopeStack Growth Engine</h1>
+          </div>
+          <p className="text-slate-400 max-w-lg">
+            Unbundling qualifications to unlock hidden revenue at every stage of the student lifecycle through automated intelligence.
           </p>
         </div>
-        <div className="text-right mt-6 md:mt-0">
-          <div className="text-slate-500 text-xs uppercase tracking-wider font-bold">Total Revenue Uplift</div>
-          <div className="text-4xl font-mono font-bold text-emerald-400">
-            +${uplift > 0 ? uplift.toLocaleString() : '...'}
+        <div className="flex gap-8">
+          <div className="text-right">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Lifetime Value Multiplier</p>
+            <div className="flex items-baseline justify-end gap-2">
+              <span className="text-4xl font-extrabold text-primary">{ltvMultiplier}x</span>
+              <span className="text-xs text-primary/80 font-medium">vs Traditional</span>
+            </div>
           </div>
-          <div className="text-emerald-500/60 text-xs font-medium mt-1">
-            Per Student vs. Standard Diploma
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
-        <div className="lg:col-span-4 flex flex-col justify-center">
-          <h3 className="text-slate-300 font-bold text-sm uppercase tracking-wide mb-6 flex items-center gap-2">
-            <DollarSign size={16} /> Yield Architecture
-          </h3>
-          
-          <div className="flex gap-6 items-end justify-center h-[400px]">
-            
-            <div className="w-24 flex flex-col items-center group">
-              <div className="text-slate-500 font-mono text-xs mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                ${standardRevenue.toLocaleString()}
-              </div>
-              <div className="w-full h-[60%] bg-slate-800 rounded-t-lg border-t border-slate-700 relative group-hover:bg-slate-700 transition-colors">
-                 <div className="absolute bottom-4 left-0 w-full text-center text-slate-500 text-xs -rotate-90">
-                    Standard
-                 </div>
-              </div>
-              <div className="mt-3 text-center">
-                <div className="text-slate-400 font-bold text-sm">Old Way</div>
-                <div className="text-slate-600 text-[10px]">Single Transaction</div>
-              </div>
+          <div className="text-right border-l border-slate-800 pl-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Total Revenue Uplift</p>
+            <div className="text-4xl font-extrabold text-white flex items-center justify-end">
+              <span className="text-primary mr-1">+</span>${totalRevenueUplift.toLocaleString()}
             </div>
-
-            <div className="mb-20 text-slate-700">
-              <ArrowRight size={24} />
-            </div>
-
-            <div className="w-24 flex flex-col items-center relative z-10">
-              <div className="text-emerald-400 font-mono text-xs mb-2 font-bold animate-pulse">
-                ${clusteredRevenue.toLocaleString()}
-              </div>
-              
-              <div className="w-full h-[75%] flex flex-col-reverse rounded-t-lg overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                {pathways.map((step, i) => (
-                  <div key={i} 
-                    className={`w-full flex items-center justify-center border-t border-white/10 transition-all hover:brightness-110 cursor-pointer
-                      ${i === 0 ? 'bg-white h-[15%] text-slate-900' : ''}
-                      ${i === 1 ? 'bg-emerald-500 h-[30%] text-white' : ''}
-                      ${i === 2 ? 'bg-blue-600 h-[55%] text-white' : ''}
-                    `}
-                  >
-                    <span className="text-[10px] font-bold">${step.stage_revenue}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-3 text-center">
-                <div className="text-emerald-400 font-bold text-sm">New Way</div>
-                <div className="text-slate-500 text-[10px]">3x Transactions</div>
-              </div>
-            </div>
-
           </div>
         </div>
-
-        <div className="lg:col-span-8 border-l border-slate-800 pl-0 lg:pl-12">
-          <h3 className="text-slate-300 font-bold text-sm uppercase tracking-wide mb-8 flex items-center gap-2">
-            <Mail size={16} /> Automated Upsell Loop
-          </h3>
-
-          <div className="relative space-y-8">
-            <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-slate-800/50"></div>
-
-            {pathways.map((step, index) => (
-              <div key={index} className="relative group">
-                
-                <div className="flex gap-4 items-center mb-4 relative z-10">
-                  <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg border-4 border-slate-950
-                    ${index === 0 ? 'bg-white text-slate-900' : 
-                      index === 1 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 
-                      'bg-blue-600 text-white'}
-                  `}>
-                    {index + 1}
-                  </div>
-                  <div className="flex-1 bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center hover:border-blue-500/30 transition-colors">
-                    <div>
-                      <h4 className="text-white font-bold text-sm">{step.current_stage}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-slate-500 text-xs">Revenue Event:</span>
-                        <span className="text-emerald-400 font-mono text-xs font-bold">${step.stage_revenue.toLocaleString()}</span>
-                      </div>
-                    </div>
-                    {index === 0 && <span className="bg-white/10 text-white text-[10px] px-2 py-1 rounded">Entry Point</span>}
-                  </div>
+      </header>
+      <main className="grid grid-cols-1 lg:grid-cols-12">
+        <aside className="lg:col-span-4 p-8 border-r border-slate-800 bg-black/20">
+          <div className="flex items-center gap-2 mb-12">
+            <Wallet className="text-sm text-slate-400" />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Yield Architecture</h2>
+          </div>
+          <div className="relative h-80 flex items-end gap-1 mt-20 px-4">
+            <div className="flex-1 flex flex-col items-center group">
+              <div className="w-full bg-slate-800 h-12 rounded-t-lg relative">
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-bold">${standardRevenue.toLocaleString()}</div>
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-[10px] font-bold uppercase text-slate-400">Old Way</p>
+                <p className="text-[10px] text-slate-500">Single Transaction</p>
+              </div>
+            </div>
+            <div className="flex-[0.5] flex items-center justify-center pb-20">
+              <ArrowRight className="text-slate-700" />
+            </div>
+            <div className="flex-[2] flex items-end gap-1">
+              <div className="flex-1 flex flex-col items-center group">
+                <div className="w-full bg-emerald-500 h-8 rounded-t-md staircase-step cursor-help relative">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold">${pathways[0]?.stage_revenue}</div>
                 </div>
-
+                <div className="mt-4 w-full h-1 bg-emerald-500/20 rounded-full"></div>
+              </div>
+              <div className="flex-1 flex flex-col items-center group">
+                <div className="w-full bg-blue-500 h-24 rounded-t-md staircase-step cursor-help relative">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold">${pathways[1]?.stage_revenue}</div>
+                </div>
+                <div className="mt-4 w-full h-1 bg-blue-500/20 rounded-full"></div>
+              </div>
+              <div className="flex-1 flex flex-col items-center group">
+                <div className="w-full bg-violet-500 h-56 rounded-t-md staircase-step cursor-help relative">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold">${pathways[2]?.stage_revenue}</div>
+                </div>
+                <div className="mt-4 w-full h-1 bg-violet-500/20 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-12 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-primary">New Total Yield</span>
+              <span className="text-xl font-bold text-white">${clusteredRevenue.toLocaleString()}</span>
+            </div>
+            <Progress value={(clusteredRevenue / (pathways[2].stage_revenue + standardRevenue)) * 100} className="h-1.5 [&>div]:bg-primary" />
+            <p className="text-[10px] text-slate-400 mt-2 text-center italic">3x transactions vs industry baseline</p>
+          </div>
+        </aside>
+        <section className="lg:col-span-8 p-8 relative">
+          <div className="flex items-center gap-2 mb-8">
+            <RefreshCw className="text-sm text-slate-400" />
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Automated Upsell Loop</h2>
+          </div>
+          <div className="relative pl-12">
+            <div className="absolute left-5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-emerald-500 via-blue-500 to-violet-500 opacity-30"></div>
+            {pathways.map((step, index) => (
+              <div key={index} className="relative mb-12">
+                 <div className={`absolute -left-12 top-0 w-10 h-10 rounded-full flex items-center justify-center font-bold z-10 shadow-lg 
+                  ${index === 0 ? 'bg-white/10 border-2 border-primary text-primary shadow-primary/20' : ''} 
+                  ${index === 1 ? 'bg-primary text-white neon-glow' : ''} 
+                  ${index === 2 ? 'bg-white/10 border-2 border-violet-500 text-violet-500 shadow-violet-500/20' : ''}
+                `}>
+                  {index + 1}
+                </div>
+                <div className={`bg-slate-900/70 border border-slate-800 p-5 rounded-2xl flex justify-between items-center
+                  ${index === 1 ? 'border-2 border-primary/40 shadow-lg shadow-primary/5' : ''}
+                `}>
+                  <div>
+                    <h3 className="font-bold text-lg text-white">{step.current_stage}</h3>
+                    <p className="text-sm text-slate-400 font-mono">Revenue Event: <span className={`font-bold ${tierTextColors[index+1 as keyof typeof tierTextColors]}`}>${step.stage_revenue}</span></p>
+                  </div>
+                  {index === 0 && <span className="text-[10px] font-bold px-3 py-1 bg-slate-800 text-slate-500 rounded-full uppercase tracking-tighter">Entry Point</span>}
+                  {index === 1 && <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span className="text-[10px] font-bold text-primary uppercase">Active Segment</span></div>}
+                </div>
                 {step.automation_action && (
-                  <div className="ml-12 pl-8 pb-8 relative">
-                    <div className="absolute -left-[19px] top-6 w-6 h-6 bg-slate-950 border border-slate-700 rounded-full flex items-center justify-center text-slate-500">
-                      <ArrowDown size={12} />
+                  <div className="mt-4 ml-4 flex gap-4 items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${tierBorderColors[index+2 as keyof typeof tierBorderColors]} ${tierBgColors[index+2 as keyof typeof tierBgColors]}`}>
+                       {index === 0 ? <MessageSquare className={`text-sm ${tierTextColors[index+2 as keyof typeof tierTextColors]}`} /> : <Clock className={`text-sm ${tierTextColors[index+2 as keyof typeof tierTextColors]}`} />}
                     </div>
-
-                    <div className="bg-slate-800/30 border border-slate-700/50 border-dashed rounded-lg p-4 hover:bg-slate-800/50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-blue-500/10 rounded-md text-blue-400 mt-1">
-                          <MessageSquare size={16} />
+                    <div className={`flex-1 bg-slate-900 border border-dashed ${tierBorderColors[index+2 as keyof typeof tierBorderColors]} p-4 rounded-xl flex justify-between items-center group transition-colors`}>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-black text-white px-2 py-0.5 rounded ${tierColors[index+2 as keyof typeof tierColors]}`}>TRIGGER: {step.automation_action.delay}</span>
+                                <span className={`text-[10px] font-bold flex items-center gap-1 ${tierTextColors[index+2 as keyof typeof tierTextColors]}`}>
+                                    <BarChart2 className="text-[12px]" /> {step.automation_action.conversion_rate}% Conversion
+                                </span>
+                            </div>
+                            <p className="text-xs italic text-slate-400">"{step.automation_action.message_hook}"</p>
                         </div>
-                        <div>
-                           <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-bold text-blue-400 uppercase bg-blue-500/10 px-1.5 py-0.5 rounded">
-                                Trigger: {step.automation_action.delay}
-                              </span>
-                           </div>
-                           <p className="text-slate-300 text-xs italic mb-2">
-                             "{step.automation_action.message_hook}"
-                           </p>
-                           <div className="flex items-center gap-2 text-[10px] text-slate-500">
-                             <span>Unlocks next stage:</span>
-                             <span className="text-white font-bold">{step.automation_action.upsell_product}</span>
-                           </div>
-                        </div>
-                      </div>
+                        <ArrowDown className={`text-slate-700 group-hover:${tierTextColors[index+2 as keyof typeof tierTextColors]} transition-colors`} />
                     </div>
                   </div>
                 )}
-
               </div>
             ))}
-
-            <div className="flex gap-4 items-center relative z-10 opacity-60">
-               <div className="w-12 h-12 rounded-full bg-slate-900 border-2 border-slate-700 border-dashed flex items-center justify-center text-slate-500">
-                  <CheckCircle size={20} />
-               </div>
-               <div className="text-slate-500 text-sm font-medium">
-                  Student Lifecycle Complete (Alumni Status)
-               </div>
+            <div className="mt-12 flex items-center gap-4 text-slate-500">
+              <div className="w-10 h-10 -ml-12 rounded-full border-2 border-slate-800 bg-slate-900 flex items-center justify-center">
+                <CheckCircle className="text-sm"/>
+              </div>
+              <span className="text-sm font-medium">Student Lifecycle Complete (Alumni Status)</span>
             </div>
-
           </div>
+        </section>
+      </main>
+      <footer className="p-4 bg-black/40 flex justify-between items-center border-t border-slate-800">
+        <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
+          <span className="text-[10px] font-bold tracking-widest uppercase">Powered by</span>
+          <div className="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-black italic">Gemini 2.5 Pro</div>
         </div>
-
-      </div>
+        <div className="flex items-center gap-4">
+          <button className="text-[10px] font-bold uppercase text-slate-400 hover:text-primary transition-colors">Export Strategy</button>
+          <button className="bg-primary text-slate-950 px-4 py-2 rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-primary/30 transition-all">Optimize Flow</button>
+        </div>
+      </footer>
     </div>
   );
 }
