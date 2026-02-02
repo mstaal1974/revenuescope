@@ -20,6 +20,7 @@ export async function generateMicrocredential(
 const prompt = ai.definePrompt({
     name: 'microcredentialPrompt',
     input: { schema: MicrocredentialInputSchema },
+    output: { schema: MicrocredentialOutputSchema },
     model: auditModel,
     prompt: `
 **CORE DIRECTIVE:**
@@ -52,29 +53,7 @@ You must identify one specific "AI Productivity Skill" tailored to the target oc
 - Unit: \`{{{unit_code}}} - {{{unit_title}}}\`
 
 **TASK:**
-Based on the rules and logic above, generate a single raw JSON object for the micro-credential product derived from the provided Unit of Competency AND the associated AI opportunity.
-
-**REQUIRED JSON OUTPUT FORMAT (This is an example, you must generate real data based on the INPUT DATA):**
-{
-  "microcredential_product": {
-    "market_title": "Laser & Spirit Level Basics for Site Hands",
-    "target_occupation": "Construction Laborer / Apprentice",
-    "skill_focus": "Setting up a laser level and checking heights accurately.",
-    "format": "Non-Accredited (Industry Skill Badge)",
-    "duration": "3 Hours (Online + Practical Video)",
-    "pathway_mapping": {
-      "leads_to_unit": "CPCCCM2006",
-      "leads_to_qual": "CPC30220",
-      "value_prop": "Complete this to gain confidence before starting your apprenticeship."
-    }
-  },
-  "ai_opportunity": {
-    "product_title": "Automating Site Safety Reports with Voice-to-Text",
-    "target_tool": "ChatGPT Mobile & Otter.ai",
-    "pain_point_solved": "Supervisors currently spend 2 hours a night typing reports. This cuts it to 15 mins.",
-    "marketing_hook": "Get off the laptop and get back on the tools. Learn to write reports with your voice."
-  }
-}
+Based on the rules and logic above, generate the micro-credential product derived from the provided Unit of Competency AND the associated AI opportunity.
 `,
 });
 
@@ -82,32 +61,15 @@ const generateMicrocredentialFlow = ai.defineFlow(
   {
     name: 'generateMicrocredentialFlow',
     inputSchema: MicrocredentialInputSchema,
-    // outputSchema: MicrocredentialOutputSchema,
+    outputSchema: MicrocredentialOutputSchema,
   },
   async (input) => {
-    const response = await prompt(input);
-    const rawText = response.text;
-
-    if (!rawText) {
-      throw new Error("AI returned no text output for Micro-credential generation.");
+    const { output } = await prompt(input);
+    
+    if (!output) {
+      throw new Error("AI returned no structured output for Micro-credential generation.");
     }
     
-    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-    let parsedJson: any;
-    
-    try {
-        parsedJson = JSON.parse(cleanJson);
-    } catch (e) {
-        console.error("Failed to parse JSON from AI for Microcredential:", e, "\nRaw text:", rawText);
-        throw new Error("AI returned malformed JSON for Micro-credential generation.");
-    }
-    
-    const validationResult = MicrocredentialOutputSchema.safeParse(parsedJson);
-    if (validationResult.success) {
-      return validationResult.data;
-    }
-
-    console.error("AI output for Microcredential failed validation.", validationResult.error);
-    throw new Error(`AI output for Microcredential failed validation: ${validationResult.error.message}`);
+    return output;
   }
 );
