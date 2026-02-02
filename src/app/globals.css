@@ -56,3 +56,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* PRINT STYLES */
+@media print {
+  @page { size: A4; margin: 0; }
+  body { 
+    background-color: white !important; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+  }
+  nav, header, footer, aside, .no-print { display: none !important; }
+  .print-page { 
+    width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; position: relative; background: white; 
+  }
+  .print-container { padding: 20mm; height: 100%; display: flex; flex-direction: column; }
+  .no-break { break-inside: avoid; }
+}
+@media screen {
+  .print-page { 
+    width: 210mm; height: 297mm; margin: 40px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+  }
+}
