@@ -143,7 +143,7 @@ export default function RevenueGrowthEngine({ data }: RevenueGrowthEngineProps) 
           <div className="relative pl-12">
             <div className="absolute left-5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-emerald-500 via-blue-500 to-violet-500 opacity-30"></div>
             {pathways.map((step, index) => (
-              <div key={index} className="relative mb-12">
+              <div key={index} id={`tier-${index + 1}`} className="relative mb-12 scroll-mt-24">
                  <div className={`absolute -left-12 top-0 w-10 h-10 rounded-full flex items-center justify-center font-bold z-10 shadow-lg 
                   ${index === 0 ? 'bg-white/10 border-2 border-primary text-primary shadow-primary/20' : ''} 
                   ${index === 1 ? 'bg-primary text-white neon-glow' : ''} 
