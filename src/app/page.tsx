@@ -34,13 +34,6 @@ const LogicProof = ({ icon, title, children }: { icon: React.ReactNode, title: s
     </div>
 );
 
-const FloatingLabel = ({ text, className }: { text: string, className?: string }) => (
-    <div className={cn("absolute p-4 rounded-full text-xs font-bold bg-slate-900/50 text-white backdrop-blur-sm border border-slate-700 whitespace-nowrap shadow-lg", className)}>
-        <div className="absolute -inset-1 bg-blue-500/50 rounded-full blur-lg -z-10 animate-pulse-grow"></div>
-        {text}
-    </div>
-)
-
 
 export default function Home() {
   return (
@@ -103,17 +96,13 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">This isn't just a list of units.</h2>
             <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">It's a complete Go-To-Market strategy, delivered in seconds.</p>
             <div className="max-w-4xl mx-auto relative">
-                <div className="relative aspect-[4/3] sm:aspect-video rounded-3xl bg-slate-900 border-2 border-slate-800 p-4 flex flex-col gap-2 filter blur-sm opacity-60">
-                    <div className="flex gap-2">
-                        <div className="w-1/4 h-20 bg-slate-800 rounded-lg"></div>
-                        <div className="w-3/4 h-20 bg-slate-800 rounded-lg"></div>
-                    </div>
-                    <div className="w-full h-full bg-slate-800 rounded-lg"></div>
-                </div>
-
-                <FloatingLabel text="💰 $145k Opportunity Found" className="top-1/4 left-1/4 -translate-x-1/2" />
-                <FloatingLabel text="📉 Marketing Ad Copy Included" className="top-1/2 right-1/4 translate-x-1/2" />
-                <FloatingLabel text="🗺️ Student Visual Pathway" className="bottom-1/4 left-1/2 -translate-x-1/2" />
+                <Image
+                    src="https://raw.githubusercontent.com/mstaal1974/Brand-Guide-/main/assets/Gemini_Generated_Image_iytrfmiytrfmiytr.png"
+                    alt="AI-generated Go-To-Market strategy dashboard"
+                    width={1200}
+                    height={800}
+                    className="rounded-3xl border-2 border-slate-800 shadow-2xl shadow-blue-500/10"
+                />
             </div>
         </section>
       </main>
