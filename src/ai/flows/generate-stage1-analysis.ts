@@ -66,17 +66,45 @@ Your overall task is to act as a **Strategic Growth Director** and **Labour Mark
     *   \`top_performing_sector\`: A string identifying the best sector.
     *   \`strategic_advice\`: A string with your main recommendation.
 
-2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\`. The properties for market health and competition intensity must be flattened. For each sector, also generate a list of 2-3 innovative, AI-related micro-credential course titles that could be developed. These should be stored in a \`suggested_ai_courses\` array. For each sector, also generate the \`business_multipliers\` object with the following logic:
-    *   \`marketing_cac_label\`: Estimate a Customer Acquisition Cost (CAC) reduction percentage. Example: "-24% CAC".
-    *   \`marketing_cac_subtext\`: Briefly explain the reasoning. Example: "Self-Liquidating Offer logic applied."
-    *   \`retention_ltv_value\`: Estimate the Lifetime Value (LTV) increase from upselling. Example: "+$2,400 LTV".
-    *   \`retention_ltv_subtext\`: Provide context, like an upsell probability. Example: "Upsell Prob: 85%".
-    *   \`strategic_positioning\`: A concise, impactful label for their market position. Example: "Category King".
-    *   \`strategic_positioning_subtext\`: A short descriptor for the position. Example: "Elite B2B Automation partner."
-    *   \`b2b_scale_potential\`: A qualitative rating ('High', 'Medium', 'Low').
-    *   \`b2b_scale_rating\`: A quantitative rating from 0 to 100 for the \`b2b_scale_potential\`. 'High' should be > 70, 'Medium' 40-70, 'Low' < 40.
+2.  **\`sector_breakdown\` (Array of Objects):** Group qualifications from the provided scope by Training Package (e.g., BSB -> Business). For each sector, create an object in the array and populate it. You MUST use the **MANDATORY 4-STEP REVENUE MODEL** to calculate the \`financial_opportunity\`. The properties for market health and competition intensity must be flattened. For each sector, also generate a list of 2-3 innovative, AI-related micro-credential course titles that could be developed. These should be stored in a \`suggested_ai_courses\` array. For each sector, you MUST generate the \`business_multipliers\` object using the MANDATORY BUSINESS MULTIPLIER LOGIC below.
 
 3.  **\`occupation_analysis\` (Array of Objects):** Focus on the sector you identified as 'top_performing_sector'. Identify the top 10 most relevant occupations from the ANZSCO codes provided. For each occupation, create an object in this array with name, demand, market size, and growth rate. **This field MUST be an array, not an object.**
+
+**MANDATORY BUSINESS MULTIPLIER LOGIC**
+You must calculate the \`business_multipliers\` object using the following 4 recipes. Show your work in the 'subtext' fields.
+
+**1. CAC OFFSET (Marketing Efficiency):**
+*   **Formula:** \`(Estimated Tier 1 Price / Industry Average Cost Per Lead)\`. The result should show how many leads are paid for by one sale.
+*   **Data Sources:**
+    *   **Estimated Tier 1 Price:** You must estimate a plausible price for a small, non-accredited online course for this sector (e.g., $97, $149).
+    *   **CPL Lookup Table:** Use these industry average Cost Per Lead (CPL) values: \`Trades/Construction: $35\`, \`Health/Community: $45\`, \`Business/Leadership: $60\`, \`Default: $50\`.
+*   **Output Fields:**
+    *   \`marketing_cac_label\`: Format as a string showing the multiplier, e.g., "4.2x CAC Offset".
+    *   \`marketing_cac_subtext\`: Explain the calculation, e.g., "A $149 course pays for 4.2 leads at $35 CPL."
+
+**2. RETENTION / LIFETIME VALUE (LTV):**
+*   **Formula:** \`(Est Tier 1 Price) + (Est Tier 2 Price * 0.3) + (Est Tier 3 Price * 0.1)\`.
+*   **Data Sources:**
+    *   **Estimated Prices:** You must estimate plausible prices for Tier 1 (impulse buy), Tier 2 (core skillset), and Tier 3 (full qualification) products in this sector.
+    *   **Retention Assumption:** Use a fixed 30% upgrade rate to Tier 2 and a 10% upgrade rate to Tier 3.
+*   **Output Fields:**
+    *   \`retention_ltv_value\`: Format the final LTV as a currency string, e.g., "+$950 LTV".
+    *   \`retention_ltv_subtext\`: Briefly show the calculation, e.g., "$97 + ($850*0.3) + ($4k*0.1) = $752".
+
+**3. POSITIONING (Brand Authority):**
+*   **Logic:** Scarcity = Authority. Based on your training data, estimate the number of competing RTOs for the core qualifications in this sector.
+*   **Rules:**
+    *   If > 200 RTOs: \`strategic_positioning\` = "High Competition". \`strategic_positioning_subtext\` = "Strategy: Niche Down or Compete on Price."
+    *   If 50-200 RTOs: \`strategic_positioning\` = "Specialist". \`strategic_positioning_subtext\` = "Strategy: Focus on unique delivery or quality."
+    *   If < 50 RTOs: \`strategic_positioning\` = "Category King". \`strategic_positioning_subtext\` = "Strategy: Dominate this niche market."
+
+**4. B2B SCALE (Corporate Potential):**
+*   **Logic:** Analyze qualification and unit titles for keywords indicating corporate compliance or liability needs.
+*   **Keywords:** "WHS", "Safety", "Lead", "Manage", "Audit", "Risk", "Compliance", "First Aid".
+*   **Rules:**
+    *   If multiple keywords found: \`b2b_scale_potential\` = "High". \`b2b_scale_rating\` = a number > 70. \`strategic_positioning_subtext\` for B2B Scale should be "Optimized for bulk corporate procurement."
+    *   If few or no keywords found (e.g., 'Art', 'History'): \`b2b_scale_potential\` = "Low". \`b2b_scale_rating\` = a number < 40.
+    *   Otherwise: \`b2b_scale_potential\` = "Medium". \`b2b_scale_rating\` = a number between 40-70.
 
 **OUTPUT RULES:**
 - Return ONLY valid, raw JSON.
