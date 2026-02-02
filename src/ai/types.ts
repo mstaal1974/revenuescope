@@ -162,7 +162,7 @@ const AutomationActionSchema = z.object({
 const ClusterPathwaySchema = z.object({
   current_stage: z.string().describe("The title of the product for this stage of the pathway, taken directly from the 'tiers' array."),
   stage_revenue: z.number().describe("The price of the product for this stage, taken directly from the 'tiers' array."),
-  automation_action: AutomationActionSchema.optional().describe("The automated marketing action to upsell to the next stage. This should be null for the final stage."),
+  automation_action: AutomationActionSchema.nullable().describe("The automated marketing action to upsell to the next stage. This should be null for the final stage."),
 });
 
 

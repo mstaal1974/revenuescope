@@ -76,11 +76,32 @@ const prompt = ai.definePrompt({
       },
       "OUTPUT_FORMAT": "Strict Raw JSON Only. No preamble or markdown.",
       "JSON_STRUCTURE": {
-        "strategy_summary": "String (1 sentence hook)",
+        "strategy_summary": "A 1-sentence hook for the entire strategy.",
         "tiers": [
-          { "tier_level": 1, "..." : "..." },
-          { "tier_level": 2, "..." : "..." },
-          { "tier_level": 3, "..." : "..." }
+          {
+            "tier_level": 1,
+            "title": "string - The marketable title of the Tier 1 product.",
+            "format": "string - e.g., 'Online, Self-paced'",
+            "price": "number - e.g., 97",
+            "commercial_leverage": {
+              "cac_offset": "string - e.g., 'Pays for 100% of Ads'",
+              "volume_potential": "string - e.g., '50x wider audience than Diploma'",
+              "trust_velocity": "string - e.g., 'Impulse Buy (<5 mins)'"
+            },
+            "marketing_hook": "string - A short marketing hook, e.g., 'The 1-hour workshop to...'",
+            "marketing_playbook": {
+              "target_audience": "string - e.g., 'Frustrated Retail Workers looking for stable hours'",
+              "pain_point": "string - e.g., 'Tired of weekend shifts?'",
+              "channel": "string - e.g., 'Facebook/Instagram Ads'",
+              "ad_creative_visual": "string - e.g., 'Close up of hands holding a pipette, clean blue lighting, high trust'",
+              "ad_headline": "string - A punchy 5-word hook for the ad",
+              "ad_body_copy": "string - 2 sentences of ad copy expanding on the hook",
+              "hashtags": "string - e.g., '#CareerChange #Pathology'",
+              "email_subject": "string - The subject line to sell this product"
+            }
+          },
+          { "tier_level": 2, "...": "Follow the same structure as Tier 1, but for a Tier 2 product." },
+          { "tier_level": 3, "...": "Follow the same structure as Tier 1, but for a Tier 3 product." }
         ],
         "cluster_pathways": [
           {
@@ -148,7 +169,7 @@ const generateProductEcosystemFlow = ai.defineFlow(
         return RevenueStaircaseSchema.parse(parsedJson);
     } catch (e) {
         console.error("Failed to parse JSON from AI response:", textOutput);
-        const errorMessage = e instanceof Error ? e.message : String(e);
+        const errorMessage = e instanceof Error ? e.message : JSON.stringify(e, null, 2);
         throw new Error(`AI returned malformed JSON for Revenue Staircase generation: ${errorMessage}`);
     }
   }
