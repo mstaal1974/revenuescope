@@ -24,7 +24,7 @@ const prompt = ai.definePrompt({
     model: auditModel,
     prompt: `
 **CORE DIRECTIVE:**
-Your primary task is to design a marketable, non-accredited micro-credential based on real-world **industry skills**, not on formal "Units of Competency". The unit code is provided for compliance mapping purposes only, not as the source of the product idea.
+Your primary task is to design a marketable, non-accredited micro-credential based on real-world **industry skills**, not on formal "Units of Competency". The unit code is provided for compliance mapping purposes only, not as the source of the product idea. Your entire creative process must start from the industry need, not the academic unit.
 
 **THE CRITICAL MINDSET SHIFT:**
 - **WRONG:** Start with Unit \`BSBFIN301\` -> Create course called "Process Financial Transactions".
