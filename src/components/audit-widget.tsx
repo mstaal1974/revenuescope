@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { runStage1Action, runStage2Action, runStage3Action } from '@/app/actions';
+import { runStage1Action, runStage2Action, runStage3Action, runScopeFallbackAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
 import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search } from 'lucide-react';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -101,65 +101,75 @@ const AuditWidget: React.FC = () => {
       const qualificationsRef = collection(db, "qualifications");
       
       let querySnapshot;
-      let rtoIdForAudit: string;
+      let rtoIdForAudit: string = code.trim();
+      let manualScopeDataset: string = "";
+      let rtoName: string = "";
 
+      // 1. ATTEMPT DIRECT DATABASE LOOKUP
       if (isRtoAudit) {
-        // Query for full RTO scope: match rtoCode and ensure it's Current
         const q = query(
           qualificationsRef, 
           where("rtoCode", "==", code.trim()), 
           where("usageRecommendation", "==", "Current")
         );
         querySnapshot = await getDocs(q);
-        rtoIdForAudit = code.trim();
-      } else { // auditType === 'qual'
-        // Query for a single qualification to find its details and associated RTO
+        
+        // Robustness: try as number if empty
+        if (querySnapshot.empty && !isNaN(Number(code))) {
+             const qNum = query(
+              qualificationsRef, 
+              where("rtoCode", "==", Number(code)), 
+              where("usageRecommendation", "==", "Current")
+            );
+            querySnapshot = await getDocs(qNum);
+        }
+      } else {
         const q = query(
           qualificationsRef, 
           where("code", "==", code.trim().toUpperCase())
         );
         querySnapshot = await getDocs(q);
+      }
+
+      // 2. CHECK RESULTS & TRIGGER AI FALLBACK IF EMPTY
+      if (querySnapshot && !querySnapshot.empty) {
+        updateProgress(0, 'success', isRtoAudit ? `Found ${querySnapshot.size} current qualification(s) on scope.` : `Successfully located qualification ${code.trim().toUpperCase()}.`);
         
-        if (!querySnapshot.empty) {
-            rtoIdForAudit = querySnapshot.docs[0].data().rtoCode;
+        updateProgress(1, 'running');
+        const allQualifications = querySnapshot.docs.map(doc => doc.data());
+        rtoName = allQualifications.length > 0 ? (allQualifications[0] as any).rtoLegalName : "";
+        rtoIdForAudit = isRtoAudit ? code.trim() : (allQualifications[0] as any).rtoCode;
+        
+        const scopeData = isRtoAudit ? allQualifications : [allQualifications[0]];
+        const scopeItems: string[] = scopeData.map((data: any) => {
+          return `${data.code || ''},${data.title || ''},${data.anzsco || ''}`;
+        });
+        manualScopeDataset = scopeItems.join('\n');
+        
+        updateProgress(1, 'success', `Analyzing scope for: ${rtoName || rtoIdForAudit}...`);
+      } else {
+        // FALLBACK: Use AI to find the scope
+        updateProgress(0, 'running', 'Direct lookup failed. Attempting AI Deep Search of National Register...');
+        const fallbackResponse = await runScopeFallbackAction({ code, isRtoAudit });
+        
+        if (fallbackResponse.ok && fallbackResponse.result.manualScopeDataset) {
+            manualScopeDataset = fallbackResponse.result.manualScopeDataset;
+            rtoName = fallbackResponse.result.rtoName;
+            rtoIdForAudit = isRtoAudit ? code.trim() : fallbackResponse.result.rtoCode;
+            updateProgress(0, 'success', `AI Deep Search successful. Identified ${fallbackResponse.result.count} qualifications.`);
+            updateProgress(1, 'success', `Analyzing AI-retrieved scope for: ${rtoName}...`);
         } else {
-            rtoIdForAudit = 'N/A';
+            const identifier = isRtoAudit ? `RTO ID "${code}"` : `Qualification Code "${code}"`;
+            throw new Error(`${identifier} could not be found in the national register or our local cache. Please check the code.`);
         }
       }
 
-      if (querySnapshot.empty) {
-        const identifier = isRtoAudit ? `RTO ID "${code}"` : `Qualification Code "${code}"`;
-        throw new Error(`${identifier} is invalid or could not be found in our dataset. Please check the code and try again.`);
-      }
-
-      const successMessage1 = isRtoAudit 
-        ? `Found ${querySnapshot.size} current qualification(s) on scope.`
-        : `Successfully located qualification ${code.trim().toUpperCase()}.`;
-      updateProgress(0, 'success', successMessage1);
-      
-      updateProgress(1, 'running');
-      const allQualifications = querySnapshot.docs.map(doc => doc.data());
-      const rtoName = allQualifications.length > 0 ? (allQualifications[0] as any).rtoLegalName : "";
-      
-      // Determine what to analyze: full scope or just the target qual
-      const scopeData = isRtoAudit ? allQualifications : [allQualifications[0]];
-      
-      // Format the database records into a CSV-like string for the AI
-      const scopeItems: string[] = scopeData.map((data: any) => {
-        return `${data.code || ''},${data.title || ''},${data.anzsco || ''}`;
-      });
-      const manualScopeDataset = scopeItems.join('\n');
-      
+      // 3. PROCEED WITH AI AUDIT STAGES
       const baseAuditInput: FullAuditInput = { 
         rtoId: rtoIdForAudit, 
         rtoName: rtoName,
         manualScopeDataset: manualScopeDataset 
       };
-      
-      const successMessage2 = isRtoAudit
-        ? `Analyzing ${rtoName}...`
-        : `Analyzing single qualification for RTO: ${rtoName || rtoIdForAudit}...`;
-      updateProgress(1, 'success', successMessage2);
 
       // AI Stage 1: Market & Sector Analysis
       updateProgress(2, 'running', 'Model is analyzing market health and financial opportunities...');
@@ -207,6 +217,10 @@ const AuditWidget: React.FC = () => {
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
       if (runningStepIndex !== -1) {
           updateProgress(runningStepIndex, 'error', message);
+      } else {
+          // If no step is running, update the first pending one or add a details log
+          const firstPending = progressSteps.findIndex(step => step.status === 'pending');
+          if (firstPending !== -1) updateProgress(firstPending, 'error', message);
       }
       setState(AuditState.ERROR);
     }

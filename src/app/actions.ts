@@ -7,6 +7,7 @@ import { generateMicrocredential } from "@/ai/flows/generate-microcredential";
 import { generateCourseTimeline } from "@/ai/flows/generate-course-timeline";
 import { generateLearningOutcomes } from "@/ai/flows/generate-learning-outcomes";
 import { generateSectorCampaignKit } from "@/ai/flows/generate-sector-campaign-kit";
+import { fetchScopeFallback } from "@/ai/flows/fetch-scope-fallback";
 
 import { 
   type FullAuditInput, 
@@ -22,7 +23,9 @@ import {
   type LearningOutcomesInput,
   type LearningOutcomesOutput,
   type SectorCampaignKitInput,
-  type SectorCampaignKitOutput
+  type SectorCampaignKitOutput,
+  type ScopeFallbackInput,
+  type ScopeFallbackOutput
 } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
@@ -54,6 +57,10 @@ export type CourseTimelineActionResult =
 
 export type SectorCampaignKitActionResult =
   | { ok: true; result: SectorCampaignKitOutput }
+  | { ok: false; error: string };
+
+export type ScopeFallbackActionResult = 
+  | { ok: true; result: ScopeFallbackOutput }
   | { ok: false; error: string };
 
 
@@ -187,6 +194,21 @@ export async function runGenerateSectorCampaignKitAction(
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateSectorCampaignKitAction failed:", e);
+    return { ok: false, error: message };
+  }
+}
+
+// SCOPE FALLBACK ACTION
+export async function runScopeFallbackAction(
+  input: ScopeFallbackInput
+): Promise<ScopeFallbackActionResult> {
+  try {
+    checkApiKey();
+    const result = await fetchScopeFallback(input);
+    return { ok: true, result };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("runScopeFallbackAction failed:", e);
     return { ok: false, error: message };
   }
 }

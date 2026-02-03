@@ -9,3 +9,4 @@ import '@/ai/flows/generate-microcredential';
 import '@/ai/flows/generate-course-timeline';
 import '@/ai/flows/generate-learning-outcomes';
 import '@/ai/flows/generate-sector-campaign-kit';
+import '@/ai/flows/fetch-scope-fallback';

@@ -45,6 +45,7 @@ const SectorBreakdownSchema = z.object({
   qualification_count: z.number(),
   market_health_demand_level: z.string(),
   market_health_trend_direction: z.string(),
+  market_health_avg_industry_wide_wage: z.string().optional(),
   market_health_avg_industry_wage: z.string(),
   financial_opportunity: FinancialOpportunitySchema,
   business_multipliers: BusinessMultipliersSchema.optional(),
@@ -331,3 +332,18 @@ export const SectorCampaignKitOutputSchema = z.object({
     }),
 });
 export type SectorCampaignKitOutput = z.infer<typeof SectorCampaignKitOutputSchema>;
+
+// SCOPE FALLBACK
+export const ScopeFallbackInputSchema = z.object({
+  code: z.string(),
+  isRtoAudit: z.boolean(),
+});
+export type ScopeFallbackInput = z.infer<typeof ScopeFallbackInputSchema>;
+
+export const ScopeFallbackOutputSchema = z.object({
+  manualScopeDataset: z.string().describe("A CSV-like string of scope items (Code,Name,Anzsco)."),
+  rtoName: z.string(),
+  rtoCode: z.string(),
+  count: z.number(),
+});
+export type ScopeFallbackOutput = z.infer<typeof ScopeFallbackOutputSchema>;
