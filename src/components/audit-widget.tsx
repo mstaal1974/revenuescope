@@ -4,12 +4,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action, runScopeFallbackAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
-import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink } from 'lucide-react';
+import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink, AlertCircle } from 'lucide-react';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 
 
 type AuditResult = FullAuditOutput;
@@ -227,7 +228,7 @@ const AuditWidget: React.FC = () => {
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
       
       // Specific detection for disabled Generative Language API
-      if (message.includes("Generative Language API has not been used") || message.includes("403 Forbidden")) {
+      if (message.includes("Generative Language API has not been used") || message.includes("403 Forbidden") || message.includes("disabled")) {
           message = "CRITICAL: The Gemini API is disabled for your project. You MUST enable it in Google Cloud Console to proceed.";
       }
 
@@ -298,7 +299,7 @@ const AuditWidget: React.FC = () => {
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     const errorDetails = progressSteps.find(s => s.status === 'error')?.details || "";
-    const isApiDisabledError = errorDetails.includes("CRITICAL") || errorDetails.includes("enable it");
+    const isApiDisabledError = errorDetails.includes("CRITICAL") || errorDetails.includes("enable it") || errorDetails.includes("disabled");
 
     return (
       <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
@@ -342,28 +343,38 @@ const AuditWidget: React.FC = () => {
         
         {state === AuditState.ERROR && (
           <div className="mt-6">
-             <div className="bg-rose-900/50 border border-rose-500/30 p-4 rounded-md mb-4 text-left">
-                <p className="text-rose-300 font-bold text-sm">Action Required</p>
-                <p className="text-rose-400/80 text-xs mt-1 leading-relaxed">
-                    {isApiDisabledError ? (
-                        <>
-                            Gemini is currently disabled for project 851458267599. 
-                            <a 
-                                href="https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=851458267599" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-blue-400 font-bold underline ml-1 hover:text-blue-300"
-                            >
-                                Enable API Here <ExternalLink size={10}/>
-                            </a>
-                            . After enabling, wait 2 minutes and retry.
-                        </>
-                    ) : errorDetails}
-                </p>
-             </div>
+             {isApiDisabledError ? (
+                <div className="bg-rose-950/50 border border-rose-500/50 p-6 rounded-xl mb-4 text-center">
+                    <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="text-rose-500 w-8 h-8" />
+                    </div>
+                    <h4 className="text-rose-100 font-black text-xl mb-2">Manual Action Required</h4>
+                    <p className="text-rose-200/80 text-sm leading-relaxed mb-6">
+                        The **Generative Language API** is disabled in your Google Cloud Project. You must enable it to unlock the AI audit capabilities.
+                    </p>
+                    <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-xl shadow-xl shadow-blue-900/40">
+                        <a 
+                            href="https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=851458267599" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 text-lg"
+                        >
+                            ENABLE GEMINI API <ExternalLink size={20}/>
+                        </a>
+                    </Button>
+                    <p className="text-slate-500 text-[10px] mt-4 uppercase font-bold tracking-widest">
+                        Wait 2 mins after enabling before retrying
+                    </p>
+                </div>
+             ) : (
+                <div className="bg-rose-900/50 border border-rose-500/30 p-4 rounded-md mb-4 text-left">
+                    <p className="text-rose-300 font-bold text-sm">Error Details</p>
+                    <p className="text-rose-400/80 text-xs mt-1 leading-relaxed">{errorDetails}</p>
+                </div>
+             )}
             <button
               onClick={() => setState(AuditState.IDLE)}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md transition-all text-sm"
+              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl transition-all text-sm uppercase tracking-widest"
             >
               Adjust Input & Retry
             </button>
