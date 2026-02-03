@@ -25,7 +25,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: ''
+    phoneNumber: ''
   });
   const db = useFirestore();
   const { toast } = useToast();
@@ -50,19 +50,19 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       const docRef = doc(leadsCollection);
       const leadId = docRef.id;
 
-      // Prepare lead data matching the standardized schema
+      // Prepare lead data matching the standardized schema in backend.json
       const leadData = {
         id: leadId,
         name: formData.name,
         email: formData.email,
-        phoneNumber: formData.phone,
+        phoneNumber: formData.phoneNumber,
         rtoCode: rtoCode || 'N/A',
-        createdAt: serverTimestamp(), // For reliable server-side ordering
-        timestamp: new Date().toISOString() // For instant client-side reading
+        createdAt: serverTimestamp(),
+        timestamp: new Date().toISOString()
       };
 
       // Perform the write using the non-blocking helper
-      setDocumentNonBlocking(docRef, leadData, {});
+      setDocumentNonBlocking(docRef, leadData, { merge: true });
 
       // Store leadId in local storage for session persistence
       localStorage.setItem('leadId', leadId);
@@ -129,8 +129,8 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                   placeholder="Direct Phone"
                   required
                   className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 />
               </div>
             </div>
