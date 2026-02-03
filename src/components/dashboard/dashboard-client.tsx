@@ -7,7 +7,6 @@ import SectorAnalysis from "./SectorAnalysis";
 import { Sparkles, FileText, Loader2 } from "lucide-react";
 import RevenueGrowthEngine from "./RevenueGrowthEngine";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { LeadCaptureOverlay } from "./lead-capture-overlay";
 import { cn } from "@/lib/utils";
 
@@ -79,10 +78,10 @@ export function DashboardClient({ data }: { data: AuditData }) {
                     <span className="text-[11px] font-bold text-slate-300 tracking-wide uppercase">Powered by Gemini 2.5 Pro</span>
                 </div>
                  <Button asChild className="bg-white text-slate-900 hover:bg-slate-50 font-bold px-6 py-2 shadow-xl border border-slate-200">
-                    <Link href="/audit/report/print">
+                    <a href="https://github.com/mstaal1974/Brand-Guide-/blob/main/assets/Example%20Board%20report.pdf" target="_blank" rel="noopener noreferrer">
                         <FileText className="mr-2 h-4 w-4" />
-                        Export Board Briefing
-                    </Link>
+                        Download Example Board Briefing
+                    </a>
                 </Button>
               </div>
             </div>
