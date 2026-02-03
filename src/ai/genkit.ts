@@ -6,7 +6,8 @@ export const ai = genkit({
   plugins: [
     googleAI({ 
       apiKey: process.env.GEMINI_API_KEY,
-      apiVersion: 'v1',
+      // Removed explicit apiVersion to allow plugin to use the most compatible endpoint
+      // for structured JSON outputs (fixing responseMimeType errors).
     }),
   ],
 });

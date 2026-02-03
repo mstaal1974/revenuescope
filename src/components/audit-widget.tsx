@@ -109,28 +109,20 @@ const AuditWidget: React.FC = () => {
       let rtoName: string = "";
       let dataSource: 'db' | 'ai' = 'db';
 
-      // 1. DATABASE LOOKUP
-      if (isRtoAudit) {
-        let q = query(qualificationsRef, where("rtoCode", "==", code.trim()), where("usageRecommendation", "==", "Current"));
-        querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
-            q = query(qualificationsRef, where("rtoCode", "==", code.trim()));
-            querySnapshot = await getDocs(q);
-        }
-
-        if (querySnapshot.empty && !isNaN(Number(code))) {
-             q = query(qualificationsRef, where("rtoCode", "==", Number(code)));
-             querySnapshot = await getDocs(q);
-        }
-      } else {
-        const q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()));
-        querySnapshot = await getDocs(q);
+      // 1. DATABASE LOOKUP logic
+      // Try string match first
+      let q = query(qualificationsRef, where("rtoCode", "==", code.trim()));
+      querySnapshot = await getDocs(q);
+      
+      // Try numeric match if string fails and input is a number
+      if (querySnapshot.empty && !isNaN(Number(code))) {
+          q = query(qualificationsRef, where("rtoCode", "==", Number(code)));
+          querySnapshot = await getDocs(q);
       }
 
       // 2. PROCESS RESULTS OR FALLBACK
       if (querySnapshot && !querySnapshot.empty) {
-        updateProgress(0, 'success', isRtoAudit ? `Found ${querySnapshot.size} local qualification(s).` : `Located qualification ${code.trim().toUpperCase()}.`, 'db');
+        updateProgress(0, 'success', isRtoAudit ? `Found ${querySnapshot.size} qualification(s).` : `Located qualification ${code.trim().toUpperCase()}.`, 'db');
         
         updateProgress(1, 'running');
         const allQualifications = querySnapshot.docs.map(doc => doc.data());
@@ -280,7 +272,6 @@ const AuditWidget: React.FC = () => {
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     const errorDetails = progressSteps.find(s => s.status === 'error')?.details || "";
-    // Check for 403 Forbidden or "Blocked" message which indicates API restriction settings
     const isBlockedError = errorDetails.includes("403") || errorDetails.toLowerCase().includes("blocked") || errorDetails.toLowerCase().includes("forbidden");
 
     return (
@@ -338,7 +329,6 @@ const AuditWidget: React.FC = () => {
                         <br/>1. Go to <b>Credentials</b> in Google Cloud.
                         <br/>2. Edit your API Key.
                         <br/>3. Ensure "API restrictions" is set to <b>"Don't restrict key"</b> OR that <b>"Generative Language API"</b> is explicitly allowed.
-                        <br/>4. Ensure <b>"Application restrictions"</b> is set to "None" for server-side actions.
                     </p>
                     <div className="flex flex-col gap-3">
                         <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-xl shadow-xl shadow-blue-900/40">
@@ -349,16 +339,6 @@ const AuditWidget: React.FC = () => {
                                 className="flex items-center justify-center gap-2 text-lg"
                             >
                                 LIFT KEY RESTRICTIONS <ExternalLink size={20}/>
-                            </a>
-                        </Button>
-                        <Button asChild variant="outline" className="w-full border-white/20 text-slate-300 hover:bg-white/10 font-bold py-4 rounded-xl">
-                            <a 
-                                href="https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=851458267599" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2"
-                            >
-                                VERIFY API STATUS <ExternalLink size={16}/>
                             </a>
                         </Button>
                     </div>
