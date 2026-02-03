@@ -104,24 +104,26 @@ const AuditWidget: React.FC = () => {
       let rtoIdForAudit: string;
 
       if (isRtoAudit) {
-        const q = query(qualificationsRef, where("rtoCode", "==", code.trim()), where("usageRecommendation", "==", "Current"));
+        // Query for full RTO scope: match rtoCode and ensure it's Current
+        const q = query(
+          qualificationsRef, 
+          where("rtoCode", "==", code.trim()), 
+          where("usageRecommendation", "==", "Current")
+        );
         querySnapshot = await getDocs(q);
         rtoIdForAudit = code.trim();
       } else { // auditType === 'qual'
-        // First, try to find a 'Current' qualification
-        let q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()), where("usageRecommendation", "==", "Current"));
+        // Query for a single qualification to find its details and associated RTO
+        const q = query(
+          qualificationsRef, 
+          where("code", "==", code.trim().toUpperCase())
+        );
         querySnapshot = await getDocs(q);
-
-        // If no 'Current' qual found, broaden the search to any recommendation status
-        if (querySnapshot.empty) {
-          q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()));
-          querySnapshot = await getDocs(q);
-        }
         
         if (!querySnapshot.empty) {
             rtoIdForAudit = querySnapshot.docs[0].data().rtoCode;
         } else {
-            rtoIdForAudit = 'N/A'; // This will cause the check below to fail if still empty
+            rtoIdForAudit = 'N/A';
         }
       }
 
@@ -139,10 +141,12 @@ const AuditWidget: React.FC = () => {
       const allQualifications = querySnapshot.docs.map(doc => doc.data());
       const rtoName = allQualifications.length > 0 ? (allQualifications[0] as any).rtoLegalName : "";
       
+      // Determine what to analyze: full scope or just the target qual
       const scopeData = isRtoAudit ? allQualifications : [allQualifications[0]];
       
+      // Format the database records into a CSV-like string for the AI
       const scopeItems: string[] = scopeData.map((data: any) => {
-        return `${data.code || ''},${data.title || ''},`;
+        return `${data.code || ''},${data.title || ''},${data.anzsco || ''}`;
       });
       const manualScopeDataset = scopeItems.join('\n');
       
@@ -157,18 +161,21 @@ const AuditWidget: React.FC = () => {
         : `Analyzing single qualification for RTO: ${rtoName || rtoIdForAudit}...`;
       updateProgress(1, 'success', successMessage2);
 
+      // AI Stage 1: Market & Sector Analysis
       updateProgress(2, 'running', 'Model is analyzing market health and financial opportunities...');
       const stage1Response = await runStage1Action(baseAuditInput);
       if (!stage1Response.ok) throw new Error(`AI Stage 1 Failed: ${stage1Response.error}`);
       const stage1Result = stage1Response.result;
       updateProgress(2, 'success', `Identified ${stage1Result.executive_summary.top_performing_sector} as top sector.`);
 
+      // AI Stage 2: Skills Analysis
       updateProgress(3, 'running', 'Model is mapping all skills to current employer demand...');
       const stage2Response = await runStage2Action(baseAuditInput);
       if (!stage2Response.ok) throw new Error(`AI Stage 2 Failed: ${stage2Response.error}`);
       const stage2Result = stage2Response.result;
       updateProgress(3, 'success', `Generated heatmap with ${stage2Result.skills_heatmap.length} unique skills.`);
 
+      // AI Stage 3: Product & Revenue Design
       const stage3Input: RevenueStaircaseInput = {
         ...baseAuditInput,
         top_performing_sector: stage1Result.executive_summary.top_performing_sector,
@@ -197,9 +204,6 @@ const AuditWidget: React.FC = () => {
     } catch (err) {
       console.error(err);
       let message = err instanceof Error ? err.message : "An unknown error occurred.";
-      if (message.includes("API key was reported as leaked")) {
-        message = "SECURITY ALERT: Your Gemini API key has been disabled by Google because it was publicly exposed. To fix this: 1. Create a new API key in Google AI Studio. 2. Create a file named '.env.local' in your project root. 3. Add `GEMINI_API_KEY=YOUR_NEW_KEY` to it.";
-      }
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
       if (runningStepIndex !== -1) {
           updateProgress(runningStepIndex, 'error', message);
