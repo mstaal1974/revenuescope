@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -38,8 +39,8 @@ export function DashboardClient({ data }: { data: AuditData }) {
 
       {/* Main content - blurred if locked */}
       <div className={cn(
-        "max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-1000 transition-all",
-        !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-50"
+        "max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-1000 transition-all pb-24",
+        !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-50 h-screen"
       )}>
         
         {/* 1. THE AUDIT HEADER */}
