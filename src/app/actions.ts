@@ -66,11 +66,19 @@ export type ScopeFallbackActionResult =
 
 
 const checkApiKey = () => {
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_GENAI_API_KEY) {
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
+    if (!key) {
       throw new Error(
         "AI configuration is missing. Please ensure your GEMINI_API_KEY is set in the environment variables."
       );
     }
+}
+
+/**
+ * Utility to ensure data is strictly serializable for Next.js Server Actions.
+ */
+function sanitize<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
 }
 
 // STAGE 1 ACTION
@@ -83,8 +91,7 @@ export async function runStage1Action(
       throw new Error("RTO ID and Scope data are required for Stage 1.");
     }
     const result = await generateStage1Analysis(input);
-    // Ensure plain object return
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage1Action failed:", e);
@@ -102,7 +109,7 @@ export async function runStage2Action(
       throw new Error("RTO ID and Scope data are required for Stage 2.");
     }
     const result = await generateSkillsHeatmap(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage2Action failed:", e);
@@ -120,7 +127,7 @@ export async function runStage3Action(
         throw new Error("Top sector and skills heatmap are required for Stage 3.");
     }
     const result = await generateProductEcosystem(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage3Action failed:", e);
@@ -138,7 +145,7 @@ export async function runMicrocredentialAction(
       throw new Error("Unit and Qualification codes are required.");
     }
     const result = await generateMicrocredential(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runMicrocredentialAction failed:", e);
@@ -156,7 +163,7 @@ export async function runGenerateLearningOutcomesAction(
       throw new Error("Course Title is required.");
     }
     const result = await generateLearningOutcomes(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateLearningOutcomesAction failed:", e);
@@ -174,7 +181,7 @@ export async function runGenerateCourseTimelineAction(
       throw new Error("Course Title and Learning Outcomes are required.");
     }
     const result = await generateCourseTimeline(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateCourseTimelineAction failed:", e);
@@ -192,7 +199,7 @@ export async function runGenerateSectorCampaignKitAction(
       throw new Error("Sector data is required.");
     }
     const result = await generateSectorCampaignKit(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateSectorCampaignKitAction failed:", e);
@@ -207,7 +214,7 @@ export async function runScopeFallbackAction(
   try {
     checkApiKey();
     const result = await fetchScopeFallback(input);
-    return { ok: true, result: JSON.parse(JSON.stringify(result)) };
+    return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runScopeFallbackAction failed:", e);
