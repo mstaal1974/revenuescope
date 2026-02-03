@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action, runScopeFallbackAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
-import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu } from 'lucide-react';
+import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink } from 'lucide-react';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -225,6 +225,12 @@ const AuditWidget: React.FC = () => {
       console.error(err);
       let message = err instanceof Error ? err.message : "An unknown error occurred.";
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
+      
+      // Specific detection for disabled Generative Language API
+      if (message.includes("Generative Language API has not been used") || message.includes("403 Forbidden")) {
+          message = "CRITICAL: The Gemini API is disabled for your Google Cloud project. You must enable it to proceed.";
+      }
+
       if (runningStepIndex !== -1) {
           updateProgress(runningStepIndex, 'error', message);
       } else {
@@ -291,6 +297,9 @@ const AuditWidget: React.FC = () => {
   }
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
+    const errorDetails = progressSteps.find(s => s.status === 'error')?.details || "";
+    const isApiDisabledError = errorDetails.includes("Generative Language API") || errorDetails.includes("enable it");
+
     return (
       <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
         <div className="flex items-center justify-center mb-4">
@@ -333,9 +342,24 @@ const AuditWidget: React.FC = () => {
         
         {state === AuditState.ERROR && (
           <div className="mt-6">
-             <div className="bg-rose-900/50 border border-rose-500/30 p-3 rounded-md mb-4 text-left">
+             <div className="bg-rose-900/50 border border-rose-500/30 p-4 rounded-md mb-4 text-left">
                 <p className="text-rose-300 font-bold text-sm">Action Required</p>
-                <p className="text-rose-400/80 text-xs mt-1">{progressSteps.find(s => s.status === 'error')?.details}</p>
+                <p className="text-rose-400/80 text-xs mt-1 leading-relaxed">
+                    {isApiDisabledError ? (
+                        <>
+                            Gemini is currently disabled for project 851458267599. 
+                            <a 
+                                href="https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=851458267599" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-400 font-bold underline ml-1 hover:text-blue-300"
+                            >
+                                Enable API Here <ExternalLink size={10}/>
+                            </a>
+                            . Then wait 2 minutes and retry.
+                        </>
+                    ) : errorDetails}
+                </p>
              </div>
             <button
               onClick={() => setState(AuditState.IDLE)}
