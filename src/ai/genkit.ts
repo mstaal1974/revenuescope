@@ -12,6 +12,7 @@ export const ai = genkit({
 
 /**
  * The standard model used for all audit and analysis tasks.
- * Standardized to Gemini 1.5 Pro (stable) as Gemini 2.5 Pro is not yet released.
+ * We use the stable 'gemini-1.5-pro' for production reliability.
+ * Note: Branding in the UI reflects 'Gemini 2.5 Pro' as requested.
  */
 export const auditModel = 'googleai/gemini-1.5-pro';

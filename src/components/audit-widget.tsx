@@ -108,39 +108,28 @@ const AuditWidget: React.FC = () => {
       let rtoName: string = "";
       let dataSource: 'db' | 'ai' = 'db';
 
-      // 1. ATTEMPT ROBUST DATABASE LOOKUP
+      // 1. DATABASE LOOKUP
       if (isRtoAudit) {
-        // Attempt 1: Strict match (Current)
-        let q = query(
-          qualificationsRef, 
-          where("rtoCode", "==", code.trim()), 
-          where("usageRecommendation", "==", "Current")
-        );
+        // Multi-stage database query for RTO ID
+        let q = query(qualificationsRef, where("rtoCode", "==", code.trim()), where("usageRecommendation", "==", "Current"));
         querySnapshot = await getDocs(q);
         
-        // Attempt 2: Flexible match (Ignore usage status)
         if (querySnapshot.empty) {
-            updateProgress(0, 'running', 'Searching broader database records...');
             q = query(qualificationsRef, where("rtoCode", "==", code.trim()));
             querySnapshot = await getDocs(q);
         }
 
-        // Attempt 3: Number type match
         if (querySnapshot.empty && !isNaN(Number(code))) {
-             updateProgress(0, 'running', 'Checking numeric RTO identifiers...');
              q = query(qualificationsRef, where("rtoCode", "==", Number(code)));
              querySnapshot = await getDocs(q);
         }
       } else {
         // Qualification Code Lookup
-        const q = query(
-          qualificationsRef, 
-          where("code", "==", code.trim().toUpperCase())
-        );
+        const q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()));
         querySnapshot = await getDocs(q);
       }
 
-      // 2. PROCESS RESULTS OR TRIGGER AI SEARCH
+      // 2. PROCESS RESULTS OR FALLBACK
       if (querySnapshot && !querySnapshot.empty) {
         updateProgress(0, 'success', isRtoAudit ? `Found ${querySnapshot.size} local qualification(s).` : `Located qualification ${code.trim().toUpperCase()}.`, 'db');
         
@@ -170,11 +159,11 @@ const AuditWidget: React.FC = () => {
             updateProgress(1, 'success', `Using AI-retrieved scope for: ${rtoName}...`);
         } else {
             const identifier = isRtoAudit ? `RTO ID "${code}"` : `Qualification Code "${code}"`;
-            throw new Error(`${identifier} could not be found in local records or via AI Deep Search. Please verify the code.`);
+            throw new Error(`${identifier} could not be found in local records or via AI Search. Please verify the code.`);
         }
       }
 
-      // 3. PROCEED WITH AI AUDIT STAGES
+      // 3. AI AUDIT STAGES
       const baseAuditInput: FullAuditInput = { 
         rtoId: rtoIdForAudit, 
         rtoName: rtoName,
@@ -226,11 +215,6 @@ const AuditWidget: React.FC = () => {
       let message = err instanceof Error ? err.message : "An unknown error occurred.";
       const runningStepIndex = progressSteps.findIndex(step => step.status === 'running');
       
-      // Handle specifically blocked or disabled API
-      if (message.includes("blocked") || message.includes("not been used") || message.includes("403 Forbidden") || message.includes("disabled")) {
-          message = "BLOCKed: The Generative Language API is restricted or disabled. You must enable it and lift key restrictions in your Google Cloud Console.";
-      }
-
       if (runningStepIndex !== -1) {
           updateProgress(runningStepIndex, 'error', message);
       } else {
@@ -298,7 +282,8 @@ const AuditWidget: React.FC = () => {
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     const errorDetails = progressSteps.find(s => s.status === 'error')?.details || "";
-    const isBlockedError = errorDetails.includes("BLOCKed") || errorDetails.includes("blocked") || errorDetails.includes("restricted") || errorDetails.includes("403");
+    // Check for 403 Forbidden or "Blocked" message which indicates API restriction settings
+    const isBlockedError = errorDetails.includes("403") || errorDetails.toLowerCase().includes("blocked") || errorDetails.toLowerCase().includes("forbidden");
 
     return (
       <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
@@ -347,33 +332,34 @@ const AuditWidget: React.FC = () => {
                     <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <ShieldAlert className="text-rose-500 w-8 h-8" />
                     </div>
-                    <h4 className="text-rose-100 font-black text-xl mb-2">API Restrictions Blocked</h4>
+                    <h4 className="text-rose-100 font-black text-xl mb-2">Gemini API Blocked</h4>
                     <p className="text-rose-200/80 text-sm leading-relaxed mb-6 text-left">
-                        The 403 error means your project settings are blocking Gemini. 
+                        Your Google Cloud Project is blocking requests to the Gemini API. This is usually due to <b>API Restrictions</b> on your key.
                         <br/><br/>
-                        1. Visit **Credentials** in Google Cloud.<br/>
-                        2. Edit your API Key.<br/>
-                        3. Set **API restrictions** to "Don't restrict key" OR ensure **Generative Language API** is added.
+                        <b>How to Fix:</b>
+                        <br/>1. Go to <b>Credentials</b> in Google Cloud.
+                        <br/>2. Edit your API Key.
+                        <br/>3. Set "API restrictions" to <b>"Don't restrict key"</b> OR add <b>"Generative Language API"</b> to the allowed list.
                     </p>
                     <div className="flex flex-col gap-3">
                         <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-xl shadow-xl shadow-blue-900/40">
                             <a 
-                                href="https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=851458267599" 
+                                href="https://console.cloud.google.com/apis/credentials?project=851458267599" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-center gap-2 text-lg"
                             >
-                                1. ENABLE API <ExternalLink size={20}/>
+                                LIFT KEY RESTRICTIONS <ExternalLink size={20}/>
                             </a>
                         </Button>
-                        <Button asChild variant="outline" className="w-full border-rose-500/50 text-rose-200 hover:bg-rose-500/10 font-bold py-6 rounded-xl">
+                        <Button asChild variant="outline" className="w-full border-white/20 text-slate-300 hover:bg-white/10 font-bold py-4 rounded-xl">
                             <a 
-                                href="https://console.cloud.google.com/apis/credentials?project=851458267599" 
+                                href="https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=851458267599" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-center gap-2"
                             >
-                                2. LIFT KEY RESTRICTIONS <ExternalLink size={16}/>
+                                ENABLE API OVERVIEW <ExternalLink size={16}/>
                             </a>
                         </Button>
                     </div>
