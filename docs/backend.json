@@ -1,145 +1,73 @@
 {
   "entities": {
-    "qualification": {
-      "title": "Qualification",
-      "description": "A single RTO qualification record.",
+    "Lead": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Lead",
       "type": "object",
+      "description": "Represents a lead captured through the lead capture overlay.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the record, composed of rtoCode_qualificationCode."
+          "description": "Unique identifier for the Lead entity."
         },
-        "rtoCode": {
-          "type": "string",
-          "description": "The RTO code."
-        },
-        "rtoLegalName": {
-          "type": "string",
-          "description": "The legal name of the RTO."
-        },
-        "code": {
-          "type": "string",
-          "description": "The qualification code."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the qualification."
-        },
-        "usageRecommendation": {
-          "type": "string",
-          "description": "Usage recommendation, e.g., 'Current'."
-        },
-        "delivery": {
-          "type": "object",
-          "properties": {
-            "QLD": { "type": "boolean" },
-            "SA": { "type": "boolean" },
-            "NSW": { "type": "boolean" },
-            "VIC": { "type": "boolean" },
-            "TAS": { "type": "boolean" },
-            "NT": { "type": "boolean" },
-            "WA": { "type": "boolean" },
-            "ACT": { "type": "boolean" },
-            "Overseas": { "type": "boolean" }
-          }
-        },
-        "implicitScope": {
-            "type": "boolean",
-            "description": "Indicates if the scope is implicit."
-        },
-        "nrtType": {
-            "type": "string",
-            "description": "The type of the National Training register item."
-        },
-        "scopeEndDate": {
-            "type": "string",
-            "format": "date",
-            "description": "The end date of the scope."
-        },
-        "scopeExtent": {
-            "type": "string",
-            "description": "The extent of the scope."
-        },
-        "scopeStartDate": {
-            "type": "string",
-            "format": "date",
-            "description": "The start date of the scope."
-        },
-        "scopeType": {
-            "type": "string",
-            "description": "The type of the scope."
-        }
-      },
-      "required": ["id", "rtoCode", "code", "title"]
-    },
-    "userProfile": {
-      "title": "User Profile",
-      "description": "Represents a user's profile information.",
-      "type": "object",
-      "properties": {
-        "displayName": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string",
-          "format": "email"
-        }
-      }
-    },
-    "lead": {
-      "title": "Lead",
-      "description": "A lead captured from the website.",
-      "type": "object",
-      "properties": {
         "name": {
           "type": "string",
           "description": "Name of the lead."
         },
         "email": {
           "type": "string",
-          "format": "email",
-          "description": "Email address of the lead."
+          "description": "Email address of the lead.",
+          "format": "email"
         },
-        "phone": {
+        "phoneNumber": {
           "type": "string",
           "description": "Phone number of the lead."
         },
-        "createdAt": {
+        "rtoCode": {
           "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the lead was created."
+          "description": "RTO code associated with the audit for which the lead was captured."
         },
-        "curriculum": {
-          "type": "object",
-          "description": "The generated course curriculum data."
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the lead was created.",
+          "format": "date-time"
         }
       },
-      "required": ["name", "email", "createdAt"]
+      "required": [
+        "id",
+        "name",
+        "email",
+        "phoneNumber",
+        "rtoCode",
+        "timestamp"
+      ]
     }
   },
   "auth": {
     "providers": [
+      "password",
       "anonymous"
     ]
   },
   "firestore": {
-    "/qualifications/{qualificationId}": {
-      "schema": {
-        "$ref": "#/entities/qualification"
-      },
-      "description": "Stores individual RTO qualification documents."
-    },
-    "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/userProfile"
-      },
-      "description": "Stores public user profile information."
-    },
-    "/leads/{leadId}": {
-      "schema": {
-        "$ref": "#/entities/lead"
-      },
-      "description": "Stores captured lead information from contact forms."
-    }
+    "structure": [
+      {
+        "path": "/leads/{leadId}",
+        "definition": {
+          "entityName": "Lead",
+          "schema": {
+            "$ref": "#/backend/entities/Lead"
+          },
+          "description": "Stores lead information captured from the Lead Capture Overlay. Includes fields for name, email, phone number, RTO code, and timestamp. Requires admin role for create, read, update and delete.",
+          "params": [
+            {
+              "name": "leadId",
+              "description": "Unique identifier for the Lead document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This design prioritizes security and scalability by adhering to the core design principles and strategy mandates. Specifically, it emphasizes Authorization Independence by storing all necessary authorization data directly within each document, eliminating the need for `get()` calls in security rules. \n\nThe primary collection is `/leads`. Since all documents within the `leads` collection share the same access requirements (admin only create/read/write), this structure maintains a Homogeneous Security Posture.\n\nTo ensure QAPs (Rules Are Not Filters), access to the `leads` collection is strictly controlled based on authentication and potentially pre-defined admin roles stored in a separate collection. This prevents unauthorized listing of leads.\n"
   }
 }

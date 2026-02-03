@@ -1,11 +1,8 @@
-// Your web app's Firebase configuration.
-// This is used to initialize the Firebase app.
-// These values are pulled from your .env.local file.
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  "projectId": "scopesearch-ai-61831617-482e9",
+  "appId": "1:472403261651:web:48230c5711819cd39b7c26",
+  "apiKey": "AIzaSyASJQ3rRRsz_f0D_TRy4brlsbxK3cQWz8g",
+  "authDomain": "scopesearch-ai-61831617-482e9.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "472403261651"
 };

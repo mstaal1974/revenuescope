@@ -1,27 +1,77 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access to qualifications for the app to function.
-    // This is a permissive rule for demonstration purposes.
-    // For production, you should implement stricter access control.
-    match /qualifications/{qualificationId} {
-      allow read: if true;
-      allow write: if false; // Disallow write access from the client
-    }
-    
-    // Users can only read and write their own profile
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    /**
+     * CORE SECURITY PHILOSOPHY:
+     * This ruleset implements a "Lead Capture" security model. It prioritizes the conversion
+     * funnel by allowing unauthenticated users to submit contact information (create documents)
+     * while strictly restricting the retrieval, modification, or deletion of that sensitive
+     * data to administrative accounts.
+     *
+     * DATA STRUCTURE:
+     * - /leads/{leadId}: A top-level collection containing lead contact information.
+     *
+     * KEY SECURITY DECISIONS:
+     * - Open Creation: To support the Lead Capture Overlay, the 'create' operation on leads
+     *   is permitted for all users. This allows prospective clients to submit their data
+     *   without requiring a prior account.
+     * - Admin-Only Access: All other operations (get, list, update, delete) are restricted
+     *   to users with an 'admin' role.
+     * - Authorization Independence: Admin checks are performed against auth token claims
+     *   to avoid costly `get()` calls, ensuring the rules remain performant and scalable.
+     *
+     * RELATIONAL INTEGRITY:
+     * - During the prototyping phase, we do not enforce strict data schemas (types/fields).
+     *   Validation is focused purely on ensuring data submitted via the capture form
+     *   remains accessible only to authorized personnel.
+     */
+
+    /** 
+     * @description Checks if the request is from an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Allow anyone to submit a lead and update it.
-    // WARNING: In a production environment, you should lock down read access.
-    // This is opened for the admin dashboard functionality.
+    /** 
+     * @description Checks if the user has an administrative role.
+     * Note: Per the IR reasoning of avoiding `get()` calls, this uses custom claims.
+     */
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
+    /**
+     * @description Checks if a user is an admin and the document exists for state changes.
+     */
+    function isExistingAdmin() {
+      return isAdmin() && resource != null;
+    }
+
+    /**
+     * @description Rules for the Leads collection.
+     * @path /leads/{leadId}
+     * @allow (create) - Any user can submit a lead form to the database.
+     * @allow (list) - Admin users can view all captured leads.
+     * @deny (get) - A standard user tries to read back a lead document by its ID.
+     * @principle Permits open data submission for lead generation while securing PII for admins.
+     */
     match /leads/{leadId} {
+      // Allow creation for lead capture. Note: Although IR reasoning suggested Admin-only,
+      // the application logic requires public 'create' to function as a lead capture tool.
       allow create: if true;
-      allow update: if true; // Allow curriculum to be saved later
-      allow read: if true;   // Allow admin dashboard to read all leads
-      allow delete: if false;
+      
+      // Admin-only permissions for managing captured data
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow update: if isExistingAdmin();
+      allow delete: if isExistingAdmin();
+    }
+
+    // Default deny for any paths not explicitly matched
+    match /{path=**} {
+      allow read, write: if false;
     }
   }
 }
