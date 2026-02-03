@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview This file defines a fallback flow for fetching RTO scope using Gemini AI if the direct database query fails.
@@ -26,10 +25,13 @@ const prompt = ai.definePrompt({
   prompt: `
     You are an expert on the Australian National Register of VET (training.gov.au).
     
+    FACTUAL OVERRIDE:
+    - RTO Code 5800 is EXACTLY "Alan Bartlett Consulting Pty Ltd". It is NOT TAFE NSW.
+    
     TASK:
     {{#if isRtoAudit}}
     Find the official current scope of registration for RTO Code: "{{code}}". 
-    1. Identify the EXACT Legal Name of the RTO from the national register. (e.g. RTO 5800 is "Alan Bartlett Consulting Pty Ltd").
+    1. Identify the EXACT Legal Name of the RTO from the national register.
     2. List the primary current qualifications (Code, Title, and typical ANZSCO code).
     {{else}}
     Find the details for Qualification Code: "{{code}}".
@@ -42,7 +44,7 @@ const prompt = ai.definePrompt({
     3. rtoCode: The RTO code.
     4. count: The number of qualifications found.
     
-    CRITICAL: You must be 100% accurate with the RTO Legal Name. If you are unsure, do not guess. If the code is 5800, the name is Alan Bartlett Consulting Pty Ltd.
+    CRITICAL: Accuracy is paramount. Use the official training.gov.au data.
     Ensure the output is strictly valid JSON.
   `,
 });

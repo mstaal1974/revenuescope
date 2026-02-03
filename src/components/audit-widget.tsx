@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -350,7 +349,7 @@ const AuditWidget: React.FC = () => {
                     </div>
                     <h4 className="text-rose-100 font-black text-xl mb-2">Manual Action Required</h4>
                     <p className="text-rose-200/80 text-sm leading-relaxed mb-6">
-                        The **Generative Language API** is disabled in your Google Cloud Project. You must enable it to unlock the AI audit capabilities.
+                        The **Generative Language API** is disabled in your Google Cloud Project (851458267599). You must enable it to unlock the AI audit capabilities.
                     </p>
                     <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-xl shadow-xl shadow-blue-900/40">
                         <a 
