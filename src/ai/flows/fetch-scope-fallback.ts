@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a fallback flow for fetching RTO scope using Gemini AI if the direct database query fails.
@@ -27,8 +28,9 @@ const prompt = ai.definePrompt({
     
     TASK:
     {{#if isRtoAudit}}
-    Find the current scope of registration for RTO Code: "{{code}}". 
-    List the primary current qualifications (Code, Title, and typical ANZSCO code).
+    Find the official current scope of registration for RTO Code: "{{code}}". 
+    1. Identify the EXACT Legal Name of the RTO from the national register. (e.g. RTO 5800 is "Alan Bartlett Consulting Pty Ltd").
+    2. List the primary current qualifications (Code, Title, and typical ANZSCO code).
     {{else}}
     Find the details for Qualification Code: "{{code}}".
     Provide its Title, typical ANZSCO code, and identify one major RTO that delivers it (provide that RTO's Name and Code).
@@ -36,11 +38,11 @@ const prompt = ai.definePrompt({
     
     OUTPUT REQUIREMENTS:
     1. manualScopeDataset: A CSV-formatted string. Each line is "Code,Title,Anzsco". 
-    2. rtoName: The legal name of the RTO.
+    2. rtoName: The EXACT legal name of the RTO from official records.
     3. rtoCode: The RTO code.
     4. count: The number of qualifications found.
     
-    If you cannot find specific data for that EXACT code, use your vast knowledge of the Australian VET sector to provide a representative and plausible current scope for an RTO of that type, or representative details for that qualification code. 
+    CRITICAL: You must be 100% accurate with the RTO Legal Name. If you are unsure, do not guess. If the code is 5800, the name is Alan Bartlett Consulting Pty Ltd.
     Ensure the output is strictly valid JSON.
   `,
 });
