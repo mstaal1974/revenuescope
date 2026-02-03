@@ -194,7 +194,7 @@ export default function RevenueGrowthEngine({ data }: RevenueGrowthEngineProps) 
       <footer className="p-4 bg-black/40 flex justify-between items-center border-t border-slate-800">
         <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
           <span className="text-[10px] font-bold tracking-widest uppercase">Powered by</span>
-          <div className="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-black italic">Gemini 2.5 Pro</div>
+          <div className="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-black italic">Gemini 1.5 Pro</div>
         </div>
         <div className="flex items-center gap-4">
           <button className="text-[10px] font-bold uppercase text-slate-400 hover:text-primary transition-colors">Export Strategy</button>

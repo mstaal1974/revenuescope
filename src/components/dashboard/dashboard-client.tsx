@@ -56,7 +56,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
                     <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
                         <Sparkles className="text-white h-3 w-3" />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-300 tracking-wide">Powered by Gemini 2.5 Pro</span>
+                    <span className="text-[11px] font-bold text-slate-300 tracking-wide">Powered by Gemini 1.5 Pro</span>
                 </div>
                  <Button asChild>
                     <Link href="/audit/report/print">
