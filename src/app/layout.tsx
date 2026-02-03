@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { FirebaseProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 
 const inter = Inter({
@@ -33,9 +33,9 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jetbrains_mono.variable}`}>
       <head />
       <body className="font-body antialiased bg-background text-foreground">
-        <FirebaseProvider>
+        <FirebaseClientProvider>
           {children}
-        </FirebaseProvider>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>
