@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 /**
  * DashboardClient is the main container for the audit results.
  * It manages the 'unlocked' state and shows a Lead Capture Overlay if required.
+ * Implementing "Initial State - The Blurred Report" logic.
  */
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -32,14 +33,17 @@ export function DashboardClient({ data }: { data: AuditData }) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950">
         <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
-        <p className="mt-4 text-slate-400 font-bold tracking-widest uppercase text-xs">Initializing Secure Environment...</p>
+        <p className="mt-4 text-slate-400 font-bold tracking-widest uppercase text-xs">Syncing Intelligence Engine...</p>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-950">
-      {/* Show overlay if the report is locked */}
+    <div className="relative min-h-screen bg-slate-950 overflow-x-hidden">
+      {/* 
+        Initial State: The Blurred Report 
+        If isUnlocked is false, display the LeadCaptureOverlay and blur the content.
+      */}
       {!isUnlocked && (
         <LeadCaptureOverlay 
           rtoCode={data.rto_id} 
@@ -47,9 +51,9 @@ export function DashboardClient({ data }: { data: AuditData }) {
         />
       )}
 
-      {/* Main content - blurred if locked */}
+      {/* Main dashboard content - visually obscured if locked */}
       <div className={cn(
-        "max-w-7xl mx-auto overflow-hidden animate-in fade-in duration-1000 transition-all pb-24",
+        "max-w-7xl mx-auto animate-in fade-in duration-1000 transition-all pb-24",
         !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-20 h-screen overflow-hidden"
       )}>
         
@@ -60,7 +64,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-slate-800/50 border border-slate-700">
                   <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-                  <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Market Intelligence Dashboard</span>
+                  <span className="text-xs font-semibold tracking-wider uppercase text-slate-400">Market Intelligence Report</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 shadow-xl">
@@ -72,11 +76,17 @@ export function DashboardClient({ data }: { data: AuditData }) {
                  <Button asChild className="bg-white text-slate-900 hover:bg-slate-50 font-bold px-6 py-2 shadow-xl border border-slate-200">
                     <Link href="/audit/report/print">
                         <FileText className="mr-2 h-4 w-4" />
-                        Download Report
+                        Export Board Briefing
                     </Link>
                 </Button>
               </div>
             </div>
+            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4">
+                Strategy Breakdown: <span className="text-blue-500">{data.rto_name || data.rto_id}</span>
+            </h1>
+            <p className="text-xl text-slate-400 max-w-2xl font-medium leading-relaxed">
+                We've unbundled your scope into a high-velocity revenue engine using live labor market demand signals.
+            </p>
           </div>
         </div>
 
@@ -86,10 +96,10 @@ export function DashboardClient({ data }: { data: AuditData }) {
           <div>
               <div className="text-center mb-12">
                 <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
-                  Sector Analysis with <span className="text-primary">Business Multipliers</span>
+                  Sector Analysis & <span className="text-primary">Business Multipliers</span>
                 </h2>
-                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                  A comprehensive breakdown of each training package on your scope, with AI-suggested growth opportunities.
+                <p className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                  Deep-dive analysis of your training packages with AI-calculated multipliers for CAC Offset and Student LTV.
                 </p>
               </div>
               <SectorAnalysis sectors={data.sector_breakdown} />

@@ -18,6 +18,7 @@ interface LeadCaptureOverlayProps {
 /**
  * LeadCaptureOverlay captures user contact info before revealing the dashboard.
  * It saves data to Firestore and stores the leadId in localStorage.
+ * Following the multi-step capture process described.
  */
 export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,19 +38,19 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       toast({
         variant: 'destructive',
         title: 'Connection Error',
-        description: 'Could not connect to the database. Please refresh and try again.'
+        description: 'Could not connect to the secure database. Please refresh.'
       });
       setIsLoading(false);
       return;
     }
 
     try {
-      // Create a document reference with a generated ID immediately
+      // 1. Create a document reference with a generated ID immediately
       const leadsCollection = collection(db, 'leads');
       const docRef = doc(leadsCollection);
       const leadId = docRef.id;
 
-      // Prepare lead data matching the standardized schema in backend.json
+      // 2. Prepare lead data matching the standardized schema
       const leadData = {
         id: leadId,
         name: formData.name,
@@ -60,18 +61,18 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
         timestamp: new Date().toISOString()
       };
 
-      // Perform the write using the non-blocking helper
+      // 3. Perform the write using the non-blocking helper (optimistic write)
       setDocumentNonBlocking(docRef, leadData, { merge: true });
 
-      // Store leadId in local storage for session persistence
+      // 4. Linking Future Actions: Store leadId in local storage for session persistence
       localStorage.setItem('leadId', leadId);
       
-      // Unlock the dashboard immediately (optimistic UI)
+      // 5. Unlocking the Report: Reveal the dashboard immediately
       onUnlock();
       
       toast({
-        title: 'Report Unlocked!',
-        description: 'You now have full access to your personalized growth strategy.',
+        title: 'Strategy Unlocked',
+        description: 'Your high-fidelity growth report is now available.',
       });
 
     } catch (error) {
@@ -79,7 +80,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       toast({
         variant: 'destructive',
         title: 'Submission Error',
-        description: 'We encountered an error saving your details. Please try again.'
+        description: 'An unexpected error occurred. Please try again.'
       });
     } finally {
       setIsLoading(false);
@@ -94,8 +95,10 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
             <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/20 shadow-inner">
                 <Lock className="w-10 h-10 text-blue-400" />
             </div>
-            <CardTitle className="text-3xl font-black tracking-tight mb-2 uppercase italic">Professional Access Only</CardTitle>
-            <p className="text-slate-400 font-medium">To view the full strategic unbundling report for <b>{rtoCode}</b>, please verify your professional details.</p>
+            <CardTitle className="text-3xl font-black tracking-tight mb-2 uppercase italic">Professional Access Required</CardTitle>
+            <p className="text-slate-400 font-medium leading-relaxed px-4">
+                To view the full strategic unbundling report for <b className="text-blue-400">{rtoCode}</b>, please verify your professional details.
+            </p>
         </div>
         <CardContent className="p-10 md:p-12">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,7 +108,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                 <Input
                   placeholder="Full Name"
                   required
-                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900"
+                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900 placeholder:text-slate-400"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
@@ -116,7 +119,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                   type="email"
                   placeholder="Work Email"
                   required
-                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900"
+                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900 placeholder:text-slate-400"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -127,7 +130,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                   type="tel"
                   placeholder="Direct Phone"
                   required
-                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900"
+                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900 placeholder:text-slate-400"
                   value={formData.phoneNumber}
                   onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 />
@@ -142,13 +145,13 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                 <Loader2 className="animate-spin h-6 w-6" />
               ) : (
                 <span className="flex items-center gap-2">
-                    UNLOCK FULL STRATEGY <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                    UNLOCK STRATEGY PACK <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
                 </span>
               )}
             </Button>
             <div className="flex items-center justify-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>Powered by Gemini 2.5 Pro Architecture</span>
+                <span>Encrypted via Gemini 2.5 Pro Architecture</span>
             </div>
           </form>
         </CardContent>

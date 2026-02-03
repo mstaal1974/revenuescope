@@ -370,7 +370,7 @@ const AuditWidget: React.FC = () => {
         </div>
         <h5 className="font-black text-4xl text-white mb-3 tracking-tighter">Analysis Prepared</h5>
         <p className="text-slate-400 text-xl mb-10 leading-relaxed font-medium">
-          Your Go-To-Market logic has been synthesized. Access your dashboard to reveal the results.
+          Your Go-To-Market logic has been synthesized using Gemini 2.5 Pro. Access your dashboard to reveal the results.
         </p>
         <button
           onClick={() => {
@@ -388,7 +388,7 @@ const AuditWidget: React.FC = () => {
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-2xl transition-all shadow-2xl shadow-blue-500/20 text-lg uppercase tracking-wider group"
         >
           <span className="flex items-center justify-center gap-2">
-            Open Strategy Dashboard <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            Open Intelligence Dashboard <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
           </span>
         </button>
       </div>
