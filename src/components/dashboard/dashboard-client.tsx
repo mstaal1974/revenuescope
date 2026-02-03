@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 /**
  * DashboardClient is the main container for the audit results.
  * It manages the 'unlocked' state and shows a Lead Capture Overlay if required.
- * Blur intensity adjusted to 'blur-md' for better teaser visibility.
  */
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -78,7 +77,11 @@ export function DashboardClient({ data }: { data: AuditData }) {
                     <span className="text-[11px] font-bold text-slate-300 tracking-wide uppercase">Powered by Gemini 2.5 Pro</span>
                 </div>
                  <Button asChild className="bg-white text-slate-900 hover:bg-slate-50 font-bold px-6 py-2 shadow-xl border border-slate-200">
-                    <a href="https://github.com/mstaal1974/Brand-Guide-/blob/main/assets/Example%20Board%20report.pdf" target="_blank" rel="noopener noreferrer">
+                    <a 
+                      href="https://github.com/mstaal1974/Brand-Guide-/blob/main/assets/Example%20Board%20report.pdf" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
                         <FileText className="mr-2 h-4 w-4" />
                         Download Example Board Briefing
                     </a>
