@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Phone, User, Download, ShieldCheck } from 'lucide-react';
+import { Loader2, Mail, Phone, User, Download, ShieldCheck, Lock } from 'lucide-react';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 interface LeadCaptureOverlayProps {
@@ -87,15 +87,15 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-3xl animate-in fade-in duration-500">
-      <Card className="w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-500">
+      <Card className="w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-none animate-in zoom-in-95">
         <div className="bg-slate-950 p-10 text-center text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/20 shadow-inner">
-                <Download className="w-10 h-10 text-blue-400" />
+                <Lock className="w-10 h-10 text-blue-400" />
             </div>
-            <CardTitle className="text-3xl font-black tracking-tight mb-2">Unlock Your Full Analysis</CardTitle>
-            <p className="text-slate-400 font-medium">Enter your professional details to download the complete Strategy & Content Pack.</p>
+            <CardTitle className="text-3xl font-black tracking-tight mb-2 uppercase italic">Professional Access Only</CardTitle>
+            <p className="text-slate-400 font-medium">To view the full strategic unbundling report for <b>{rtoCode}</b>, please verify your professional details.</p>
         </div>
         <CardContent className="p-10 md:p-12">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,7 +105,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                 <Input
                   placeholder="Full Name"
                   required
-                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all"
+                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
@@ -116,7 +116,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                   type="email"
                   placeholder="Work Email"
                   required
-                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all"
+                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -127,7 +127,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                   type="tel"
                   placeholder="Direct Phone"
                   required
-                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all"
+                  className="pl-12 py-7 bg-slate-50 border-slate-200 rounded-2xl font-bold text-lg focus:ring-4 focus:ring-blue-500/10 h-auto transition-all text-slate-900"
                   value={formData.phoneNumber}
                   onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 />
@@ -142,13 +142,13 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
                 <Loader2 className="animate-spin h-6 w-6" />
               ) : (
                 <span className="flex items-center gap-2">
-                    Access Strategy Report <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                    UNLOCK FULL STRATEGY <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
                 </span>
               )}
             </Button>
             <div className="flex items-center justify-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>Encrypted Data Transmission</span>
+                <span>Powered by Gemini 2.5 Pro Architecture</span>
             </div>
           </form>
         </CardContent>

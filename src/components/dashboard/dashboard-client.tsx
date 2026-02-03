@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { AuditData } from "@/app/actions";
 import { SkillsHeatmap } from "./skills-heatmap";
 import SectorAnalysis from "./SectorAnalysis";
-import { Sparkles, FileText, Lock } from "lucide-react";
+import { Sparkles, FileText, Lock, Loader2 } from "lucide-react";
 import RevenueGrowthEngine from "./RevenueGrowthEngine";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
  */
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isMounting, setIsMounting] = useState(true);
 
   useEffect(() => {
     // On mount, check if user has already submitted a lead in this browser session
@@ -24,10 +25,20 @@ export function DashboardClient({ data }: { data: AuditData }) {
     if (leadId) {
       setIsUnlocked(true);
     }
+    setIsMounting(false);
   }, []);
 
+  if (isMounting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950">
+        <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
+        <p className="mt-4 text-slate-400 font-bold tracking-widest uppercase text-xs">Initializing Secure Environment...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-slate-950">
       {/* Show overlay if the report is locked */}
       {!isUnlocked && (
         <LeadCaptureOverlay 
@@ -38,8 +49,8 @@ export function DashboardClient({ data }: { data: AuditData }) {
 
       {/* Main content - blurred if locked */}
       <div className={cn(
-        "max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-1000 transition-all pb-24",
-        !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-50 h-screen overflow-hidden"
+        "max-w-7xl mx-auto overflow-hidden animate-in fade-in duration-1000 transition-all pb-24",
+        !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-20 h-screen overflow-hidden"
       )}>
         
         {/* 1. THE AUDIT HEADER */}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -369,9 +368,9 @@ const AuditWidget: React.FC = () => {
         <div className="w-20 h-20 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-emerald-500/30 shadow-inner">
             <CheckCircle className="w-12 h-12 text-emerald-400" />
         </div>
-        <h5 className="font-black text-4xl text-white mb-3 tracking-tighter">Strategy Unlocked</h5>
+        <h5 className="font-black text-4xl text-white mb-3 tracking-tighter">Analysis Prepared</h5>
         <p className="text-slate-400 text-xl mb-10 leading-relaxed font-medium">
-          Your personalized Go-To-Market analysis is ready for board review.
+          Your Go-To-Market logic has been synthesized. Access your dashboard to reveal the results.
         </p>
         <button
           onClick={() => {
@@ -389,7 +388,7 @@ const AuditWidget: React.FC = () => {
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-2xl transition-all shadow-2xl shadow-blue-500/20 text-lg uppercase tracking-wider group"
         >
           <span className="flex items-center justify-center gap-2">
-            Access Dashboard <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            Open Strategy Dashboard <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
           </span>
         </button>
       </div>
