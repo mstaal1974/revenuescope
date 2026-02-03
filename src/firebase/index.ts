@@ -1,9 +1,10 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, initializeFirestore } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -33,10 +34,22 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  // We use initializeFirestore with forceLongPolling to ensure connectivity 
+  // in proxied or restricted network environments (like Cloud Workstations).
+  let firestore;
+  try {
+    firestore = initializeFirestore(firebaseApp, {
+      experimentalForceLongPolling: true,
+    });
+  } catch (e) {
+    // If already initialized, fallback to getFirestore
+    firestore = getFirestore(firebaseApp);
+  }
+
   return {
     firebaseApp,
     auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
+    firestore: firestore
   };
 }
 
