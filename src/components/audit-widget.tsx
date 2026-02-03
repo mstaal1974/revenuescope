@@ -228,7 +228,7 @@ const AuditWidget: React.FC = () => {
       
       // Specific detection for disabled Generative Language API
       if (message.includes("Generative Language API has not been used") || message.includes("403 Forbidden")) {
-          message = "CRITICAL: The Gemini API is disabled for your Google Cloud project. You must enable it to proceed.";
+          message = "CRITICAL: The Gemini API is disabled for your project. You MUST enable it in Google Cloud Console to proceed.";
       }
 
       if (runningStepIndex !== -1) {
@@ -298,7 +298,7 @@ const AuditWidget: React.FC = () => {
 
   if (state === AuditState.PROCESSING || state === AuditState.ERROR) {
     const errorDetails = progressSteps.find(s => s.status === 'error')?.details || "";
-    const isApiDisabledError = errorDetails.includes("Generative Language API") || errorDetails.includes("enable it");
+    const isApiDisabledError = errorDetails.includes("CRITICAL") || errorDetails.includes("enable it");
 
     return (
       <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
@@ -356,7 +356,7 @@ const AuditWidget: React.FC = () => {
                             >
                                 Enable API Here <ExternalLink size={10}/>
                             </a>
-                            . Then wait 2 minutes and retry.
+                            . After enabling, wait 2 minutes and retry.
                         </>
                     ) : errorDetails}
                 </p>
