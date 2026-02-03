@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import type { AuditData } from "@/app/actions";
 import { SkillsHeatmap } from "./skills-heatmap";
 import SectorAnalysis from "./SectorAnalysis";
-import { Sparkles, FileText } from "lucide-react";
+import { Sparkles, FileText, Lock } from "lucide-react";
 import RevenueGrowthEngine from "./RevenueGrowthEngine";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -40,7 +39,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
       {/* Main content - blurred if locked */}
       <div className={cn(
         "max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-1000 transition-all",
-        !isUnlocked && "filter blur-3xl pointer-events-none select-none"
+        !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-50"
       )}>
         
         {/* 1. THE AUDIT HEADER */}
@@ -57,12 +56,12 @@ export function DashboardClient({ data }: { data: AuditData }) {
                     <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
                         <Sparkles className="text-white h-3 w-3" />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-300 tracking-wide">Powered by Gemini 2.5 Pro</span>
+                    <span className="text-[11px] font-bold text-slate-300 tracking-wide uppercase">Powered by Gemini 2.5 Pro</span>
                 </div>
-                 <Button asChild>
+                 <Button asChild className="bg-white text-slate-900 hover:bg-slate-50 font-bold px-6 py-2 shadow-xl border border-slate-200">
                     <Link href="/audit/report/print">
                         <FileText className="mr-2 h-4 w-4" />
-                        View Report
+                        Download Report
                     </Link>
                 </Button>
               </div>
@@ -71,7 +70,6 @@ export function DashboardClient({ data }: { data: AuditData }) {
         </div>
 
         <div className="p-8 md:px-16 space-y-24">
-          {/* Note: SkillsHeatmap expects the full audit data object */}
           <SkillsHeatmap data={data} />
 
           <div>
@@ -80,7 +78,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
                   Sector Analysis with <span className="text-primary">Business Multipliers</span>
                 </h2>
                 <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                  A breakdown of each training package on your scope, with AI-suggested opportunities and strategic multipliers.
+                  A comprehensive breakdown of each training package on your scope, with AI-suggested growth opportunities.
                 </p>
               </div>
               <SectorAnalysis sectors={data.sector_breakdown} />

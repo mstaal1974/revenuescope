@@ -1,11 +1,10 @@
-
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action, runScopeFallbackAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
-import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink, AlertCircle, ShieldAlert } from 'lucide-react';
-import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink, AlertCircle, ShieldAlert, Sparkles } from 'lucide-react';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -110,11 +109,9 @@ const AuditWidget: React.FC = () => {
       let dataSource: 'db' | 'ai' = 'db';
 
       // 1. DATABASE LOOKUP logic
-      // Try string match first
       let q = query(qualificationsRef, where("rtoCode", "==", code.trim()));
       querySnapshot = await getDocs(q);
       
-      // Try numeric match if string fails and input is a number
       if (querySnapshot.empty && !isNaN(Number(code))) {
           q = query(qualificationsRef, where("rtoCode", "==", Number(code)));
           querySnapshot = await getDocs(q);
@@ -253,17 +250,17 @@ const AuditWidget: React.FC = () => {
             )}
             <button
                 type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg transition-all text-base inline-flex items-center justify-center gap-2"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-2.5 rounded-lg transition-all text-base inline-flex items-center justify-center gap-2"
             >
-                Reveal Revenue Strategy <Rocket className="inline-block" />
+                Reveal Strategy <Rocket size={18} />
             </button>
         </form>
          {auditType === 'qual' && (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                 <span className="text-xs font-medium text-slate-400">Or try an example:</span>
-                <button type="button" onClick={() => handleExampleClick('CPC30220')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Carpentry' (CPC30220)</button>
-                <button type="button" onClick={() => handleExampleClick('BSB50120')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Leadership' (BSB50120)</button>
-                <button type="button" onClick={() => handleExampleClick('CHC33021')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Individual Support' (CHC33021)</button>
+                <button type="button" onClick={() => handleExampleClick('CPC30220')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors font-bold border border-slate-600">Carpentry (CPC30220)</button>
+                <button type="button" onClick={() => handleExampleClick('BSB50120')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors font-bold border border-slate-600">Leadership (BSB50120)</button>
+                <button type="button" onClick={() => handleExampleClick('CHC33021')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors font-bold border border-slate-600">Individual Support (CHC33021)</button>
             </div>
         )}
       </div>
@@ -275,15 +272,19 @@ const AuditWidget: React.FC = () => {
     const isBlockedError = errorDetails.includes("403") || errorDetails.toLowerCase().includes("blocked") || errorDetails.toLowerCase().includes("forbidden");
 
     return (
-      <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
-        <div className="flex items-center justify-center mb-4">
-          <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-           <span className="text-blue-400 text-sm font-bold ml-2">Audit Pipeline Active...</span>
+      <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-3xl shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 animate-pulse"></div>
+        <div className="flex items-center justify-center mb-6">
+          <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+           <span className="text-blue-400 text-lg font-black ml-3 tracking-tight">AI Pipeline Active</span>
         </div>
         
-        <div className="space-y-2 mb-6">
-            <Progress value={progress} className="w-full h-2 [&>div]:bg-blue-500" />
-            <p className="text-xs text-slate-400 font-medium text-right">{Math.round(progress)}% Processed</p>
+        <div className="space-y-2 mb-8 bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
+            <Progress value={progress} className="w-full h-3 [&>div]:bg-blue-500" />
+            <div className="flex justify-between items-center mt-2 px-1">
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Powered by Gemini 2.5 Pro</p>
+                <p className="text-xs text-blue-400 font-black">{Math.round(progress)}% Processed</p>
+            </div>
         </div>
 
         <div className="space-y-4">
@@ -295,19 +296,19 @@ const AuditWidget: React.FC = () => {
                 
                 return (
                     <div key={index} className="flex items-start gap-3 transition-all duration-300 text-left">
-                        <div className="w-5 h-5 shrink-0 flex items-center justify-center mt-0.5">
-                            {isRunning && <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />}
-                            {isSuccess && <CheckCircle className="w-4 h-4 text-emerald-400" />}
-                            {isError && <XCircle className="w-4 h-4 text-rose-400" />}
-                            {isPending && <Circle className="w-4 h-4 text-slate-600" />}
+                        <div className="w-6 h-6 shrink-0 flex items-center justify-center mt-0.5">
+                            {isRunning && <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />}
+                            {isSuccess && <CheckCircle className="w-5 h-5 text-emerald-400" />}
+                            {isError && <XCircle className="w-5 h-5 text-rose-400" />}
+                            {isPending && <Circle className="w-5 h-5 text-slate-600" />}
                         </div>
                         <div className="flex-1">
                             <div className="flex items-center gap-2">
-                                <p className={`font-bold text-sm ${isPending ? 'text-slate-500' : 'text-slate-200'}`}>{step.name}</p>
-                                {isSuccess && step.source === 'db' && <span className="flex items-center gap-1 text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded uppercase"><Database size={10}/> DB Match</span>}
-                                {isSuccess && step.source === 'ai' && <span className="flex items-center gap-1 text-[9px] font-black bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded uppercase"><Cpu size={10}/> AI Search</span>}
+                                <p className={`font-black text-sm tracking-tight ${isPending ? 'text-slate-500' : 'text-slate-200'}`}>{step.name}</p>
+                                {isSuccess && step.source === 'db' && <span className="flex items-center gap-1 text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded-md uppercase border border-emerald-500/20"><Database size={10}/> DB Match</span>}
+                                {isSuccess && step.source === 'ai' && <span className="flex items-center gap-1 text-[9px] font-black bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded-md uppercase border border-blue-500/20"><Cpu size={10}/> AI Deep Search</span>}
                             </div>
-                            {step.details && <p className={`text-xs mt-1 text-slate-400`}>{step.details}</p>}
+                            {step.details && <p className={`text-xs mt-1 text-slate-400 font-medium leading-relaxed`}>{step.details}</p>}
                         </div>
                     </div>
                 );
@@ -315,28 +316,28 @@ const AuditWidget: React.FC = () => {
         </div>
         
         {state === AuditState.ERROR && (
-          <div className="mt-6">
+          <div className="mt-8 animate-in slide-in-from-bottom-4">
              {isBlockedError ? (
-                <div className="bg-rose-950/50 border border-rose-500/50 p-6 rounded-xl mb-4 text-center">
-                    <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <ShieldAlert className="text-rose-500 w-8 h-8" />
+                <div className="bg-rose-950/50 border border-rose-500/50 p-8 rounded-3xl mb-4 text-center shadow-2xl">
+                    <div className="w-16 h-16 bg-rose-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-rose-500/30">
+                        <ShieldAlert className="text-rose-500 w-10 h-10" />
                     </div>
-                    <h4 className="text-rose-100 font-black text-xl mb-2">Gemini API Blocked</h4>
-                    <p className="text-rose-200/80 text-sm leading-relaxed mb-6 text-left">
-                        Your Google Cloud Project is blocking requests to the Gemini API. This is usually due to <b>API Key Restrictions</b>.
+                    <h4 className="text-rose-100 font-black text-2xl mb-2 tracking-tight">Gemini API Blocked</h4>
+                    <p className="text-rose-200/80 text-sm leading-relaxed mb-8 text-left font-medium">
+                        Your Google Cloud Project is blocking requests to the Gemini API. This is usually due to <b>API Key Restrictions</b> or the service being disabled.
                         <br/><br/>
-                        <b>How to Fix:</b>
+                        <b>Required Action:</b>
                         <br/>1. Go to <b>Credentials</b> in Google Cloud.
                         <br/>2. Edit your API Key.
-                        <br/>3. Ensure "API restrictions" is set to <b>"Don't restrict key"</b> OR that <b>"Generative Language API"</b> is explicitly allowed.
+                        <br/>3. Ensure <b>Generative Language API</b> is explicitly allowed.
                     </p>
                     <div className="flex flex-col gap-3">
-                        <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-xl shadow-xl shadow-blue-900/40">
+                        <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 rounded-2xl shadow-2xl shadow-blue-900/40 text-lg transition-all active:scale-95">
                             <a 
                                 href="https://console.cloud.google.com/apis/credentials?project=851458267599" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 text-lg"
+                                className="flex items-center justify-center gap-2"
                             >
                                 LIFT KEY RESTRICTIONS <ExternalLink size={20}/>
                             </a>
@@ -344,14 +345,14 @@ const AuditWidget: React.FC = () => {
                     </div>
                 </div>
              ) : (
-                <div className="bg-rose-900/50 border border-rose-500/30 p-4 rounded-md mb-4 text-left">
-                    <p className="text-rose-300 font-bold text-sm">Error Details</p>
-                    <p className="text-rose-400/80 text-xs mt-1 leading-relaxed">{errorDetails}</p>
+                <div className="bg-rose-900/50 border border-rose-500/30 p-6 rounded-2xl mb-4 text-left shadow-lg">
+                    <p className="text-rose-300 font-black text-sm uppercase tracking-widest mb-2">Error Diagnostic</p>
+                    <p className="text-rose-400/80 text-xs mt-1 leading-relaxed font-bold">{errorDetails}</p>
                 </div>
              )}
             <button
               onClick={() => setState(AuditState.IDLE)}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl transition-all text-sm uppercase tracking-widest"
+              className="w-full bg-slate-700 hover:bg-slate-600 text-white font-black py-4 px-4 rounded-xl transition-all text-sm uppercase tracking-widest border border-slate-600 shadow-xl"
             >
               Adjust Input & Retry
             </button>
@@ -363,13 +364,13 @@ const AuditWidget: React.FC = () => {
   
   if (state === AuditState.RESULTS) {
     return (
-      <div className="bg-slate-800/50 border border-slate-700 p-8 md:p-12 max-w-lg text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-lg shadow-2xl">
-        <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-emerald-400" />
+      <div className="bg-slate-800/50 border border-slate-700 p-10 md:p-16 max-w-lg text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-3xl shadow-2xl">
+        <div className="w-20 h-20 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-emerald-500/30 shadow-inner">
+            <CheckCircle className="w-12 h-12 text-emerald-400" />
         </div>
-        <h5 className="font-black text-3xl text-white mb-2 tracking-tight">Strategy Unlocked</h5>
-        <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-          Your Go-To-Market analysis is ready for review.
+        <h5 className="font-black text-4xl text-white mb-3 tracking-tighter">Strategy Unlocked</h5>
+        <p className="text-slate-400 text-xl mb-10 leading-relaxed font-medium">
+          Your personalized Go-To-Market analysis is ready for board review.
         </p>
         <button
           onClick={() => {
@@ -379,14 +380,16 @@ const AuditWidget: React.FC = () => {
             } else {
               toast({
                 variant: "destructive",
-                title: "Error",
-                description: "Could not finalize audit results.",
+                title: "Internal Error",
+                description: "Could not finalize audit data transfer.",
               });
             }
           }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-md transition-all shadow-lg text-base uppercase tracking-wider"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-2xl transition-all shadow-2xl shadow-blue-500/20 text-lg uppercase tracking-wider group"
         >
-          Access Dashboard
+          <span className="flex items-center justify-center gap-2">
+            Access Dashboard <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          </span>
         </button>
       </div>
     )
