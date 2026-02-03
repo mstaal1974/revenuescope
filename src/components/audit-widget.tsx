@@ -110,7 +110,6 @@ const AuditWidget: React.FC = () => {
 
       // 1. DATABASE LOOKUP
       if (isRtoAudit) {
-        // Multi-stage database query for RTO ID
         let q = query(qualificationsRef, where("rtoCode", "==", code.trim()), where("usageRecommendation", "==", "Current"));
         querySnapshot = await getDocs(q);
         
@@ -124,7 +123,6 @@ const AuditWidget: React.FC = () => {
              querySnapshot = await getDocs(q);
         }
       } else {
-        // Qualification Code Lookup
         const q = query(qualificationsRef, where("code", "==", code.trim().toUpperCase()));
         querySnapshot = await getDocs(q);
       }
@@ -146,7 +144,6 @@ const AuditWidget: React.FC = () => {
         
         updateProgress(1, 'success', `Analysing scope for: ${rtoName || rtoIdForAudit}...`);
       } else {
-        // FALLBACK: AI Search
         dataSource = 'ai';
         updateProgress(0, 'running', 'No local records found. Initializing AI Deep Search...', 'ai');
         const fallbackResponse = await runScopeFallbackAction({ code, isRtoAudit });
@@ -334,12 +331,13 @@ const AuditWidget: React.FC = () => {
                     </div>
                     <h4 className="text-rose-100 font-black text-xl mb-2">Gemini API Blocked</h4>
                     <p className="text-rose-200/80 text-sm leading-relaxed mb-6 text-left">
-                        Your Google Cloud Project is blocking requests to the Gemini API. This is usually due to <b>API Restrictions</b> on your key.
+                        Your Google Cloud Project is blocking requests to the Gemini API. This is usually due to <b>API Key Restrictions</b>.
                         <br/><br/>
                         <b>How to Fix:</b>
                         <br/>1. Go to <b>Credentials</b> in Google Cloud.
                         <br/>2. Edit your API Key.
-                        <br/>3. Set "API restrictions" to <b>"Don't restrict key"</b> OR add <b>"Generative Language API"</b> to the allowed list.
+                        <br/>3. Ensure "API restrictions" is set to <b>"Don't restrict key"</b> OR that <b>"Generative Language API"</b> is explicitly allowed.
+                        <br/>4. Ensure <b>"Application restrictions"</b> is set to "None" for server-side actions.
                     </p>
                     <div className="flex flex-col gap-3">
                         <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-6 rounded-xl shadow-xl shadow-blue-900/40">
@@ -359,7 +357,7 @@ const AuditWidget: React.FC = () => {
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-center gap-2"
                             >
-                                ENABLE API OVERVIEW <ExternalLink size={16}/>
+                                VERIFY API STATUS <ExternalLink size={16}/>
                             </a>
                         </Button>
                     </div>
