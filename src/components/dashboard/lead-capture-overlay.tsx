@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useFirestore } from '@/firebase';
-import { Firestore, collection, doc, serverTimestamp } from 'firebase/firestore';
+import React, { useState, useContext } from 'react';
+import { FirebaseContext } from '@/firebase/provider';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -17,28 +17,20 @@ interface LeadCaptureOverlayProps {
 
 /**
  * LeadCaptureOverlay captures user contact info before revealing the dashboard.
- * It uses a defensive Firestore initialization to prevent crashes during startup.
+ * It uses the FirebaseContext directly to safely access Firestore without throwing errors
+ * during the initialization phase.
  */
 export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [db, setDb] = useState<Firestore | null>(null);
+  const firebaseContext = useContext(FirebaseContext);
+  const db = firebaseContext?.firestore;
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phoneNumber: ''
   });
   const { toast } = useToast();
-
-  useEffect(() => {
-    try {
-      // Defensively attempt to get the firestore instance
-      const firestore = useFirestore();
-      setDb(firestore);
-      console.log('LeadCaptureOverlay: Firestore connection established.');
-    } catch (error) {
-      console.error('LeadCaptureOverlay: Firebase not available yet:', error);
-    }
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +41,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       toast({
         variant: 'destructive',
         title: 'Connection Error',
-        description: 'Could not connect to the secure database. Please refresh the page.'
+        description: 'The secure database is still initializing. Please wait a moment and try again.'
       });
       setIsLoading(false);
       return;
@@ -151,14 +143,14 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
             </div>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !db}
               className="w-full bg-slate-950 hover:bg-blue-600 text-white font-black py-8 rounded-2xl transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] text-xl h-auto group"
             >
               {isLoading ? (
                 <Loader2 className="animate-spin h-6 w-6" />
               ) : (
                 <span className="flex items-center gap-2">
-                    UNLOCK STRATEGY PACK <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                    {db ? 'UNLOCK STRATEGY PACK' : 'CONNECTING...'} <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
                 </span>
               )}
             </Button>

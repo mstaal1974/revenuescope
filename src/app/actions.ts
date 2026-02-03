@@ -75,6 +75,7 @@ const checkApiKey = () => {
 
 /**
  * Utility to ensure data is strictly serializable for Next.js Server Actions.
+ * DOUBLE-SERIALIZATION is used here to force a clean JSON-only object.
  */
 function sanitize<T>(data: T): T {
   if (!data) return data;
