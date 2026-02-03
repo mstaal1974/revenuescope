@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { AuditData } from "@/app/actions";
 import { SkillsHeatmap } from "./skills-heatmap";
 import SectorAnalysis from "./SectorAnalysis";
-import { Sparkles, FileText, Lock, Loader2 } from "lucide-react";
+import { Sparkles, FileText, Loader2 } from "lucide-react";
 import RevenueGrowthEngine from "./RevenueGrowthEngine";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -14,17 +14,22 @@ import { cn } from "@/lib/utils";
 /**
  * DashboardClient is the main container for the audit results.
  * It manages the 'unlocked' state and shows a Lead Capture Overlay if required.
- * Implementing "Initial State - The Blurred Report" logic.
+ * Blur intensity adjusted to 'blur-md' for better teaser visibility.
  */
 export function DashboardClient({ data }: { data: AuditData }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isMounting, setIsMounting] = useState(true);
 
   useEffect(() => {
-    // On mount, check if user has already submitted a lead in this browser session
+    console.log('DashboardClient: Mounted, checking for leadId in localStorage...');
     const leadId = localStorage.getItem('leadId');
+    console.log('DashboardClient: Found leadId:', leadId);
+    
     if (leadId) {
       setIsUnlocked(true);
+      console.log('DashboardClient: Dashboard unlocked automatically.');
+    } else {
+      console.log('DashboardClient: No leadId found, showing capture overlay.');
     }
     setIsMounting(false);
   }, []);
@@ -54,7 +59,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
       {/* Main dashboard content - visually obscured if locked */}
       <div className={cn(
         "max-w-7xl mx-auto animate-in fade-in duration-1000 transition-all pb-24",
-        !isUnlocked && "filter blur-3xl grayscale pointer-events-none select-none opacity-20 h-screen overflow-hidden"
+        !isUnlocked && "filter blur-md pointer-events-none select-none opacity-40 grayscale"
       )}>
         
         {/* 1. THE AUDIT HEADER */}

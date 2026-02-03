@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { Firestore, collection, doc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -17,28 +17,39 @@ interface LeadCaptureOverlayProps {
 
 /**
  * LeadCaptureOverlay captures user contact info before revealing the dashboard.
- * It saves data to Firestore and stores the leadId in localStorage.
- * Following the multi-step capture process described.
+ * It uses a defensive Firestore initialization to prevent crashes during startup.
  */
 export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [db, setDb] = useState<Firestore | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phoneNumber: ''
   });
-  const db = useFirestore();
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      // Defensively attempt to get the firestore instance
+      const firestore = useFirestore();
+      setDb(firestore);
+      console.log('LeadCaptureOverlay: Firestore connection established.');
+    } catch (error) {
+      console.error('LeadCaptureOverlay: Firebase not available yet:', error);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log('LeadCaptureOverlay: Lead capture form submitted', { rtoCode, formData });
 
     if (!db) {
       toast({
         variant: 'destructive',
         title: 'Connection Error',
-        description: 'Could not connect to the secure database. Please refresh.'
+        description: 'Could not connect to the secure database. Please refresh the page.'
       });
       setIsLoading(false);
       return;
@@ -66,8 +77,10 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
 
       // 4. Linking Future Actions: Store leadId in local storage for session persistence
       localStorage.setItem('leadId', leadId);
+      console.log('LeadCaptureOverlay: LeadId saved to localStorage:', leadId);
       
       // 5. Unlocking the Report: Reveal the dashboard immediately
+      console.log('LeadCaptureOverlay: Calling onUnlock...');
       onUnlock();
       
       toast({
@@ -76,7 +89,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       });
 
     } catch (error) {
-      console.error('Error saving lead:', error);
+      console.error('LeadCaptureOverlay: Error saving lead:', error);
       toast({
         variant: 'destructive',
         title: 'Submission Error',
