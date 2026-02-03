@@ -1,9 +1,10 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action, runScopeFallbackAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
-import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search } from 'lucide-react';
+import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu } from 'lucide-react';
 import { getFirestore, collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -24,6 +25,7 @@ type ProgressStep = {
   name: string;
   status: 'pending' | 'running' | 'success' | 'error';
   details?: string;
+  source?: 'db' | 'ai';
 };
 
 
@@ -40,11 +42,11 @@ const AuditWidget: React.FC = () => {
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
   const [progress, setProgress] = useState(0);
 
-  const updateProgress = (stepIndex: number, status: ProgressStep['status'], details?: string) => {
+  const updateProgress = (stepIndex: number, status: ProgressStep['status'], details?: string, source?: 'db' | 'ai') => {
       setProgressSteps(prev => {
           const newSteps = [...prev];
           if (!newSteps[stepIndex]) return prev;
-          newSteps[stepIndex] = { ...newSteps[stepIndex], status, details };
+          newSteps[stepIndex] = { ...newSteps[stepIndex], status, details, source };
           if (status === 'running') {
               for (let i = stepIndex + 1; i < newSteps.length; i++) {
                   newSteps[i].status = 'pending';
@@ -73,8 +75,8 @@ const AuditWidget: React.FC = () => {
     }
 
     const initialProgressRTO: ProgressStep[] = [
-      { name: 'Connecting to National Register...', status: 'pending' },
-      { name: 'Analysing Full Scope & Competitors...', status: 'pending' },
+      { name: 'Connecting to Database...', status: 'pending' },
+      { name: 'Gathering RTO Scope Data...', status: 'pending' },
       { name: 'AI Stage 1: Sector & Occupation Analysis', status: 'pending' },
       { name: 'AI Stage 2: Skills Demand Heatmap', status: 'pending' },
       { name: 'AI Stage 3: 3-Tier Revenue Staircase Design', status: 'pending' },
@@ -82,8 +84,8 @@ const AuditWidget: React.FC = () => {
     ];
 
     const initialProgressQual: ProgressStep[] = [
-      { name: 'Looking up Qualification details...', status: 'pending' },
-      { name: 'Preparing for AI Analysis...', status: 'pending' },
+      { name: 'Looking up Qualification...', status: 'pending' },
+      { name: 'Preparing AI Dataset...', status: 'pending' },
       { name: 'AI Stage 1: Market & Occupation Analysis', status: 'pending' },
       { name: 'AI Stage 2: Core Skills Analysis', status: 'pending' },
       { name: 'AI Stage 3: 3-Tier Revenue Staircase Design', status: 'pending' },
@@ -100,30 +102,37 @@ const AuditWidget: React.FC = () => {
       const db = getFirestore();
       const qualificationsRef = collection(db, "qualifications");
       
-      let querySnapshot;
+      let querySnapshot = null;
       let rtoIdForAudit: string = code.trim();
       let manualScopeDataset: string = "";
       let rtoName: string = "";
+      let dataSource: 'db' | 'ai' = 'db';
 
-      // 1. ATTEMPT DIRECT DATABASE LOOKUP
+      // 1. ATTEMPT ROBUST DATABASE LOOKUP
       if (isRtoAudit) {
-        const q = query(
+        // Attempt 1: Strict match (Current)
+        let q = query(
           qualificationsRef, 
           where("rtoCode", "==", code.trim()), 
           where("usageRecommendation", "==", "Current")
         );
         querySnapshot = await getDocs(q);
         
-        // Robustness: try as number if empty
+        // Attempt 2: Flexible match (Ignore usage status)
+        if (querySnapshot.empty) {
+            updateProgress(0, 'running', 'Searching broader database records...');
+            q = query(qualificationsRef, where("rtoCode", "==", code.trim()));
+            querySnapshot = await getDocs(q);
+        }
+
+        // Attempt 3: Number type match
         if (querySnapshot.empty && !isNaN(Number(code))) {
-             const qNum = query(
-              qualificationsRef, 
-              where("rtoCode", "==", Number(code)), 
-              where("usageRecommendation", "==", "Current")
-            );
-            querySnapshot = await getDocs(qNum);
+             updateProgress(0, 'running', 'Checking numeric RTO identifiers...');
+             q = query(qualificationsRef, where("rtoCode", "==", Number(code)));
+             querySnapshot = await getDocs(q);
         }
       } else {
+        // Qualification Code Lookup
         const q = query(
           qualificationsRef, 
           where("code", "==", code.trim().toUpperCase())
@@ -131,13 +140,13 @@ const AuditWidget: React.FC = () => {
         querySnapshot = await getDocs(q);
       }
 
-      // 2. CHECK RESULTS & TRIGGER AI FALLBACK IF EMPTY
+      // 2. PROCESS RESULTS OR TRIGGER AI SEARCH
       if (querySnapshot && !querySnapshot.empty) {
-        updateProgress(0, 'success', isRtoAudit ? `Found ${querySnapshot.size} current qualification(s) on scope.` : `Successfully located qualification ${code.trim().toUpperCase()}.`);
+        updateProgress(0, 'success', isRtoAudit ? `Found ${querySnapshot.size} local qualification(s).` : `Located qualification ${code.trim().toUpperCase()}.`, 'db');
         
         updateProgress(1, 'running');
         const allQualifications = querySnapshot.docs.map(doc => doc.data());
-        rtoName = allQualifications.length > 0 ? (allQualifications[0] as any).rtoLegalName : "";
+        rtoName = allQualifications.length > 0 ? (allQualifications[0] as any).rtoLegalName || (allQualifications[0] as any).rtoName : "";
         rtoIdForAudit = isRtoAudit ? code.trim() : (allQualifications[0] as any).rtoCode;
         
         const scopeData = isRtoAudit ? allQualifications : [allQualifications[0]];
@@ -146,21 +155,22 @@ const AuditWidget: React.FC = () => {
         });
         manualScopeDataset = scopeItems.join('\n');
         
-        updateProgress(1, 'success', `Analyzing scope for: ${rtoName || rtoIdForAudit}...`);
+        updateProgress(1, 'success', `Analysing scope for: ${rtoName || rtoIdForAudit}...`);
       } else {
-        // FALLBACK: Use AI to find the scope
-        updateProgress(0, 'running', 'Direct lookup failed. Attempting AI Deep Search of National Register...');
+        // FALLBACK: AI Search
+        dataSource = 'ai';
+        updateProgress(0, 'running', 'No local records found. Initializing AI Deep Search...', 'ai');
         const fallbackResponse = await runScopeFallbackAction({ code, isRtoAudit });
         
         if (fallbackResponse.ok && fallbackResponse.result.manualScopeDataset) {
             manualScopeDataset = fallbackResponse.result.manualScopeDataset;
             rtoName = fallbackResponse.result.rtoName;
             rtoIdForAudit = isRtoAudit ? code.trim() : fallbackResponse.result.rtoCode;
-            updateProgress(0, 'success', `AI Deep Search successful. Identified ${fallbackResponse.result.count} qualifications.`);
-            updateProgress(1, 'success', `Analyzing AI-retrieved scope for: ${rtoName}...`);
+            updateProgress(0, 'success', `AI identified ${fallbackResponse.result.count} qualifications.`, 'ai');
+            updateProgress(1, 'success', `Using AI-retrieved scope for: ${rtoName}...`);
         } else {
             const identifier = isRtoAudit ? `RTO ID "${code}"` : `Qualification Code "${code}"`;
-            throw new Error(`${identifier} could not be found in the national register or our local cache. Please check the code.`);
+            throw new Error(`${identifier} could not be found in local records or via AI Deep Search. Please verify the code.`);
         }
       }
 
@@ -171,31 +181,31 @@ const AuditWidget: React.FC = () => {
         manualScopeDataset: manualScopeDataset 
       };
 
-      // AI Stage 1: Market & Sector Analysis
-      updateProgress(2, 'running', 'Model is analyzing market health and financial opportunities...');
+      // AI Stage 1
+      updateProgress(2, 'running', 'Analyzing market health and ROI potential...');
       const stage1Response = await runStage1Action(baseAuditInput);
       if (!stage1Response.ok) throw new Error(`AI Stage 1 Failed: ${stage1Response.error}`);
       const stage1Result = stage1Response.result;
-      updateProgress(2, 'success', `Identified ${stage1Result.executive_summary.top_performing_sector} as top sector.`);
+      updateProgress(2, 'success', `Top Sector: ${stage1Result.executive_summary.top_performing_sector}`);
 
-      // AI Stage 2: Skills Analysis
-      updateProgress(3, 'running', 'Model is mapping all skills to current employer demand...');
+      // AI Stage 2
+      updateProgress(3, 'running', 'Mapping skills to employer demand signals...');
       const stage2Response = await runStage2Action(baseAuditInput);
       if (!stage2Response.ok) throw new Error(`AI Stage 2 Failed: ${stage2Response.error}`);
       const stage2Result = stage2Response.result;
-      updateProgress(3, 'success', `Generated heatmap with ${stage2Result.skills_heatmap.length} unique skills.`);
+      updateProgress(3, 'success', `Analyzed ${stage2Result.skills_heatmap.length} unique skills.`);
 
-      // AI Stage 3: Product & Revenue Design
+      // AI Stage 3
       const stage3Input: RevenueStaircaseInput = {
         ...baseAuditInput,
         top_performing_sector: stage1Result.executive_summary.top_performing_sector,
         skills_heatmap: stage2Result.skills_heatmap,
       };
-      updateProgress(4, 'running', 'Model is designing a 3-tier revenue staircase...');
+      updateProgress(4, 'running', 'Designing tiered product architecture...');
       const stage3Response = await runStage3Action(stage3Input);
       if (!stage3Response.ok) throw new Error(`AI Stage 3 Failed: ${stage3Response.error}`);
       const stage3Result = stage3Response.result;
-      updateProgress(4, 'success', '3-Tier product architecture and revenue model complete.');
+      updateProgress(4, 'success', 'Revenue staircase design complete.');
 
       updateProgress(5, 'running');
       const fullAuditResult: AuditResult = {
@@ -218,7 +228,6 @@ const AuditWidget: React.FC = () => {
       if (runningStepIndex !== -1) {
           updateProgress(runningStepIndex, 'error', message);
       } else {
-          // If no step is running, update the first pending one or add a details log
           const firstPending = progressSteps.findIndex(step => step.status === 'pending');
           if (firstPending !== -1) updateProgress(firstPending, 'error', message);
       }
@@ -274,7 +283,7 @@ const AuditWidget: React.FC = () => {
                 <span className="text-xs font-medium text-slate-400">Or try an example:</span>
                 <button type="button" onClick={() => handleExampleClick('CPC30220')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Carpentry' (CPC30220)</button>
                 <button type="button" onClick={() => handleExampleClick('BSB50120')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Leadership' (BSB50120)</button>
-                <button type="button" onClick={() => handleExampleClick('CHC33021')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Certificate III in Individual Support' (CHC33021)</button>
+                <button type="button" onClick={() => handleExampleClick('CHC33021')} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-700 px-3 py-1 rounded-full transition-colors">Try 'Individual Support' (CHC33021)</button>
             </div>
         )}
       </div>
@@ -286,12 +295,12 @@ const AuditWidget: React.FC = () => {
       <div className="bg-slate-800/50 border border-slate-700 p-8 max-w-lg mx-auto rounded-lg">
         <div className="flex items-center justify-center mb-4">
           <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-           <span className="text-blue-400 text-sm font-bold ml-2">Analyzing...</span>
+           <span className="text-blue-400 text-sm font-bold ml-2">Audit Pipeline Active...</span>
         </div>
         
         <div className="space-y-2 mb-6">
             <Progress value={progress} className="w-full h-2 [&>div]:bg-blue-500" />
-            <p className="text-xs text-slate-400 font-medium text-right">{Math.round(progress)}% Complete</p>
+            <p className="text-xs text-slate-400 font-medium text-right">{Math.round(progress)}% Processed</p>
         </div>
 
         <div className="space-y-4">
@@ -310,7 +319,11 @@ const AuditWidget: React.FC = () => {
                             {isPending && <Circle className="w-4 h-4 text-slate-600" />}
                         </div>
                         <div className="flex-1">
-                            <p className={`font-medium text-sm text-slate-300`}>{step.name}</p>
+                            <div className="flex items-center gap-2">
+                                <p className={`font-bold text-sm ${isPending ? 'text-slate-500' : 'text-slate-200'}`}>{step.name}</p>
+                                {isSuccess && step.source === 'db' && <span className="flex items-center gap-1 text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded uppercase"><Database size={10}/> DB Match</span>}
+                                {isSuccess && step.source === 'ai' && <span className="flex items-center gap-1 text-[9px] font-black bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded uppercase"><Cpu size={10}/> AI Search</span>}
+                            </div>
                             {step.details && <p className={`text-xs mt-1 text-slate-400`}>{step.details}</p>}
                         </div>
                     </div>
@@ -321,14 +334,14 @@ const AuditWidget: React.FC = () => {
         {state === AuditState.ERROR && (
           <div className="mt-6">
              <div className="bg-rose-900/50 border border-rose-500/30 p-3 rounded-md mb-4 text-left">
-                <p className="text-rose-300 font-bold text-sm">An Error Occurred</p>
+                <p className="text-rose-300 font-bold text-sm">Action Required</p>
                 <p className="text-rose-400/80 text-xs mt-1">{progressSteps.find(s => s.status === 'error')?.details}</p>
              </div>
             <button
               onClick={() => setState(AuditState.IDLE)}
               className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-md transition-all text-sm"
             >
-              Try Again
+              Adjust Input & Retry
             </button>
           </div>
         )}
@@ -339,9 +352,12 @@ const AuditWidget: React.FC = () => {
   if (state === AuditState.RESULTS) {
     return (
       <div className="bg-slate-800/50 border border-slate-700 p-8 md:p-12 max-w-lg text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-lg shadow-2xl">
-        <h5 className="font-black text-3xl text-white mb-4 tracking-tight">Strategy Ready!</h5>
+        <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-emerald-400" />
+        </div>
+        <h5 className="font-black text-3xl text-white mb-2 tracking-tight">Strategy Unlocked</h5>
         <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-          Your Go-To-Market report is ready to be viewed.
+          Your Go-To-Market analysis is ready for review.
         </p>
         <button
           onClick={() => {
@@ -352,13 +368,13 @@ const AuditWidget: React.FC = () => {
               toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Could not retrieve audit results. Please try again.",
+                description: "Could not finalize audit results.",
               });
             }
           }}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-md transition-all shadow-lg text-base uppercase tracking-wider"
         >
-          Go to Dashboard
+          Access Dashboard
         </button>
       </div>
     )
