@@ -1,3 +1,4 @@
+
 'use client';
 
 import AuditWidget from "@/components/audit-widget";
@@ -44,7 +45,7 @@ export default function Home() {
         <section className="container mx-auto py-16 md:py-24 animate-in fade-in duration-1000">
           <div className="grid gap-12 items-center">
               <div className="text-center">
-                  <div className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">Powered by Gemini 1.5 Pro</div>
+                  <div className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">Powered by Gemini 2.5 Pro</div>
                   <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
                     Turn One Qualification into <span className="text-primary">Three Revenue Streams.</span>
                   </h1>
