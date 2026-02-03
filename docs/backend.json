@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Lead": {
@@ -29,8 +30,11 @@
         },
         "timestamp": {
           "type": "string",
-          "description": "Timestamp indicating when the lead was created.",
-          "format": "date-time"
+          "description": "ISO Timestamp indicating when the lead was created."
+        },
+        "createdAt": {
+          "type": "object",
+          "description": "Firestore Server Timestamp for ordering."
         }
       },
       "required": [
@@ -58,7 +62,7 @@
           "schema": {
             "$ref": "#/backend/entities/Lead"
           },
-          "description": "Stores lead information captured from the Lead Capture Overlay. Includes fields for name, email, phone number, RTO code, and timestamp. Requires admin role for create, read, update and delete.",
+          "description": "Stores lead information captured from the Lead Capture Overlay. Includes fields for name, email, phoneNumber, RTO code, and timestamps. Public create access enabled.",
           "params": [
             {
               "name": "leadId",
@@ -68,6 +72,6 @@
         }
       }
     ],
-    "reasoning": "This design prioritizes security and scalability by adhering to the core design principles and strategy mandates. Specifically, it emphasizes Authorization Independence by storing all necessary authorization data directly within each document, eliminating the need for `get()` calls in security rules. \n\nThe primary collection is `/leads`. Since all documents within the `leads` collection share the same access requirements (admin only create/read/write), this structure maintains a Homogeneous Security Posture.\n\nTo ensure QAPs (Rules Are Not Filters), access to the `leads` collection is strictly controlled based on authentication and potentially pre-defined admin roles stored in a separate collection. This prevents unauthorized listing of leads.\n"
+    "reasoning": "Standardized schema to ensure consistency between lead capture forms and admin reporting tools."
   }
 }

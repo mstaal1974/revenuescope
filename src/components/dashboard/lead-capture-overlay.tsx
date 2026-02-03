@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -37,7 +38,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       toast({
         variant: 'destructive',
         title: 'Connection Error',
-        description: 'Could not connect to the database. Please try again later.'
+        description: 'Could not connect to the database. Please refresh and try again.'
       });
       setIsLoading(false);
       return;
@@ -49,20 +50,21 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       const docRef = doc(leadsCollection);
       const leadId = docRef.id;
 
+      // Prepare lead data matching the standardized schema
       const leadData = {
         id: leadId,
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
+        phoneNumber: formData.phone,
         rtoCode: rtoCode || 'N/A',
-        createdAt: serverTimestamp(),
-        timestamp: new Date().toISOString()
+        createdAt: serverTimestamp(), // For reliable server-side ordering
+        timestamp: new Date().toISOString() // For instant client-side reading
       };
 
       // Perform the write using the non-blocking helper
       setDocumentNonBlocking(docRef, leadData, {});
 
-      // Store leadId in local storage for future reference (e.g. Course Builder)
+      // Store leadId in local storage for session persistence
       localStorage.setItem('leadId', leadId);
       
       // Unlock the dashboard immediately (optimistic UI)
@@ -78,7 +80,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       toast({
         variant: 'destructive',
         title: 'Submission Error',
-        description: 'Something went wrong. Please check your connection and try again.'
+        description: 'We encountered an error saving your details. Please try again.'
       });
     } finally {
       setIsLoading(false);

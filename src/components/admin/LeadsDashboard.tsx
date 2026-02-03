@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo } from 'react';
@@ -16,9 +17,10 @@ interface Lead {
   id: string;
   name: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   rtoCode: string;
   createdAt: Timestamp;
+  timestamp?: string;
   curriculum?: any;
 }
 
@@ -27,6 +29,7 @@ export function LeadsDashboard() {
 
   const leadsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
+    // We order by createdAt desc to show the newest leads first.
     return query(collection(firestore, 'leads'), orderBy('createdAt', 'desc'));
   }, [firestore]);
 
@@ -35,7 +38,6 @@ export function LeadsDashboard() {
   const handleDownload = () => {
     if (!leads) return;
     const dataStr = JSON.stringify(leads, (key, value) => {
-      // Convert Firestore Timestamps to ISO strings for export
       if (value && typeof value === 'object' && value.seconds && value.nanoseconds) {
         return new Timestamp(value.seconds, value.nanoseconds).toDate().toISOString();
       }
@@ -87,7 +89,7 @@ export function LeadsDashboard() {
             </div>
             <h3 className="text-2xl font-black text-slate-900 tracking-tight">No Leads Captured</h3>
             <p className="mt-2 text-slate-500 font-medium text-lg">
-              The pipeline is active, but no audits have been unlocked yet.
+              The pipeline is active, but no leads have been recorded yet.
             </p>
           </CardContent>
         </Card>
@@ -143,11 +145,11 @@ export function LeadsDashboard() {
                            </div>
                            <span className="font-bold text-slate-600 group-hover:text-blue-600 transition-colors">{lead.email}</span>
                        </a>
-                       <a href={`tel:${lead.phone}`} className="flex items-center gap-2 group">
+                       <a href={`tel:${lead.phoneNumber}`} className="flex items-center gap-2 group">
                            <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                                <Phone className="h-4 w-4" />
                            </div>
-                           <span className="font-bold text-slate-600 group-hover:text-emerald-600 transition-colors">{lead.phone}</span>
+                           <span className="font-bold text-slate-600 group-hover:text-emerald-600 transition-colors">{lead.phoneNumber}</span>
                        </a>
                     </div>
                 </div>
@@ -155,7 +157,7 @@ export function LeadsDashboard() {
                 <div className="text-right shrink-0">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
                         <Calendar className="h-4 w-4 text-blue-500" />
-                        <span className="font-black text-slate-900 text-sm">{lead.createdAt ? format(lead.createdAt.toDate(), 'PPP p') : 'Timestamp Missing'}</span>
+                        <span className="font-black text-slate-900 text-sm">{lead.createdAt ? format(lead.createdAt.toDate(), 'PPP p') : (lead.timestamp ? format(new Date(lead.timestamp), 'PPP p') : 'Timestamp Missing')}</span>
                     </div>
                 </div>
               </div>
