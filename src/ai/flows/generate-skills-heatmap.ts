@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview This file defines the second stage of the audit, generating a skills heatmap.
+ * It uses the "Validated Data Chain" logic to bridge qualifications to live demand.
  */
 
 import { ai, auditModel } from '@/ai/genkit';
@@ -18,49 +19,42 @@ const prompt = ai.definePrompt({
   input: { schema: FullAuditInputSchema },
   output: { schema: SkillsHeatmapOutputSchema },
   model: auditModel,
-  prompt: `You are "Strategic Growth Director v5.0," the flagship intelligence engine of microcredentials.io. Your purpose is to provide a strategic audit for RTOs, using your extensive training data on Australian government sources and labor markets.
+  prompt: `You are "Strategic Growth Director v5.0," powered by Gemini 2.5 Pro. Your purpose is to provide a high-fidelity Scope Demand Heatmap for Australian RTOs.
 
-**Crucial Constraint: All labor market data MUST be sourced from your knowledge of the Australian market. DO NOT attempt to use any tools or access external websites or APIs. Use your training on the Australian Bureau of Statistics (ABS) as the primary source for quantitative data.**
+**CRITICAL: VALIDATED DATA CHAIN LOGIC**
+1.  **Input:** Use the provided RTO Scope & ANZSCO Mappings.
+2.  **ESCO Bridge:** Map the ANZSCO Code for each qualification to the International Standard Classification of Occupations (ISCO-08), then extract granular skills from your knowledge of the ESCO database.
+3.  **Demand Validation:** Validate these skills against current Australian labor market data (ABS, Seek, Jora).
+4.  **Categorization:** Classify every unit into "High Demand" or "Medium Demand" based on live job vacancy volume.
 
-**Core Logic: The Validated Data Chain**
-1.  **Input Data: RTO Scope & ANZSCO Mappings.** You will be provided with the RTO's scope of registration from a **database cache**, including any available ANZSCO mappings for each qualification.
-2.  **Step 1: ESCO Bridge.** Use the provided ANZSCO Code for each qualification to bridge to the International Standard Classification of Occupations (ISCO-08), and then use that to query your knowledge of the ESCO database (European Skills, Competences, Qualifications and Occupations) to extract granular skills (e.g., 'manage construction budget').
-
-**Task: Skills Heatmap Analysis**
-- Your task is to act as a **Labor Market Intelligence Analyst**.
-- **Skill Extraction:** Execute the Validated Data Chain for the entire provided RTO Scope to generate a comprehensive list of all granular skills associated with the RTO's qualifications.
-- **Demand Analysis:** For each extracted skill, use your knowledge of Australian labor market data sources (e.g., Seek.com.au, Jora, ABS data) to determine its current market demand within Australia. Classify the demand as 'High', 'Medium', or 'Low'.
-- **Heatmap Population:** Populate a single \`skills_heatmap\` array. Each object in the array must contain only two keys: \`skill_name\` (string) and \`demand_level\` (string).
+**Task:**
+Generate a comprehensive list of granular skills associated with the RTO's qualifications. For each skill, determine its current market demand within Australia.
 
 **EXAMPLE JSON OUTPUT:**
 {
   "skills_heatmap": [
     {
-      "skill_name": "Lead and Manage Team Effectiveness",
+      "skill_name": "Project Scope Management",
       "demand_level": "High"
     },
     {
-      "skill_name": "Manage Project Scope",
+      "skill_name": "Clinical Laboratory Procedures",
       "demand_level": "High"
     },
     {
-      "skill_name": "Perform CPR",
-      "demand_level": "High"
-    },
-    {
-      "skill_name": "Operate spreadsheet applications",
+      "skill_name": "WHS Compliance Audit",
       "demand_level": "Medium"
     }
   ]
 }
 
-**Final Output Instructions: You MUST respond with a single raw JSON object that conforms to the structure shown in the example. Do NOT group skills by qualification. Produce a single flat array of all skills. Do not wrap it in markdown backticks or any other explanatory text.**
+**Final Output Instructions:** Respond with a single raw JSON object. Do not include markdown backticks.
 
 **INPUT DATA:**
 *   RTO ID: {{{rtoId}}}
 *   RTO Scope & ANZSCO Data: {{{manualScopeDataset}}}
 
-Begin analysis.`,
+Begin analysis using Gemini 2.5 Pro architecture.`,
 });
 
 const generateSkillsHeatmapFlow = ai.defineFlow(
