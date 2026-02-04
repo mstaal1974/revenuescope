@@ -74,12 +74,17 @@ const checkApiKey = () => {
 }
 
 /**
- * Utility to ensure data is strictly serializable for Next.js Server Actions.
- * DOUBLE-SERIALIZATION is used here to force a clean JSON-only object.
+ * Robust utility to ensure data is strictly serializable for Next.js Server Actions.
+ * Handles potential serialization failures and ensures a clean JSON object.
  */
 function sanitize<T>(data: T): T {
-  if (!data) return data;
-  return JSON.parse(JSON.stringify(data));
+  if (data === null || data === undefined) return data;
+  try {
+    return JSON.parse(JSON.stringify(data));
+  } catch (e) {
+    console.error("Critical: Serialization failed in sanitize helper", e);
+    return {} as T;
+  }
 }
 
 // STAGE 1 ACTION
@@ -88,14 +93,15 @@ export async function runStage1Action(
 ): Promise<Stage1ActionResult> {
   try {
     checkApiKey();
-    if (!input.rtoId || !input.manualScopeDataset) {
+    if (!input?.rtoId || !input?.manualScopeDataset) {
       throw new Error("RTO ID and Scope data are required for Stage 1.");
     }
     const result = await generateStage1Analysis(input);
+    if (!result) throw new Error("Stage 1 analysis returned no data.");
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runStage1Action failed:", e);
+    console.error("runStage1Action failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -106,14 +112,15 @@ export async function runStage2Action(
 ): Promise<Stage2ActionResult> {
   try {
     checkApiKey();
-     if (!input.rtoId || !input.manualScopeDataset) {
+     if (!input?.rtoId || !input?.manualScopeDataset) {
       throw new Error("RTO ID and Scope data are required for Stage 2.");
     }
     const result = await generateSkillsHeatmap(input);
+    if (!result) throw new Error("Skills heatmap generation returned no data.");
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runStage2Action failed:", e);
+    console.error("runStage2Action failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -124,14 +131,15 @@ export async function runStage3Action(
 ): Promise<Stage3ActionResult> {
   try {
     checkApiKey();
-    if (!input.top_performing_sector || !input.skills_heatmap) {
+    if (!input?.top_performing_sector || !input?.skills_heatmap) {
         throw new Error("Top sector and skills heatmap are required for Stage 3.");
     }
     const result = await generateProductEcosystem(input);
+    if (!result) throw new Error("Revenue staircase generation returned no data.");
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runStage3Action failed:", e);
+    console.error("runStage3Action failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -142,14 +150,14 @@ export async function runMicrocredentialAction(
 ): Promise<MicrocredentialActionResult> {
   try {
     checkApiKey();
-    if (!input.unit_code || !input.qualification_code) {
+    if (!input?.unit_code || !input?.qualification_code) {
       throw new Error("Unit and Qualification codes are required.");
     }
     const result = await generateMicrocredential(input);
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runMicrocredentialAction failed:", e);
+    console.error("runMicrocredentialAction failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -160,14 +168,14 @@ export async function runGenerateLearningOutcomesAction(
 ): Promise<LearningOutcomesActionResult> {
   try {
     checkApiKey();
-    if (!input.course_title) {
+    if (!input?.course_title) {
       throw new Error("Course Title is required.");
     }
     const result = await generateLearningOutcomes(input);
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runGenerateLearningOutcomesAction failed:", e);
+    console.error("runGenerateLearningOutcomesAction failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -178,14 +186,14 @@ export async function runGenerateCourseTimelineAction(
 ): Promise<CourseTimelineActionResult> {
   try {
     checkApiKey();
-    if (!input.course_title || !input.learning_outcomes) {
+    if (!input?.course_title || !input?.learning_outcomes) {
       throw new Error("Course Title and Learning Outcomes are required.");
     }
     const result = await generateCourseTimeline(input);
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runGenerateCourseTimelineAction failed:", e);
+    console.error("runGenerateCourseTimelineAction failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -196,14 +204,14 @@ export async function runGenerateSectorCampaignKitAction(
 ): Promise<SectorCampaignKitActionResult> {
   try {
     checkApiKey();
-    if (!input.sector) {
+    if (!input?.sector) {
       throw new Error("Sector data is required.");
     }
     const result = await generateSectorCampaignKit(input);
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runGenerateSectorCampaignKitAction failed:", e);
+    console.error("runGenerateSectorCampaignKitAction failed:", message);
     return { ok: false, error: message };
   }
 }
@@ -218,7 +226,7 @@ export async function runScopeFallbackAction(
     return { ok: true, result: sanitize(result) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runScopeFallbackAction failed:", e);
+    console.error("runScopeFallbackAction failed:", message);
     return { ok: false, error: message };
   }
 }

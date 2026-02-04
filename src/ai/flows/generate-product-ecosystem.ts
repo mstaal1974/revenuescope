@@ -21,8 +21,7 @@ export async function generateProductEcosystem(
 const prompt = ai.definePrompt({
     name: 'revenueStaircasePrompt',
     input: { schema: RevenueStaircaseInputSchema },
-    // The 'output' schema is removed to prevent the nesting depth error.
-    // We will parse the JSON from the text response manually.
+    // Standardized to Gemini 2.5 Pro
     model: auditModel,
     prompt: `{
     "SYSTEM_INSTRUCTION": {
@@ -80,7 +79,7 @@ const prompt = ai.definePrompt({
           "STEP_3": {
             "current_stage": "Use the 'title' from the generated Tier 3 product.",
             "stage_revenue": "Use the 'price' from the generated Tier 3 product.",
-            "automation_action": "This is the final stage. Set this to null."
+            "automation_action": null
           }
         }
       },
@@ -236,7 +235,7 @@ const generateProductEcosystemFlow = ai.defineFlow(
     outputSchema: RevenueStaircaseSchema,
   },
   async (input) => {
-    // Call the prompt and get the raw text response
+    // Call the prompt and get the raw response
     const response = await prompt(input);
     const textOutput = response.text;
 
@@ -248,14 +247,19 @@ const generateProductEcosystemFlow = ai.defineFlow(
         // Clean the response to ensure it's valid JSON before parsing
         const startIndex = textOutput.indexOf('{');
         const endIndex = textOutput.lastIndexOf('}') + 1;
-        const jsonString = textOutput.substring(startIndex, endIndex);
+        
+        if (startIndex === -1 || endIndex === 0) {
+          throw new Error("AI output does not contain a valid JSON object block.");
+        }
 
+        const jsonString = textOutput.substring(startIndex, endIndex);
         const parsedJson = JSON.parse(jsonString);
+        
         // Validate the parsed JSON against our Zod schema
         return RevenueStaircaseSchema.parse(parsedJson);
     } catch (e) {
-        console.error("Failed to parse JSON from AI response:", textOutput);
-        const errorMessage = e instanceof Error ? e.message : JSON.stringify(e, null, 2);
+        console.error("Failed to parse JSON from AI response. Raw Output:", textOutput);
+        const errorMessage = e instanceof Error ? e.message : "Malformed JSON structure";
         throw new Error(`AI returned malformed JSON for Revenue Staircase generation: ${errorMessage}`);
     }
   }
