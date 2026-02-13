@@ -11,9 +11,12 @@ import {
   Loader2,
   AlertTriangle,
   Zap,
-  CheckCircle2,
   ShieldCheck,
-  Search
+  Search,
+  Database,
+  Globe,
+  UploadCloud,
+  CheckCircle2
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -42,6 +45,7 @@ export default function ComplianceDashboard() {
   const [activeUnit, setActiveUnit] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSimulatingEvidence, setIsSimulatingEvidence] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +87,13 @@ export default function ComplianceDashboard() {
     fetchData();
   }, []);
 
+  const handleSimulateEvidence = () => {
+    setIsSimulatingEvidence(true);
+    setTimeout(() => {
+      setIsSimulatingEvidence(false);
+    }, 3000);
+  };
+
   const currentUnitData = useMemo(() => {
     if (!data || !activeUnit) return null;
     return data.validation_gaps.find(u => u.unit_code === activeUnit);
@@ -106,8 +117,8 @@ export default function ComplianceDashboard() {
             <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-20"></div>
             <Loader2 className="relative h-20 w-20 animate-spin text-blue-500" />
         </div>
-        <h2 className="text-2xl font-black text-white tracking-tight">Syncing Compliance Intelligence...</h2>
-        <p className="text-slate-400 mt-2 max-w-md">Gemini 2.5 Pro is analyzing your scope against live labor market standards.</p>
+        <h2 className="text-2xl font-black text-white tracking-tight text-center">Syncing Compliance Intelligence...</h2>
+        <p className="text-slate-400 mt-2 max-w-md mx-auto">Gemini 2.5 Pro is analyzing your scope against live labor market standards.</p>
       </div>
     );
   }
@@ -162,6 +173,49 @@ export default function ComplianceDashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Intelligence Sources Info Card */}
+        <Card className="bg-blue-600/10 border border-blue-500/20 rounded-[2.5rem] overflow-hidden">
+            <CardContent className="p-8 md:p-12 flex flex-col md:flex-row items-center gap-10">
+                <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center shrink-0 shadow-2xl shadow-blue-600/40">
+                    <Database className="text-white w-10 h-10" />
+                </div>
+                <div className="space-y-4 flex-1">
+                    <h2 className="text-2xl font-black tracking-tight">How Systematic Monitoring Works</h2>
+                    <p className="text-slate-300 leading-relaxed max-w-3xl">
+                        You do <span className="text-white font-bold">not</span> need to manually upload assessments. 
+                        ScopeStack AI automatically monitors three critical data feeds to identify risks before ASQA does:
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                        <div className="flex items-center gap-3">
+                            <CheckCircle2 className="text-emerald-500 shrink-0" size={20} />
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">TGA (The Law)</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Globe className="text-blue-400 shrink-0" size={20} />
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Industry (The Practice)</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <UploadCloud className="text-purple-400 shrink-0" size={20} />
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Evidence (The Reality)</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="shrink-0">
+                    <Button 
+                        onClick={handleSimulateEvidence}
+                        disabled={isSimulatingEvidence}
+                        className="bg-white text-blue-600 hover:bg-slate-100 font-black rounded-2xl px-8 py-6 h-auto"
+                    >
+                        {isSimulatingEvidence ? (
+                            <><Loader2 className="mr-2 animate-spin h-4 w-4" /> SCANNING EVIDENCE...</>
+                        ) : (
+                            <><Zap className="mr-2 h-4 w-4" /> SCAN ASSESSMENT MATERIALS</>
+                        )}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
