@@ -74,16 +74,19 @@ const checkApiKey = () => {
 }
 
 /**
- * Robust utility to ensure data is strictly serializable for Next.js Server Actions.
- * Handles potential serialization failures and ensures a clean JSON object.
+ * CRITICAL UTILITY: Ensures data is strictly serializable for Next.js.
+ * Server Actions fail with "Unexpected response" if non-serializable 
+ * objects (like raw Errors or Class instances) are returned.
  */
 function sanitize<T>(data: T): T {
   if (data === null || data === undefined) return data;
   try {
+    // Deep clone via JSON stringify/parse to strip any hidden class methods or non-plain-obj data
     return JSON.parse(JSON.stringify(data));
   } catch (e) {
     console.error("Critical: Serialization failed in sanitize helper", e);
-    return {} as T;
+    // Return a safe empty version of the expected type
+    return (Array.isArray(data) ? [] : {}) as T;
   }
 }
 
