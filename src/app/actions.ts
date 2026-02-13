@@ -8,6 +8,7 @@ import { generateCourseTimeline } from "@/ai/flows/generate-course-timeline";
 import { generateLearningOutcomes } from "@/ai/flows/generate-learning-outcomes";
 import { generateSectorCampaignKit } from "@/ai/flows/generate-sector-campaign-kit";
 import { fetchScopeFallback } from "@/ai/flows/fetch-scope-fallback";
+import { generateComplianceAnalysis } from "@/ai/flows/generate-compliance-analysis";
 
 import { 
   type FullAuditInput, 
@@ -25,7 +26,8 @@ import {
   type SectorCampaignKitInput,
   type SectorCampaignKitOutput,
   type ScopeFallbackInput,
-  type ScopeFallbackOutput
+  type ScopeFallbackOutput,
+  type ComplianceAnalysisOutput
 } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
@@ -61,6 +63,10 @@ export type SectorCampaignKitActionResult =
 
 export type ScopeFallbackActionResult = 
   | { ok: true; result: ScopeFallbackOutput }
+  | { ok: false; error: string };
+
+export type ComplianceActionResult = 
+  | { ok: true; result: ComplianceAnalysisOutput }
   | { ok: false; error: string };
 
 
@@ -230,6 +236,24 @@ export async function runScopeFallbackAction(
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runScopeFallbackAction failed:", message);
+    return { ok: false, error: message };
+  }
+}
+
+// COMPLIANCE ACTION
+export async function runComplianceAnalysisAction(
+  input: FullAuditInput
+): Promise<ComplianceActionResult> {
+  try {
+    checkApiKey();
+    if (!input?.rtoId || !input?.manualScopeDataset) {
+      throw new Error("RTO ID and Scope data are required for Compliance analysis.");
+    }
+    const result = await generateComplianceAnalysis(input);
+    return { ok: true, result: sanitize(result) };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("runComplianceAnalysisAction failed:", message);
     return { ok: false, error: message };
   }
 }

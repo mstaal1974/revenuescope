@@ -206,6 +206,32 @@ export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutpu
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
 
+// COMPLIANCE ANALYSIS
+export const ComplianceAnalysisOutputSchema = z.object({
+  self_assurance_score: z.number().min(0).max(100),
+  validation_gaps: z.array(z.object({
+    unit_code: z.string(),
+    tga_mapping_score: z.number(),
+    industry_alignment_score: z.number(),
+    rto_evidence_score: z.number(),
+    risk_level: z.enum(['Low', 'Medium', 'High']),
+    analysis: z.string()
+  })),
+  assessor_variance: z.array(z.object({
+    trainer_name: z.string(),
+    pass_rate: z.number(),
+    compliance_score: z.number(),
+    risk_flag: z.boolean()
+  })),
+  monitoring_trend: z.array(z.object({
+    month: z.string(),
+    adherence: z.number(),
+    quality: z.number()
+  })),
+  live_alerts: z.array(z.string())
+});
+export type ComplianceAnalysisOutput = z.infer<typeof ComplianceAnalysisOutputSchema>;
+
 // From generate-microcredential.ts
 export const MicrocredentialInputSchema = z.object({
   qualification_code: z.string(),
