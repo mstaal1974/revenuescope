@@ -1,10 +1,9 @@
-
 "use client";
 
 import { Suspense, useState, useEffect } from 'react';
 import { Header } from "@/components/shared/header";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
-import { type AuditData } from "@/app/actions";
+import { type AuditData } from "@/ai/types";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
