@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from "next/link";
@@ -23,12 +22,6 @@ export function Header() {
               className={`text-sm font-bold transition-colors ${pathname === '/' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Audits
-            </Link>
-            <Link 
-              href="/compliance" 
-              className={`text-sm font-bold transition-colors ${pathname === '/compliance' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              Self-Assurance
             </Link>
             <Link 
               href="/admin" 
