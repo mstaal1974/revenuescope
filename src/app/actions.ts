@@ -26,8 +26,7 @@ import type {
   CourseTimelineActionResult,
   SectorCampaignKitActionResult,
   ScopeFallbackActionResult,
-  ComplianceActionResult,
-  FullAuditOutput
+  ComplianceActionResult
 } from "@/ai/types";
 
 /**
