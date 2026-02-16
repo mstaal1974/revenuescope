@@ -41,7 +41,30 @@ function CourseBuilderContent() {
       const fetchOutcomes = async () => {
         setIsOutcomesLoading(true);
         setError(null);
-        const response: LearningOutcomesActionResult = await runGenerateLearningOutcomesAction({ course_title: titleFromParams });
+
+        // Get relevant skills from localStorage
+        const dataString = localStorage.getItem("auditData");
+        let relevantSkills: string[] | undefined = undefined;
+        if (dataString) {
+            try {
+                const auditData = JSON.parse(dataString);
+                if (auditData?.skills_heatmap) {
+                    // Get the top 10 highest demand skills
+                    relevantSkills = auditData.skills_heatmap
+                        .filter((s: { demand_level: string; }) => s.demand_level === 'High')
+                        .map((s: { skill_name: string; }) => s.skill_name)
+                        .slice(0, 10);
+                }
+            } catch (e) {
+                console.error("Failed to parse audit data from localStorage", e);
+            }
+        }
+        
+        const response: LearningOutcomesActionResult = await runGenerateLearningOutcomesAction({ 
+            course_title: titleFromParams,
+            relevant_skills: relevantSkills
+        });
+
         if (response.ok) {
           setLearningOutcomes(response.result.learning_outcomes.join('\n'));
         } else {

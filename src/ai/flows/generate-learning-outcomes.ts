@@ -25,14 +25,20 @@ const prompt = ai.definePrompt({
   prompt: `
     You are an expert instructional designer. Your task is to generate a list of key learning outcomes for a course with the given title.
 
-    **RULES:**
-    1.  Generate between 5 and 7 learning outcomes.
-    2.  Each outcome should be a clear, concise, and measurable statement that starts with an action verb (e.g., "Define", "Analyze", "Apply", "Create").
-    3.  The outcomes should be appropriate for the implied audience of the course title.
-    4.  Your output must be a JSON object that conforms to the provided output schema.
-
-    **INPUT DATA:**
+    **CONTEXT:**
     *   Course Title: "{{course_title}}"
+    {{#if relevant_skills}}
+    *   This course should focus on the following key skills which have been identified as having high market demand:
+        {{#each relevant_skills}}
+        - {{this}}
+        {{/each}}
+    {{/if}}
+
+    **RULES:**
+    1.  Generate between 5 and 7 learning outcomes based on the provided course title and key skills (if provided).
+    2.  Each outcome must be a clear, concise, and measurable statement that starts with an action verb (e.g., "Define", "Analyze", "Apply", "Create").
+    3.  The outcomes should be directly related to the skills provided. If no skills are provided, base them on the course title.
+    4.  Your output must be a JSON object that conforms to the provided output schema.
     `,
 });
 

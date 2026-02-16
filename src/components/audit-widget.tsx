@@ -243,7 +243,7 @@ const AuditWidget: React.FC = () => {
       localStorage.setItem('leadEmail', leadForm.email);
       localStorage.setItem('leadPhone', leadForm.phone);
       
-      // NEW: Set a session-specific unlock flag for this code
+      // Set session-specific unlock flag for this code
       const identifier = result?.rto_id || rtoCode || qualCode || 'N/A';
       sessionStorage.setItem(`unlocked_${identifier}`, 'true');
       

@@ -245,6 +245,7 @@ export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;
 
 export const LearningOutcomesInputSchema = z.object({
   course_title: z.string(),
+  relevant_skills: z.array(z.string()).optional().describe("A list of relevant skills from a skills heatmap to help guide outcome generation."),
 });
 export type LearningOutcomesInput = z.infer<typeof LearningOutcomesInputSchema>;
 
@@ -282,6 +283,7 @@ export const CourseTimelineOutputSchema = z.object({
   modules: z.array(CourseModuleSchema),
 });
 export type CourseTimelineOutput = z.infer<typeof CourseTimelineOutputSchema>;
+<<<<<<< HEAD
 
 export const SectorCampaignKitInputSchema = z.object({
     sector: SectorBreakdownSchema,
@@ -337,3 +339,5 @@ export const ScopeFallbackOutputSchema = z.object({
   count: z.number(),
 });
 export type ScopeFallbackOutput = z.infer<typeof ScopeFallbackOutputSchema>;
+=======
+>>>>>>> d1d6ffd04eae5f02077cf85cb9cdcdf3c09cba09
