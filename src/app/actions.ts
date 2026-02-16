@@ -32,7 +32,7 @@ import type {
 
 export type AuditData = FullAuditOutput;
 
-// Action Result types
+// Action Result types - Ensure these are strictly serializable
 export type Stage1ActionResult = 
   | { ok: true; result: Stage1Output }
   | { ok: false; error: string };
@@ -71,20 +71,18 @@ export type ComplianceActionResult =
 
 
 /**
- * CRITICAL UTILITY: Ensures data is strictly serializable for Next.js 15.
- * 1. Replaces 'undefined' with 'null' (Next.js action serializer prefers null).
- * 2. Deep clones via JSON cycle to strip prototype methods or hidden properties.
+ * CRITICAL UTILITY: Ensures data is strictly serializable for Next.js Server Actions.
+ * 1. Deep clones via JSON cycle to strip prototype methods, getters, or hidden symbols.
+ * 2. Standardizes 'undefined' values to 'null' (Next.js prefers null for serialization).
  */
 function safeSerialize<T>(data: T): T {
-  if (data === undefined) return null as unknown as T;
+  if (data === undefined || data === null) return null as unknown as T;
   try {
-    return JSON.parse(
-      JSON.stringify(data, (_, value) => (value === undefined ? null : value))
-    );
+    const serialized = JSON.stringify(data, (_, value) => (value === undefined ? null : value));
+    return JSON.parse(serialized);
   } catch (e) {
-    console.error("Serialization failed in safeSerialize helper", e);
-    // Return a safe fallback if serialization fails entirely
-    return null as unknown as T;
+    console.error("CRITICAL: Serialization failed in safeSerialize utility", e);
+    return { ok: false, error: "Failed to serialize server response." } as unknown as T;
   }
 }
 
