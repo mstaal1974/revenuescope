@@ -100,7 +100,6 @@ export const TierSchema = z.object({
     match_percentage: z.number(),
     included_units: z.array(IncludedUnitSchema),
     marketing_hook: z.string(),
-    // FLATTENED Commercial Leverage
     cac_offset: z.string().optional(),
     volume_potential: z.string().optional(),
     trust_velocity: z.string().optional(),
@@ -110,7 +109,6 @@ export const TierSchema = z.object({
     conversion_probability: z.string().optional(),
     marketing_cost: z.string().optional(),
     ltv_impact: z.string().optional(),
-    // FLATTENED Marketing Playbook
     target_audience: z.string(),
     pain_point: z.string(),
     channel: z.string(),
@@ -125,7 +123,6 @@ export type Tier = z.infer<typeof TierSchema>;
 const ClusterPathwaySchema = z.object({
   current_stage: z.string(),
   stage_revenue: z.number(),
-  // FLATTENED Automation Action
   automation_delay: z.string().optional(),
   automation_message_hook: z.string().optional(),
   automation_upsell_product: z.string().optional(),
@@ -176,6 +173,44 @@ export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutpu
     manualScopeDataset: z.string().optional(),
 });
 export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
+export type AuditData = FullAuditOutput;
+
+// ACTION RESULT TYPES
+export type Stage1ActionResult = 
+  | { ok: true; result: Stage1Output }
+  | { ok: false; error: string };
+
+export type Stage2ActionResult = 
+  | { ok: true; result: SkillsHeatmapOutput }
+  | { ok: false; error: string };
+
+export type Stage3ActionResult = 
+  | { ok: true; result: RevenueStaircaseOutput }
+  | { ok: false; error: string };
+
+export type MicrocredentialActionResult =
+  | { ok: true; result: MicrocredentialOutput }
+  | { ok: false; error: string };
+
+export type LearningOutcomesActionResult =
+  | { ok: true; result: LearningOutcomesOutput }
+  | { ok: false; error: string };
+
+export type CourseTimelineActionResult =
+  | { ok: true; result: CourseTimelineOutput }
+  | { ok: false; error: string };
+
+export type SectorCampaignKitActionResult =
+  | { ok: true; result: SectorCampaignKitOutput }
+  | { ok: false; error: string };
+
+export type ScopeFallbackActionResult = 
+  | { ok: true; result: ScopeFallbackOutput }
+  | { ok: false; error: string };
+
+export type ComplianceActionResult = 
+  | { ok: true; result: ComplianceAnalysisOutput }
+  | { ok: false; error: string };
 
 // OTHERS
 export const MicrocredentialInputSchema = z.object({
