@@ -10,24 +10,24 @@ import { generateSectorCampaignKit } from "@/ai/flows/generate-sector-campaign-k
 import { fetchScopeFallback } from "@/ai/flows/fetch-scope-fallback";
 import { generateComplianceAnalysis } from "@/ai/flows/generate-compliance-analysis";
 
-import { 
-  type FullAuditInput, 
-  type Stage1Output,
-  type SkillsHeatmapOutput,
-  type RevenueStaircaseInput,
-  type RevenueStaircaseOutput,
-  type FullAuditOutput,
-  type MicrocredentialInput,
-  type MicrocredentialOutput,
-  type CourseTimelineInput,
-  type CourseTimelineOutput,
-  type LearningOutcomesInput,
-  type LearningOutcomesOutput,
-  type SectorCampaignKitInput,
-  type SectorCampaignKitOutput,
-  type ScopeFallbackInput,
-  type ScopeFallbackOutput,
-  type ComplianceAnalysisOutput
+import type { 
+  FullAuditInput, 
+  Stage1Output,
+  SkillsHeatmapOutput,
+  RevenueStaircaseInput,
+  RevenueStaircaseOutput,
+  FullAuditOutput,
+  MicrocredentialInput,
+  MicrocredentialOutput,
+  CourseTimelineInput,
+  CourseTimelineOutput,
+  LearningOutcomesInput,
+  LearningOutcomesOutput,
+  SectorCampaignKitInput,
+  SectorCampaignKitOutput,
+  ScopeFallbackInput,
+  ScopeFallbackOutput,
+  ComplianceAnalysisOutput
 } from "@/ai/types";
 
 export type AuditData = FullAuditOutput;
@@ -70,6 +70,24 @@ export type ComplianceActionResult =
   | { ok: false; error: string };
 
 
+/**
+ * CRITICAL UTILITY: Ensures data is strictly serializable for Next.js 15.
+ * 1. Replaces 'undefined' with 'null' (Next.js action serializer prefers null).
+ * 2. Deep clones via JSON cycle to strip prototype methods or hidden properties.
+ */
+function safeSerialize<T>(data: T): T {
+  if (data === undefined) return null as unknown as T;
+  try {
+    return JSON.parse(
+      JSON.stringify(data, (_, value) => (value === undefined ? null : value))
+    );
+  } catch (e) {
+    console.error("Serialization failed in safeSerialize helper", e);
+    // Return a safe fallback if serialization fails entirely
+    return null as unknown as T;
+  }
+}
+
 const checkApiKey = () => {
     const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
     if (!key) {
@@ -77,24 +95,6 @@ const checkApiKey = () => {
         "AI configuration is missing. Please ensure your GEMINI_API_KEY is set in the environment variables."
       );
     }
-}
-
-/**
- * CRITICAL UTILITY: Ensures data is strictly serializable for Next.js.
- * Server Actions fail with "Unexpected response" if non-serializable 
- * objects (like raw Errors or Class instances) are returned.
- */
-function sanitize<T>(data: T): T {
-  if (data === null || data === undefined) return data;
-  try {
-    // Deep clone via JSON stringify/parse to strip any hidden class methods or non-plain-obj data
-    // This is the safest way to ensure serializability across the server-client boundary
-    return JSON.parse(JSON.stringify(data));
-  } catch (e) {
-    console.error("Critical: Serialization failed in sanitize helper", e);
-    // Return a safe version of the data if stringify fails (e.g. circular refs)
-    return (Array.isArray(data) ? [] : {}) as T;
-  }
 }
 
 // STAGE 1 ACTION
@@ -108,11 +108,11 @@ export async function runStage1Action(
     }
     const result = await generateStage1Analysis(input);
     if (!result) throw new Error("Stage 1 analysis returned no data.");
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage1Action failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -127,11 +127,11 @@ export async function runStage2Action(
     }
     const result = await generateSkillsHeatmap(input);
     if (!result) throw new Error("Skills heatmap generation returned no data.");
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage2Action failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -146,11 +146,11 @@ export async function runStage3Action(
     }
     const result = await generateProductEcosystem(input);
     if (!result) throw new Error("Revenue staircase generation returned no data.");
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runStage3Action failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -164,11 +164,11 @@ export async function runMicrocredentialAction(
       throw new Error("Unit and Qualification codes are required.");
     }
     const result = await generateMicrocredential(input);
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runMicrocredentialAction failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -182,11 +182,11 @@ export async function runGenerateLearningOutcomesAction(
       throw new Error("Course Title is required.");
     }
     const result = await generateLearningOutcomes(input);
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateLearningOutcomesAction failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -200,11 +200,11 @@ export async function runGenerateCourseTimelineAction(
       throw new Error("Course Title and Learning Outcomes are required.");
     }
     const result = await generateCourseTimeline(input);
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateCourseTimelineAction failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -218,11 +218,11 @@ export async function runGenerateSectorCampaignKitAction(
       throw new Error("Sector data is required.");
     }
     const result = await generateSectorCampaignKit(input);
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runGenerateSectorCampaignKitAction failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -233,11 +233,11 @@ export async function runScopeFallbackAction(
   try {
     checkApiKey();
     const result = await fetchScopeFallback(input);
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runScopeFallbackAction failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
 
@@ -251,10 +251,10 @@ export async function runComplianceAnalysisAction(
       throw new Error("RTO ID and Scope data are required for Compliance analysis.");
     }
     const result = await generateComplianceAnalysis(input);
-    return { ok: true, result: sanitize(result) };
+    return safeSerialize({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("runComplianceAnalysisAction failed:", message);
-    return { ok: false, error: message };
+    return safeSerialize({ ok: false, error: message });
   }
 }
