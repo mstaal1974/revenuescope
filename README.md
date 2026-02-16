@@ -2,17 +2,37 @@
 
 This project is a Next.js application integrated with Firebase and Genkit for AI-driven RTO (Registered Training Organisation) audits.
 
+## Target Repository
+This code is configured for: **mstaal1974/scopestack-ai**
+
 ## Getting Started
 
-1. Clone the repository from GitHub.
-2. Install dependencies: `npm install`.
-3. Set up your environment variables in `.env.local`.
-4. **Recommended Git Configuration:**
-   Run the following command to ensure standard pull behavior:
+1. **Initialize Git:**
+   Run the following commands in your terminal to initialize and push to your new repository:
+   ```bash
+   git init
+   git remote add origin https://github.com/mstaal1974/scopestack-ai.git
+   git add .
+   git commit -m "Initial push: Fixed serialization and lead capture gate"
+   git branch -M main
+   git push -u origin main
+   ```
+
+2. **Recommended Git Configuration:**
+   Run this command to ensure standard pull behavior without unnecessary merge commits:
    ```bash
    git config pull.rebase false
    ```
-5. Run the development server: `npm run dev`.
+
+3. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+4. **Run Development Server:**
+   ```bash
+   npm run dev
+   ```
 
 ## Deployment (GitHub Actions)
 
@@ -32,5 +52,5 @@ This project is configured to deploy to Firebase via GitHub Actions. To enable t
 
 - **Framework**: Next.js (App Router)
 - **Styling**: Tailwind CSS & Shadcn/UI
-- **Database/Auth**: Firebase
-- **AI**: Genkit with Gemini 2.5 Pro
+- **Database/Auth**: Firebase Firestore & Auth
+- **AI**: Genkit with Gemini 2.5 Pro (Optimized for Australian VET markets)
