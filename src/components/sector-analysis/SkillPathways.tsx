@@ -1,7 +1,6 @@
 'use client';
 
 import type { RevenueStaircaseOutput } from '@/ai/types';
-import { Button } from '@/components/ui/button';
 import { Zap, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
@@ -10,11 +9,15 @@ interface SkillPathwaysProps {
 }
 
 const DemandBadge = ({ level }: { level: string }) => {
-  const isHigh = level.toLowerCase().includes('high');
+  const isHigh = level.toLowerCase().includes('high') || level.toLowerCase().includes('critical');
+  
+  // Clean up redundancy
+  const displayLevel = level.toUpperCase().replace('DEMAND', '').trim();
+
   return (
-    <div className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold ${isHigh ? 'bg-amber-400/10 text-amber-400' : 'bg-sky-400/10 text-sky-400'}`}>
+    <div className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black ${isHigh ? 'bg-amber-400/10 text-amber-400' : 'bg-sky-400/10 text-sky-400'}`}>
       <TrendingUp size={12} />
-      {level.toUpperCase()}
+      {displayLevel} DEMAND
     </div>
   );
 };
@@ -27,7 +30,7 @@ const UnitTypeBadge = ({ type }: { type: string }) => {
     colorClass = 'bg-purple-700 text-purple-200';
   }
   return (
-    <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${colorClass}`}>{type.toUpperCase()}</span>
+    <span className={`px-1.5 py-0.5 text-[8px] font-black rounded uppercase tracking-tighter ${colorClass}`}>{type}</span>
   );
 };
 
@@ -63,34 +66,41 @@ export default function SkillPathways({ data }: SkillPathwaysProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {tiers.map((tier) => (
-                <div key={tier.tier_level} className="bg-slate-900/50 border border-slate-700/50 rounded-2xl flex flex-col p-6 transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/5">
+                <div key={tier.tier_level} className="bg-slate-900/50 border border-slate-700/50 rounded-2xl flex flex-col p-6 transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/5 overflow-hidden">
                     <div className="flex justify-between items-center mb-4">
                         <DemandBadge level={tier.demand_level} />
-                        <span className="text-sm font-bold text-slate-400">{tier.match_percentage}% Match</span>
+                        <span className="text-[10px] font-bold text-slate-500 tracking-widest">{tier.match_percentage}% Match</span>
                     </div>
 
-                    <h3 className="text-xl font-bold text-white mb-2">{tier.title}</h3>
+                    <h3 className="text-xl font-bold text-white mb-2 leading-tight">{tier.title}</h3>
                     <p className="text-slate-400 text-sm flex-grow mb-6">{tier.marketing_playbook.pain_point}</p>
 
-                    <div className="space-y-2 mb-6">
+                    <div className="space-y-3 mb-6">
                         {tier.included_units.map((unit, index) => (
                             <div key={index} className="relative pl-8">
-                                <div className="absolute left-0 top-1.5 w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-xs font-bold text-slate-300">{index + 1}</div>
+                                <div className="absolute left-0 top-1 w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-[10px] font-black text-slate-300">{index + 1}</div>
                                 {index < tier.included_units.length - 1 && (
                                     <div className="absolute left-[9px] top-7 bottom-0 w-0.5 bg-slate-700"></div>
                                 )}
-                                <div className="bg-slate-800/60 border border-slate-700/80 rounded-md p-3 flex justify-between items-center">
-                                    <span className="font-medium text-sm text-slate-200">{unit.name}</span>
-                                    <UnitTypeBadge type={unit.type} />
+                                <div className="bg-slate-800/60 border border-slate-700/80 rounded-md p-3 overflow-hidden">
+                                    <div className="flex flex-col gap-2">
+                                        <span className="font-bold text-xs text-slate-200 leading-tight line-clamp-2">{unit.name}</span>
+                                        <div className="flex justify-end">
+                                            <UnitTypeBadge type={unit.type} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     <div className="mt-auto pt-6 border-t border-slate-800 flex justify-between items-center">
-                        <p className="text-sm text-slate-500">Suggested Price: <span className="font-bold text-slate-300">${tier.price}+</span></p>
-                        <Link href="#" className="font-bold text-sm text-amber-400 hover:text-amber-300 flex items-center gap-1">
-                            View Strategy <span aria-hidden="true">→</span>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Suggested Price</span>
+                            <span className="font-bold text-slate-300">${tier.price}+</span>
+                        </div>
+                        <Link href="#" className="font-bold text-sm text-amber-400 hover:text-amber-300 flex items-center gap-1 group">
+                            View Strategy <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
                         </Link>
                     </div>
                 </div>
