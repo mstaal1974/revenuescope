@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FirebaseContext } from '@/firebase/provider';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,7 @@ interface LeadCaptureOverlayProps {
 
 /**
  * LeadCaptureOverlay captures user contact info before revealing the dashboard.
- * It uses the FirebaseContext directly to safely access Firestore without throwing errors
- * during the initialization phase.
+ * It is used as a safety net if users navigate directly to the report.
  */
 export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,28 +32,34 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
   });
   const { toast } = useToast();
 
+  useEffect(() => {
+    // Pre-fill from local storage if details were previously submitted
+    setFormData({
+      name: localStorage.getItem('leadName') || '',
+      email: localStorage.getItem('leadEmail') || '',
+      phoneNumber: localStorage.getItem('leadPhone') || ''
+    });
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log('LeadCaptureOverlay: Lead capture form submitted', { rtoCode, formData });
 
     if (!db) {
       toast({
         variant: 'destructive',
         title: 'Connection Error',
-        description: 'The secure database is still initializing. Please wait a moment and try again.'
+        description: 'The secure database is still initializing. Please wait a moment.'
       });
       setIsLoading(false);
       return;
     }
 
     try {
-      // 1. Create a document reference with a generated ID immediately
       const leadsCollection = collection(db, 'leads');
       const docRef = doc(leadsCollection);
       const leadId = docRef.id;
 
-      // 2. Prepare lead data matching the standardized schema
       const leadData = {
         id: leadId,
         name: formData.name,
@@ -64,15 +70,15 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
         timestamp: new Date().toISOString()
       };
 
-      // 3. Perform the write using the non-blocking helper (optimistic write)
       setDocumentNonBlocking(docRef, leadData, { merge: true });
 
-      // 4. Linking Future Actions: Store leadId in local storage for session persistence
+      // Persist for session and global use
       localStorage.setItem('leadId', leadId);
-      console.log('LeadCaptureOverlay: LeadId saved to localStorage:', leadId);
+      localStorage.setItem('leadName', formData.name);
+      localStorage.setItem('leadEmail', formData.email);
+      localStorage.setItem('leadPhone', formData.phoneNumber);
+      sessionStorage.setItem('currentAuditLeadId', leadId);
       
-      // 5. Unlocking the Report: Reveal the dashboard immediately
-      console.log('LeadCaptureOverlay: Calling onUnlock...');
       onUnlock();
       
       toast({
@@ -94,7 +100,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-500">
-      <Card className="w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-none animate-in zoom-in-95">
+      <Card className="w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-none animate-in zoom-in-95 mx-auto">
         <div className="bg-slate-950 p-10 text-center text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/20 shadow-inner">

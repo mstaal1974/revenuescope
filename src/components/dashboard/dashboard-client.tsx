@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -19,15 +20,14 @@ export function DashboardClient({ data }: { data: AuditData }) {
   const [isMounting, setIsMounting] = useState(true);
 
   useEffect(() => {
-    console.log('DashboardClient: Mounted, checking for leadId in localStorage...');
-    const leadId = localStorage.getItem('leadId');
-    console.log('DashboardClient: Found leadId:', leadId);
+    // Check if lead has been captured in this specific session
+    const sessionLeadId = sessionStorage.getItem('currentAuditLeadId');
+    const globalLeadId = localStorage.getItem('leadId');
     
-    if (leadId) {
+    if (sessionLeadId || globalLeadId) {
+      // Even if global lead exists, we still want them to acknowledge the current capture in the AuditWidget.
+      // But if they refresh the dashboard page, we keep them unlocked.
       setIsUnlocked(true);
-      console.log('DashboardClient: Dashboard unlocked automatically.');
-    } else {
-      console.log('DashboardClient: No leadId found, showing capture overlay.');
     }
     setIsMounting(false);
   }, []);
@@ -44,7 +44,7 @@ export function DashboardClient({ data }: { data: AuditData }) {
   return (
     <div className="relative min-h-screen bg-slate-950 overflow-x-hidden">
       {/* 
-        Initial State: The Blurred Report 
+        Mandatory Lead Capture Overlay
         If isUnlocked is false, display the LeadCaptureOverlay and blur the content.
       */}
       {!isUnlocked && (
