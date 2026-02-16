@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { runStage1Action, runStage2Action, runStage3Action, runScopeFallbackAction } from '@/app/actions';
 import type { FullAuditInput, FullAuditOutput, RevenueStaircaseInput } from '@/ai/types';
-import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink, ShieldAlert, Sparkles, User, Mail, Phone, Download } from 'lucide-react';
+import { Lock, Zap, Loader2, CheckCircle, XCircle, Circle, Rocket, Search, Database, Cpu, ExternalLink, ShieldAlert, ShieldCheck, Sparkles, User, Mail, Phone, Download } from 'lucide-react';
 import { getFirestore, collection, doc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
