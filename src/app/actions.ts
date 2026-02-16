@@ -88,10 +88,11 @@ function sanitize<T>(data: T): T {
   if (data === null || data === undefined) return data;
   try {
     // Deep clone via JSON stringify/parse to strip any hidden class methods or non-plain-obj data
+    // This is the safest way to ensure serializability across the server-client boundary
     return JSON.parse(JSON.stringify(data));
   } catch (e) {
     console.error("Critical: Serialization failed in sanitize helper", e);
-    // Return a safe empty version of the expected type
+    // Return a safe version of the data if stringify fails (e.g. circular refs)
     return (Array.isArray(data) ? [] : {}) as T;
   }
 }

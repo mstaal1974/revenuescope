@@ -15,7 +15,7 @@ export function SkillsHeatmap({ data }: { data: FullAuditOutput }) {
   }
 
   // Sort by Heat Score (Hottest first)
-  const tiers = [...data.tiers].sort((a, b) => b.match_percentage - a.match_percentage);
+  const sortedTiers = [...data.tiers].sort((a, b) => b.match_percentage - a.match_percentage);
 
   const handleLinkToTier = (tierLevel: number) => {
     const tierId = `tier-${tierLevel}`;
@@ -33,7 +33,7 @@ export function SkillsHeatmap({ data }: { data: FullAuditOutput }) {
     }
   };
 
-  const highestDemandCluster = tiers[0];
+  const highestDemandCluster = sortedTiers[0];
 
   return (
     <div className="w-full bg-slate-900 rounded-[2.5rem] p-8 md:p-12 border border-slate-800 overflow-hidden relative shadow-2xl">
@@ -68,7 +68,7 @@ export function SkillsHeatmap({ data }: { data: FullAuditOutput }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {tiers.map((tier) => {
+          {sortedTiers.map((tier) => {
             const isHighDemand = 
               tier.demand_level.toLowerCase().includes('high') || 
               tier.demand_level.toLowerCase().includes('critical') || 
@@ -76,7 +76,6 @@ export function SkillsHeatmap({ data }: { data: FullAuditOutput }) {
             
             const borderColor = isHighDemand ? 'border-orange-500/40' : 'border-blue-500/20';
             const shadow = isHighDemand ? 'shadow-[0_0_50px_rgba(249,115,22,0.1)]' : 'shadow-xl';
-            const accentColor = isHighDemand ? 'text-orange-400' : 'text-blue-400';
             const bgColor = isHighDemand ? 'bg-orange-500/5' : 'bg-blue-500/5';
 
             // Clean up redundancy like "HIGH DEMAND Demand"

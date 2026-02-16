@@ -5,10 +5,12 @@ import {googleAI} from '@genkit-ai/google-genai';
  * Robust Genkit initialization.
  * Uses Gemini 2.5 Pro as the standardized model for high-fidelity reasoning.
  */
+const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
+
 export const ai = genkit({
   plugins: [
     googleAI({ 
-      apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY,
+      apiKey: apiKey || 'MISSING_API_KEY', // Prevent crash if key is missing during build/init
     }),
   ],
 });
