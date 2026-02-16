@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// From generate-full-audit.ts
+// BASE INPUTS
 export const FullAuditInputSchema = z.object({
   rtoId: z.string().describe("The ID of the RTO to analyze."),
   rtoName: z.string().optional().describe("The name of the RTO, if known."),
@@ -11,6 +11,7 @@ export const FullAuditInputSchema = z.object({
 });
 export type FullAuditInput = z.infer<typeof FullAuditInputSchema>;
 
+// STAGE 1: SECTOR & OCCUPATION ANALYSIS
 const ExecutiveSummarySchema = z.object({
   total_revenue_opportunity: z.string(),
   top_performing_sector: z.string(),
@@ -25,20 +26,19 @@ const FinancialOpportunitySchema = z.object({
   final_learner_estimate: z.number().default(0),
   average_course_yield: z.number().default(150),
   realistic_annual_revenue: z.string().default("$0 AUD"),
-  assumptions: z.array(z.string()).default(["Default assumptions used due to incomplete AI data."]),
+  assumptions: z.array(z.string()).default(["Default assumptions used."]),
 });
 
 const BusinessMultipliersSchema = z.object({
-  marketing_cac_label: z.string().describe("The marketing CAC analysis, e.g., '-24% CAC'"),
-  marketing_cac_subtext: z.string().describe("A short explanation for the CAC value."),
-  retention_ltv_value: z.string().describe("The estimated increase in LTV, e.g., '+$2,400 LTV'"),
-  retention_ltv_subtext: z.string().describe("A short explanation for the LTV value, e.g., 'Upsell Prob: 85%'"),
-  strategic_positioning: z.string().describe("A short, powerful label for the RTO's market position, e.g., 'Category King' or 'Niche Specialist'"),
-  strategic_positioning_subtext: z.string().describe("A short explanation for the positioning."),
-  b2b_scale_potential: z.string().describe("e.g., 'High', 'Medium', 'Low'"),
-  b2b_scale_rating: z.number().min(0).max(100).describe("A 0-100 rating for B2B scale potential, used for a progress bar."),
+  marketing_cac_label: z.string(),
+  marketing_cac_subtext: z.string(),
+  retention_ltv_value: z.string(),
+  retention_ltv_subtext: z.string(),
+  strategic_positioning: z.string(),
+  strategic_positioning_subtext: z.string(),
+  b2b_scale_potential: z.string(),
+  b2b_scale_rating: z.number().min(0).max(100),
 });
-
 
 const SectorBreakdownSchema = z.object({
   sector_name: z.string(),
@@ -54,7 +54,6 @@ const SectorBreakdownSchema = z.object({
 });
 export type Sector = z.infer<typeof SectorBreakdownSchema>;
 
-
 const OccupationAnalysisItemSchema = z.object({
   occupation_name: z.string(),
   demand_level: z.string(),
@@ -62,13 +61,6 @@ const OccupationAnalysisItemSchema = z.object({
   growth_rate: z.string(),
 });
 
-const SkillHeatmapItemSchema = z.object({
-  skill_name: z.string(),
-  demand_level: z.string(),
-});
-
-
-// STAGE 1: Sector & Occupation Analysis
 export const Stage1OutputSchema = z.object({
   executive_summary: ExecutiveSummarySchema,
   sector_breakdown: z.array(SectorBreakdownSchema),
@@ -76,62 +68,59 @@ export const Stage1OutputSchema = z.object({
 });
 export type Stage1Output = z.infer<typeof Stage1OutputSchema>;
 
+// STAGE 2: SKILLS HEATMAP
+const SkillHeatmapItemSchema = z.object({
+  skill_name: z.string(),
+  demand_level: z.string(),
+});
 
-// STAGE 2: Skills Heatmap
 export const SkillsHeatmapOutputSchema = z.object({
   skills_heatmap: z.array(SkillHeatmapItemSchema),
 });
 export type SkillsHeatmapOutput = z.infer<typeof SkillsHeatmapOutputSchema>;
 
-
-// STAGE 3: 3-Tier Revenue Staircase
+// STAGE 3: REVENUE STAIRCASE (Optimized for shallow nesting)
 export const RevenueStaircaseInputSchema = FullAuditInputSchema.extend({
     top_performing_sector: z.string(),
     skills_heatmap: z.array(SkillHeatmapItemSchema),
 });
 export type RevenueStaircaseInput = z.infer<typeof RevenueStaircaseInputSchema>;
 
-// Simplified and Combined Commercial Leverage to reduce nesting depth
 const CommercialLeverageSchema = z.object({
-  // Tier 1 fields
-  cac_offset: z.string().optional().describe("e.g. 'Pays for 100% of Ads'"),
-  volume_potential: z.string().optional().describe("e.g. '50x wider audience than Diploma'"),
-  trust_velocity: z.string().optional().describe("e.g. 'Impulse Buy (<5 mins)'"),
-  // Tier 2 fields
-  speed_to_revenue: z.string().optional().describe("e.g. '7 Days vs 12 Months'"),
-  employer_urgency: z.string().optional().describe("e.g. 'Mandatory for Site Entry'"),
-  margin_health: z.string().optional().describe("e.g. 'High - Low Assessment Overhead'"),
-  // Tier 3 fields
-  conversion_probability: z.string().optional().describe("e.g. 'High (Warm Leads from Tier 2)'"),
-  marketing_cost: z.string().optional().describe("e.g. '$0 - Internal Upsell'"),
-  ltv_impact: z.string().optional().describe("e.g. 'Doubles Customer Value'"),
+  cac_offset: z.string().optional(),
+  volume_potential: z.string().optional(),
+  trust_velocity: z.string().optional(),
+  speed_to_revenue: z.string().optional(),
+  employer_urgency: z.string().optional(),
+  margin_health: z.string().optional(),
+  conversion_probability: z.string().optional(),
+  marketing_cost: z.string().optional(),
+  ltv_impact: z.string().optional(),
 });
 
 const MarketingPlaybookSchema = z.object({
-    target_audience: z.string().describe("e.g. 'Frustrated Retail Workers looking for stable hours'"),
-    pain_point: z.string().describe("e.g. 'Tired of weekend shifts?'"),
-    channel: z.string().describe("e.g. 'Facebook/Instagram Ads' for Tier 1, 'LinkedIn/Seek' for Tier 2"),
-    ad_creative_visual: z.string().describe("e.g. 'Close up of hands holding a pipette, clean blue lighting, high trust'"),
-    ad_headline: z.string().describe("A punchy 5-word hook for the ad"),
-    ad_body_copy: z.string().describe("2 sentences of ad copy expanding on the hook"),
-    hashtags: z.string().describe("e.g. '#CareerChange #Pathology'"),
-    email_subject: z.string().describe("The subject line to sell this product"),
+    target_audience: z.string(),
+    pain_point: z.string(),
+    channel: z.string(),
+    ad_creative_visual: z.string(),
+    ad_headline: z.string(),
+    ad_body_copy: z.string(),
+    hashtags: z.string(),
+    email_subject: z.string(),
 });
 
 const IncludedUnitSchema = z.object({
-  name: z.string().describe("The name of the skill or unit."),
-  type: z.string().describe("The type, e.g., 'MICRO', 'SKILL SET', 'PATHWAY'."),
+  name: z.string(),
+  type: z.string(),
 });
 
-
-// Simplified Non-Union Tier Schema to avoid Gemini Nesting depth issues
 export const TierSchema = z.object({
     tier_level: z.number().min(1).max(3),
     title: z.string(),
     format: z.string(),
     price: z.number(),
-    demand_level: z.string().describe("e.g. 'High Demand', 'Steady Demand'"),
-    match_percentage: z.number().describe("The match percentage, e.g., 98"),
+    demand_level: z.string(),
+    match_percentage: z.number(),
     included_units: z.array(IncludedUnitSchema),
     commercial_leverage: CommercialLeverageSchema,
     marketing_hook: z.string(),
@@ -139,41 +128,27 @@ export const TierSchema = z.object({
 });
 export type Tier = z.infer<typeof TierSchema>;
 
-const AutomationActionSchema = z.object({
-    delay: z.string().describe("The trigger delay for the automation, e.g., 'On Completion' or '7 Days Post-Completion'."),
-    message_hook: z.string().describe("The marketing message or email subject line for the automation."),
-    upsell_product: z.string().describe("The title of the next product in the pathway being sold."),
-    conversion_rate: z.number().min(0).max(100).describe("The estimated conversion rate for this upsell action, e.g., 92."),
-});
-
 const ClusterPathwaySchema = z.object({
-  current_stage: z.string().describe("The title of the product for this stage of the pathway, taken directly from the 'tiers' array."),
-  stage_revenue: z.number().describe("The price of the product for this stage, taken directly from the 'tiers' array."),
-  automation_action: AutomationActionSchema.nullable().describe("The automated marketing action to upsell to the next stage. This should be null for the final stage."),
+  current_stage: z.string(),
+  stage_revenue: z.number(),
+  automation_action: z.object({
+    delay: z.string(),
+    message_hook: z.string(),
+    upsell_product: z.string(),
+    conversion_rate: z.number(),
+  }).nullable(),
 });
 
-
-// Main output schema for Stage 3
 export const RevenueStaircaseSchema = z.object({
   strategy_summary: z.string(),
   highest_demand_cluster: z.object({
-    name: z.string().describe("The title of the highest demand cluster, taken from one of the tiers."),
-    match_percentage: z.number().describe("The match percentage of the highest demand cluster."),
+    name: z.string(),
+    match_percentage: z.number(),
   }),
   tiers: z.array(TierSchema).length(3),
-  cluster_pathways: z.array(ClusterPathwaySchema).describe("The yield stacking and automation pathway derived from the 3 tiers."),
+  cluster_pathways: z.array(ClusterPathwaySchema),
 });
 export type RevenueStaircaseOutput = z.infer<typeof RevenueStaircaseSchema>;
-
-
-// This is the final, fully-parsed schema that the application uses internally.
-// It's a merge of all the stage outputs.
-export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(RevenueStaircaseSchema).extend({
-    rto_id: z.string(),
-    rto_name: z.string().optional(),
-    manualScopeDataset: z.string().optional(),
-});
-export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
 
 // COMPLIANCE ANALYSIS
 export const ComplianceAnalysisOutputSchema = z.object({
@@ -201,7 +176,15 @@ export const ComplianceAnalysisOutputSchema = z.object({
 });
 export type ComplianceAnalysisOutput = z.infer<typeof ComplianceAnalysisOutputSchema>;
 
-// From generate-microcredential.ts
+// MERGED FINAL OUTPUT
+export const FullAuditOutputSchema = Stage1OutputSchema.merge(SkillsHeatmapOutputSchema).merge(RevenueStaircaseSchema).extend({
+    rto_id: z.string(),
+    rto_name: z.string().optional(),
+    manualScopeDataset: z.string().optional(),
+});
+export type FullAuditOutput = z.infer<typeof FullAuditOutputSchema>;
+
+// OTHERS
 export const MicrocredentialInputSchema = z.object({
   qualification_code: z.string(),
   qualification_title: z.string(),
@@ -209,13 +192,6 @@ export const MicrocredentialInputSchema = z.object({
   unit_title: z.string(),
 });
 export type MicrocredentialInput = z.infer<typeof MicrocredentialInputSchema>;
-
-const AIOpportunitySchema = z.object({
-  product_title: z.string(),
-  target_tool: z.string(),
-  pain_point_solved: z.string(),
-  marketing_hook: z.string(),
-});
 
 export const MicrocredentialOutputSchema = z.object({
   microcredential_product: z.object({
@@ -230,11 +206,15 @@ export const MicrocredentialOutputSchema = z.object({
       value_prop: z.string(),
     }),
   }),
-  ai_opportunity: AIOpportunitySchema,
+  ai_opportunity: z.object({
+    product_title: z.string(),
+    target_tool: z.string(),
+    pain_point_solved: z.string(),
+    marketing_hook: z.string(),
+  }),
 });
 export type MicrocredentialOutput = z.infer<typeof MicrocredentialOutputSchema>;
 
-// From generate-learning-outcomes.ts
 export const LearningOutcomesInputSchema = z.object({
   course_title: z.string(),
 });
@@ -243,12 +223,8 @@ export type LearningOutcomesInput = z.infer<typeof LearningOutcomesInputSchema>;
 export const LearningOutcomesOutputSchema = z.object({
   learning_outcomes: z.array(z.string()),
 });
-export type LearningOutcomesOutput = z.infer<
-  typeof LearningOutcomesOutputSchema
->;
+export type LearningOutcomesOutput = z.infer<typeof LearningOutcomesOutputSchema>;
 
-
-// From generate-course-timeline.ts
 export const CourseTimelineInputSchema = z.object({
   course_title: z.string(),
   learning_outcomes: z.array(z.string()),
@@ -257,21 +233,19 @@ export type CourseTimelineInput = z.infer<typeof CourseTimelineInputSchema>;
 
 const CourseModuleItemSchema = z.object({
   id: z.number(),
-  type: z.enum(['video', 'resource', 'award', 'quiz']).describe("The type of lesson item. 'video' for a lecture, 'resource' for a downloadable file, 'award' for a badge/certificate, 'quiz' for an assessment."),
-  title: z.string().describe("The catchy, commercial-style title for the lecture or activity."),
-  duration: z.string().describe("The estimated time to complete the item, formatted as 'MM:SS'."),
-  description: z.string().describe("A brief, engaging description of the lesson item."),
-  
-  // Unlocked Content (Flattened)
-  learning_objective: z.string().optional().describe("A clear, single-sentence learning objective for this specific item. THIS IS PART OF THE UNLOCKED CONTENT."),
-  activity_breakdown: z.string().optional().describe("A brief description of the activities or tasks the student will perform. THIS IS PART OF THE UNLOCKED CONTENT."),
-  suggested_assessment: z.string().optional().describe("A suggested method for assessing the student's understanding of this item. THIS IS PART OF THE UNLOCKED CONTENT."),
-  observable_criteria: z.array(z.string()).optional().describe("Exactly three specific, observable criteria to verify skill acquisition. THIS IS PART OF THE UNLOCKED CONTENT."),
+  type: z.enum(['video', 'resource', 'award', 'quiz']),
+  title: z.string(),
+  duration: z.string(),
+  description: z.string(),
+  learning_objective: z.string().optional(),
+  activity_breakdown: z.string().optional(),
+  suggested_assessment: z.string().optional(),
+  observable_criteria: z.array(z.string()).optional(),
 });
 
 const CourseModuleSchema = z.object({
-  title: z.string().describe("The title of the course module, e.g., 'Module 1: Foundations'."),
-  total_duration: z.string().describe("The total estimated duration for the entire module."),
+  title: z.string(),
+  total_duration: z.string(),
   items: z.array(CourseModuleItemSchema),
 });
 
@@ -281,24 +255,10 @@ export const CourseTimelineOutputSchema = z.object({
 });
 export type CourseTimelineOutput = z.infer<typeof CourseTimelineOutputSchema>;
 
-
-// From generate-sector-campaign-kit.ts
 export const SectorCampaignKitInputSchema = z.object({
     sector: SectorBreakdownSchema,
 });
 export type SectorCampaignKitInput = z.infer<typeof SectorCampaignKitInputSchema>;
-
-const SuggestedShortCourseSchema = z.object({
-  title: z.string().describe("The marketable title of the short course."),
-  description: z.string().describe("A brief description of who this course is for and what it delivers."),
-  derived_from_units: z.array(z.string()).describe("A list of Unit of Competency codes it's derived from."),
-});
-
-const SuggestedSkillPackageSchema = z.object({
-  package_title: z.string().describe("The commercial title for the skills package, e.g., 'Construction Site Supervisor Starter Kit'."),
-  package_description: z.string().describe("A summary of the value proposition for this package."),
-  included_courses: z.array(z.string()).describe("An array of titles of the short courses included in this package."),
-});
 
 export const SectorCampaignKitOutputSchema = z.object({
     financial_impact: z.object({
@@ -322,13 +282,20 @@ export const SectorCampaignKitOutputSchema = z.object({
         key_selling_points: z.array(z.string()),
     }),
     skills_to_product_strategy: z.object({
-      suggested_short_courses: z.array(SuggestedShortCourseSchema),
-      suggested_skill_packages: z.array(SuggestedSkillPackageSchema),
+      suggested_short_courses: z.array(z.object({
+        title: z.string(),
+        description: z.string(),
+        derived_from_units: z.array(z.string()),
+      })),
+      suggested_skill_packages: z.array(z.object({
+        package_title: z.string(),
+        package_description: z.string(),
+        included_courses: z.array(z.string()),
+      })),
     }),
 });
 export type SectorCampaignKitOutput = z.infer<typeof SectorCampaignKitOutputSchema>;
 
-// SCOPE FALLBACK
 export const ScopeFallbackInputSchema = z.object({
   code: z.string(),
   isRtoAudit: z.boolean(),
@@ -336,7 +303,7 @@ export const ScopeFallbackInputSchema = z.object({
 export type ScopeFallbackInput = z.infer<typeof ScopeFallbackInputSchema>;
 
 export const ScopeFallbackOutputSchema = z.object({
-  manualScopeDataset: z.string().describe("A CSV-like string of scope items (Code,Name,Anzsco)."),
+  manualScopeDataset: z.string(),
   rtoName: z.string(),
   rtoCode: z.string(),
   count: z.number(),

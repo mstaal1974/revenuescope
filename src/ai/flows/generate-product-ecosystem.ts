@@ -43,12 +43,13 @@ const prompt = ai.definePrompt({
       
       REQUIRED OUTPUT LOGIC:
       1. strategy_summary: A 1-sentence hook for the strategy.
-      2. tiers: Generate exactly 3 tiers following the price rules. 
+      2. highest_demand_cluster: Identify the highest demand skill cluster title and match percentage.
+      3. tiers: Generate exactly 3 tiers following the price rules. 
          For commercial_leverage, populate ONLY the fields relevant to that tier level:
          - Tier 1: cac_offset, volume_potential, trust_velocity
          - Tier 2: speed_to_revenue, employer_urgency, margin_health
          - Tier 3: conversion_probability, marketing_cost, ltv_impact
-      3. cluster_pathways: Exactly 3 steps showing the upsell flow.
+      4. cluster_pathways: Exactly 3 steps showing the upsell flow. Each step's current_stage must match a tier title.
       
       Ensure accuracy regarding Australian VET standards.
     `,
