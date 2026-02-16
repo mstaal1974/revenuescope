@@ -91,25 +91,20 @@ export const RevenueStaircaseInputSchema = FullAuditInputSchema.extend({
 });
 export type RevenueStaircaseInput = z.infer<typeof RevenueStaircaseInputSchema>;
 
-// Tier 1 Commercial Leverage
-const CommercialLeverageTier1Schema = z.object({
-  cac_offset: z.string().describe("e.g. 'Pays for 100% of Ads'"),
-  volume_potential: z.string().describe("e.g. '50x wider audience than Diploma'"),
-  trust_velocity: z.string().describe("e.g. 'Impulse Buy (<5 mins)'"),
-});
-
-// Tier 2 Commercial Leverage
-const CommercialLeverageTier2Schema = z.object({
-  speed_to_revenue: z.string().describe("e.g. '7 Days vs 12 Months'"),
-  employer_urgency: z.string().describe("e.g. 'Mandatory for Site Entry'"),
-  margin_health: z.string().describe("e.g. 'High - Low Assessment Overhead'"),
-});
-
-// Tier 3 Commercial Leverage
-const CommercialLeverageTier3Schema = z.object({
-  conversion_probability: z.string().describe("e.g. 'High (Warm Leads from Tier 2)'"),
-  marketing_cost: z.string().describe("e.g. '$0 - Internal Upsell'"),
-  ltv_impact: z.string().describe("e.g. 'Doubles Customer Value'"),
+// Simplified and Combined Commercial Leverage to reduce nesting depth
+const CommercialLeverageSchema = z.object({
+  // Tier 1 fields
+  cac_offset: z.string().optional().describe("e.g. 'Pays for 100% of Ads'"),
+  volume_potential: z.string().optional().describe("e.g. '50x wider audience than Diploma'"),
+  trust_velocity: z.string().optional().describe("e.g. 'Impulse Buy (<5 mins)'"),
+  // Tier 2 fields
+  speed_to_revenue: z.string().optional().describe("e.g. '7 Days vs 12 Months'"),
+  employer_urgency: z.string().optional().describe("e.g. 'Mandatory for Site Entry'"),
+  margin_health: z.string().optional().describe("e.g. 'High - Low Assessment Overhead'"),
+  // Tier 3 fields
+  conversion_probability: z.string().optional().describe("e.g. 'High (Warm Leads from Tier 2)'"),
+  marketing_cost: z.string().optional().describe("e.g. '$0 - Internal Upsell'"),
+  ltv_impact: z.string().optional().describe("e.g. 'Doubles Customer Value'"),
 });
 
 const MarketingPlaybookSchema = z.object({
@@ -129,45 +124,19 @@ const IncludedUnitSchema = z.object({
 });
 
 
-// Discriminated union for Tiers
-export const TierSchema = z.discriminatedUnion('tier_level', [
-    z.object({
-        tier_level: z.literal(1),
-        title: z.string(),
-        format: z.string(),
-        price: z.number(),
-        demand_level: z.string().describe("e.g. 'High Demand', 'Steady Demand'"),
-        match_percentage: z.number().describe("The match percentage, e.g., 98"),
-        included_units: z.array(IncludedUnitSchema),
-        commercial_leverage: CommercialLeverageTier1Schema,
-        marketing_hook: z.string(),
-        marketing_playbook: MarketingPlaybookSchema,
-    }),
-    z.object({
-        tier_level: z.literal(2),
-        title: z.string(),
-        format: z.string(),
-        price: z.number(),
-        demand_level: z.string(),
-        match_percentage: z.number(),
-        included_units: z.array(IncludedUnitSchema),
-        commercial_leverage: CommercialLeverageTier2Schema,
-        marketing_hook: z.string(),
-        marketing_playbook: MarketingPlaybookSchema,
-    }),
-    z.object({
-        tier_level: z.literal(3),
-        title: z.string(),
-        format: z.string(),
-        price: z.number(),
-        demand_level: z.string(),
-        match_percentage: z.number(),
-        included_units: z.array(IncludedUnitSchema),
-        commercial_leverage: CommercialLeverageTier3Schema,
-        marketing_hook: z.string(),
-        marketing_playbook: MarketingPlaybookSchema,
-    }),
-]);
+// Simplified Non-Union Tier Schema to avoid Gemini Nesting depth issues
+export const TierSchema = z.object({
+    tier_level: z.number().min(1).max(3),
+    title: z.string(),
+    format: z.string(),
+    price: z.number(),
+    demand_level: z.string().describe("e.g. 'High Demand', 'Steady Demand'"),
+    match_percentage: z.number().describe("The match percentage, e.g., 98"),
+    included_units: z.array(IncludedUnitSchema),
+    commercial_leverage: CommercialLeverageSchema,
+    marketing_hook: z.string(),
+    marketing_playbook: MarketingPlaybookSchema,
+});
 export type Tier = z.infer<typeof TierSchema>;
 
 const AutomationActionSchema = z.object({
