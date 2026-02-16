@@ -34,14 +34,14 @@ import type {
  * Forces a deep-clone via JSON round-trip to strip all non-serializable properties
  * (prototypes, methods, symbols, undefined) that cause Next.js action crashes.
  */
-function atomicSerialize<T>(data: T): T {
+function atomicSafe<T>(data: T): T {
   if (data === undefined || data === null) return null as unknown as T;
   try {
     return JSON.parse(JSON.stringify(data, (_, value) => 
       value === undefined ? null : value
     ));
   } catch (e) {
-    console.error("SERVER ACTION: Serialization loop failed", e);
+    console.error("SERVER ACTION: Atomic serialization failed", e);
     // Return a guaranteed serializable fallback
     return { ok: false, error: "Critical data serialization failure on server." } as unknown as T;
   }
@@ -66,11 +66,10 @@ export async function runStage1Action(
     }
     const result = await generateStage1Analysis(input);
     if (!result) throw new Error("Stage 1 analysis returned no data.");
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runStage1Action failure:", message);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -84,11 +83,10 @@ export async function runStage2Action(
     }
     const result = await generateSkillsHeatmap(input);
     if (!result) throw new Error("Skills heatmap generation returned no data.");
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runStage2Action failure:", message);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -102,11 +100,10 @@ export async function runStage3Action(
     }
     const result = await generateProductEcosystem(input);
     if (!result) throw new Error("Revenue staircase generation returned no data.");
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("runStage3Action failure:", message);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -119,10 +116,10 @@ export async function runMicrocredentialAction(
       throw new Error("Unit and Qualification codes are required.");
     }
     const result = await generateMicrocredential(input);
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -135,10 +132,10 @@ export async function runGenerateLearningOutcomesAction(
       throw new Error("Course Title is required.");
     }
     const result = await generateLearningOutcomes(input);
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -151,10 +148,10 @@ export async function runGenerateCourseTimelineAction(
       throw new Error("Course Title and Learning Outcomes are required.");
     }
     const result = await generateCourseTimeline(input);
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -167,10 +164,10 @@ export async function runGenerateSectorCampaignKitAction(
       throw new Error("Sector data is required.");
     }
     const result = await generateSectorCampaignKit(input);
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -180,10 +177,10 @@ export async function runScopeFallbackAction(
   try {
     checkApiKey();
     const result = await fetchScopeFallback(input);
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }
 
@@ -196,9 +193,9 @@ export async function runComplianceAnalysisAction(
       throw new Error("RTO ID and Scope data are required for Compliance analysis.");
     }
     const result = await generateComplianceAnalysis(input);
-    return atomicSerialize({ ok: true, result });
+    return atomicSafe({ ok: true, result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    return atomicSerialize({ ok: false, error: message });
+    return atomicSafe({ ok: false, error: message });
   }
 }

@@ -447,7 +447,7 @@ const AuditWidget: React.FC = () => {
                 <Button 
                     type="submit" 
                     disabled={isSubmittingLead} 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-8 rounded-2xl text-xl mt-4 shadow-2xl shadow-blue-900/40 active:scale-95 transition-all group"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-8 rounded-2xl text-xl mt-4 shadow-2xl shadow-blue-900/40 active:scale-[0.98] text-xl transition-all group"
                 >
                     {isSubmittingLead ? <Loader2 className="animate-spin h-6 w-6" /> : (
                         <span className="flex items-center gap-2">
