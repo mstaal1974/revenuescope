@@ -71,18 +71,19 @@ export type ComplianceActionResult =
 
 
 /**
- * CRITICAL UTILITY: Ensures data is strictly serializable for Next.js Server Actions.
- * 1. Deep clones via JSON cycle to strip prototype methods, getters, or hidden symbols.
- * 2. Standardizes 'undefined' values to 'null' (Next.js prefers null for serialization).
+ * CRITICAL SERIALIZATION UTILITY
+ * Forces a deep-clone via JSON round-trip to strip all non-serializable properties
+ * (prototypes, methods, symbols, undefined) that cause Next.js action crashes.
  */
 function safeSerialize<T>(data: T): T {
   if (data === undefined || data === null) return null as unknown as T;
   try {
-    const serialized = JSON.stringify(data, (_, value) => (value === undefined ? null : value));
-    return JSON.parse(serialized);
+    return JSON.parse(JSON.stringify(data, (_, value) => 
+      value === undefined ? null : value
+    ));
   } catch (e) {
-    console.error("CRITICAL: Serialization failed in safeSerialize utility", e);
-    return { ok: false, error: "Failed to serialize server response." } as unknown as T;
+    console.error("CRITICAL: Serialization failed", e);
+    return { ok: false, error: "Critical data serialization failure on server." } as unknown as T;
   }
 }
 
