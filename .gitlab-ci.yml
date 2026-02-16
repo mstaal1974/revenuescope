@@ -1,0 +1,33 @@
+# GitLab CI/CD configuration for Next.js and Firebase
+image: node:20
+
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - .next/cache/
+    - node_modules/
+
+build_job:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - .next/
+      - public/
+      - package.json
+      - next.config.ts
+      - tailwind.config.ts
+      - components.json
+
+deploy_job:
+  stage: deploy
+  only:
+    - main
+  script:
+    - npm install -g firebase-tools
+    - firebase deploy --token "$FIREBASE_TOKEN" --non-interactive
