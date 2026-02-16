@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview This file defines the third stage of the audit, designing a detailed product ecosystem using a 3-Tier Revenue Staircase model.
- * Standardized to Gemini 2.5 Pro.
+ * Standardized to Gemini 2.5 Pro. Uses a flattened schema to avoid nesting depth errors.
  */
 
 import { ai, auditModel } from '@/ai/genkit';
@@ -45,11 +45,12 @@ const prompt = ai.definePrompt({
       1. strategy_summary: A 1-sentence hook for the strategy.
       2. highest_demand_cluster: Identify the highest demand skill cluster title and match percentage.
       3. tiers: Generate exactly 3 tiers following the price rules. 
-         For commercial_leverage, populate ONLY the fields relevant to that tier level:
-         - Tier 1: cac_offset, volume_potential, trust_velocity
-         - Tier 2: speed_to_revenue, employer_urgency, margin_health
-         - Tier 3: conversion_probability, marketing_cost, ltv_impact
-      4. cluster_pathways: Exactly 3 steps showing the upsell flow. Each step's current_stage must match a tier title.
+         Populate commercial metrics and marketing playbook fields directly within the tier object (FLATTENED structure).
+         - Tier 1: Focus on cac_offset, volume_potential, trust_velocity.
+         - Tier 2: Focus on speed_to_revenue, employer_urgency, margin_health.
+         - Tier 3: Focus on conversion_probability, marketing_cost, ltv_impact.
+      4. cluster_pathways: Exactly 3 steps showing the upsell flow. 
+         Populate automation fields (delay, message_hook, upsell_product, conversion_rate) directly within the pathway step object.
       
       Ensure accuracy regarding Australian VET standards.
     `,

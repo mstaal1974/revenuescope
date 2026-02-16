@@ -70,7 +70,7 @@ export default function PrintReportPage() {
   
   const topSectorData = data.sector_breakdown.find(s => s.sector_name === data.executive_summary.top_performing_sector);
   const cacOffset = topSectorData?.business_multipliers?.marketing_cac_label || 'N/A';
-  const timeToValue = data.tiers[1].commercial_leverage.speed_to_revenue || 'N/A';
+  const timeToValue = data.tiers[1].speed_to_revenue || 'N/A';
 
   const executiveSummary = data.executive_summary.strategic_advice;
   const keyInsight = `The highest immediate demand is not for the full diploma, but for the '${data.tiers[1].title}', indicating a strong market for mid-level management skills.`;
@@ -84,7 +84,6 @@ export default function PrintReportPage() {
   
   const qualTitle = data.tiers[2].title;
   const rtoName = data.rto_name || 'Your RTO';
-  const gtmPlaybook = data.tiers[0].marketing_playbook;
 
   // Data mapping for BoardBriefingPDF via DownloadButton
   const pdfData = {
@@ -194,16 +193,16 @@ export default function PrintReportPage() {
                   <div className="flex gap-4">
                     <div className="w-1/2 bg-slate-50 p-3 rounded-md">
                       <h4 className="font-semibold text-slate-600 mb-1">Target Audience</h4>
-                      <p className="text-slate-500">{gtmPlaybook.target_audience}</p>
+                      <p className="text-slate-500">{data.tiers[0].target_audience}</p>
                     </div>
                     <div className="w-1/2 bg-slate-50 p-3 rounded-md">
                       <h4 className="font-semibold text-slate-600 mb-1">Primary Channel</h4>
-                      <p className="text-slate-500">{gtmPlaybook.channel}</p>
+                      <p className="text-slate-500">{data.tiers[0].channel}</p>
                     </div>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-md">
                     <h4 className="font-semibold text-slate-600 mb-1">Core Message Hook</h4>
-                    <p className="text-slate-500 italic">"{gtmPlaybook.ad_headline} {gtmPlaybook.ad_body_copy}"</p>
+                    <p className="text-slate-500 italic">"{data.tiers[0].ad_headline} {data.tiers[0].ad_body_copy}"</p>
                   </div>
                 </div>
               </div>

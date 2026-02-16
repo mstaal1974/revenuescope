@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -132,7 +131,7 @@ export default function RevenueGrowthEngine({ data }: RevenueGrowthEngineProps) 
               <span className="text-sm font-semibold text-primary">New Total Yield</span>
               <span className="text-xl font-bold text-white">${clusteredRevenue.toLocaleString()}</span>
             </div>
-            <Progress value={(clusteredRevenue / (pathways[2].stage_revenue + standardRevenue)) * 100} className="h-1.5 [&>div]:bg-primary" />
+            <Progress value={(clusteredRevenue / (pathways[2]?.stage_revenue + standardRevenue)) * 100} className="h-1.5 [&>div]:bg-primary" />
             <p className="text-[10px] text-slate-400 mt-2 text-center italic">3x transactions vs industry baseline</p>
           </div>
         </aside>
@@ -162,22 +161,22 @@ export default function RevenueGrowthEngine({ data }: RevenueGrowthEngineProps) 
                   {index === 0 && <span className="text-[10px] font-bold px-3 py-1 bg-slate-800 text-slate-500 rounded-full uppercase tracking-tighter">Entry Point</span>}
                   {index === 1 && <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span className="text-[10px] font-bold text-primary uppercase">Active Segment</span></div>}
                 </div>
-                {step.automation_action && (
+                {step.automation_delay && (
                   <div className="mt-4 ml-4 flex gap-4 items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${tierBorderColors[index+2 as keyof typeof tierBorderColors]} ${tierBgColors[index+2 as keyof typeof tierBgColors]}`}>
-                       {index === 0 ? <MessageSquare className={`text-sm ${tierTextColors[index+2 as keyof typeof tierTextColors]}`} /> : <Clock className={`text-sm ${tierTextColors[index+2 as keyof typeof tierTextColors]}`} />}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${tierBorderColors[index+2 as keyof typeof tierBorderColors] ?? 'border-slate-700'} ${tierBgColors[index+2 as keyof typeof tierBgColors] ?? 'bg-slate-800'}`}>
+                       {index === 0 ? <MessageSquare className={`text-sm ${tierTextColors[index+2 as keyof typeof tierTextColors] ?? 'text-slate-400'}`} /> : <Clock className={`text-sm ${tierTextColors[index+2 as keyof typeof tierTextColors] ?? 'text-slate-400'}`} />}
                     </div>
-                    <div className={`flex-1 bg-slate-900 border border-dashed ${tierBorderColors[index+2 as keyof typeof tierBorderColors]} p-4 rounded-xl flex justify-between items-center group transition-colors`}>
+                    <div className={`flex-1 bg-slate-900 border border-dashed ${tierBorderColors[index+2 as keyof typeof tierBorderColors] ?? 'border-slate-700'} p-4 rounded-xl flex justify-between items-center group transition-colors`}>
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <span className={`text-[10px] font-black text-white px-2 py-0.5 rounded ${tierColors[index+2 as keyof typeof tierColors]}`}>TRIGGER: {step.automation_action.delay}</span>
-                                <span className={`text-[10px] font-bold flex items-center gap-1 ${tierTextColors[index+2 as keyof typeof tierTextColors]}`}>
-                                    <BarChart2 className="text-[12px]" /> {step.automation_action.conversion_rate}% Conversion
+                                <span className={`text-[10px] font-black text-white px-2 py-0.5 rounded ${tierColors[index+2 as keyof typeof tierColors] ?? 'bg-slate-700'}`}>TRIGGER: {step.automation_delay}</span>
+                                <span className={`text-[10px] font-bold flex items-center gap-1 ${tierTextColors[index+2 as keyof typeof tierTextColors] ?? 'text-slate-400'}`}>
+                                    <BarChart2 className="text-[12px]" /> {step.automation_conversion_rate}% Conversion
                                 </span>
                             </div>
-                            <p className="text-xs italic text-slate-400">"{step.automation_action.message_hook}"</p>
+                            <p className="text-xs italic text-slate-400">"{step.automation_message_hook}"</p>
                         </div>
-                        <ArrowDown className={`text-slate-700 group-hover:${tierTextColors[index+2 as keyof typeof tierTextColors]} transition-colors`} />
+                        <ArrowDown className={`text-slate-700 group-hover:${tierTextColors[index+2 as keyof typeof tierTextColors] ?? 'text-slate-400'} transition-colors`} />
                     </div>
                   </div>
                 )}

@@ -86,29 +86,6 @@ export const RevenueStaircaseInputSchema = FullAuditInputSchema.extend({
 });
 export type RevenueStaircaseInput = z.infer<typeof RevenueStaircaseInputSchema>;
 
-const CommercialLeverageSchema = z.object({
-  cac_offset: z.string().optional(),
-  volume_potential: z.string().optional(),
-  trust_velocity: z.string().optional(),
-  speed_to_revenue: z.string().optional(),
-  employer_urgency: z.string().optional(),
-  margin_health: z.string().optional(),
-  conversion_probability: z.string().optional(),
-  marketing_cost: z.string().optional(),
-  ltv_impact: z.string().optional(),
-});
-
-const MarketingPlaybookSchema = z.object({
-    target_audience: z.string(),
-    pain_point: z.string(),
-    channel: z.string(),
-    ad_creative_visual: z.string(),
-    ad_headline: z.string(),
-    ad_body_copy: z.string(),
-    hashtags: z.string(),
-    email_subject: z.string(),
-});
-
 const IncludedUnitSchema = z.object({
   name: z.string(),
   type: z.string(),
@@ -122,21 +99,37 @@ export const TierSchema = z.object({
     demand_level: z.string(),
     match_percentage: z.number(),
     included_units: z.array(IncludedUnitSchema),
-    commercial_leverage: CommercialLeverageSchema,
     marketing_hook: z.string(),
-    marketing_playbook: MarketingPlaybookSchema,
+    // FLATTENED Commercial Leverage
+    cac_offset: z.string().optional(),
+    volume_potential: z.string().optional(),
+    trust_velocity: z.string().optional(),
+    speed_to_revenue: z.string().optional(),
+    employer_urgency: z.string().optional(),
+    margin_health: z.string().optional(),
+    conversion_probability: z.string().optional(),
+    marketing_cost: z.string().optional(),
+    ltv_impact: z.string().optional(),
+    // FLATTENED Marketing Playbook
+    target_audience: z.string(),
+    pain_point: z.string(),
+    channel: z.string(),
+    ad_creative_visual: z.string(),
+    ad_headline: z.string(),
+    ad_body_copy: z.string(),
+    hashtags: z.string(),
+    email_subject: z.string(),
 });
 export type Tier = z.infer<typeof TierSchema>;
 
 const ClusterPathwaySchema = z.object({
   current_stage: z.string(),
   stage_revenue: z.number(),
-  automation_action: z.object({
-    delay: z.string(),
-    message_hook: z.string(),
-    upsell_product: z.string(),
-    conversion_rate: z.number(),
-  }).nullable(),
+  // FLATTENED Automation Action
+  automation_delay: z.string().optional(),
+  automation_message_hook: z.string().optional(),
+  automation_upsell_product: z.string().optional(),
+  automation_conversion_rate: z.number().optional(),
 });
 
 export const RevenueStaircaseSchema = z.object({

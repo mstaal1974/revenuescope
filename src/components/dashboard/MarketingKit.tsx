@@ -6,11 +6,6 @@ import type { Tier } from '@/ai/types';
 
 export default function MarketingKit({ tierData }: { tierData: Tier }) {
   const [copied, setCopied] = useState<string | null>(null);
-  const mk = tierData.marketing_playbook;
-
-  if (!mk) {
-    return null;
-  }
 
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -30,7 +25,7 @@ export default function MarketingKit({ tierData }: { tierData: Tier }) {
           <span className="text-gray-200 font-semibold tracking-wide text-sm">CAMPAIGN KIT GENERATOR</span>
         </div>
         <div className="text-xs text-gray-400 font-mono uppercase">
-          Target: <span className="text-blue-400">{mk.target_audience}</span>
+          Target: <span className="text-blue-400">{tierData.target_audience}</span>
         </div>
       </div>
 
@@ -56,13 +51,13 @@ export default function MarketingKit({ tierData }: { tierData: Tier }) {
             {/* The Ad Copy */}
             <div className="space-y-2 mb-3">
               <p className="text-sm font-bold text-gray-800 leading-tight">
-                {mk.ad_headline}
+                {tierData.ad_headline}
               </p>
               <p className="text-xs text-gray-600">
-                {mk.pain_point} {mk.ad_body_copy}
+                {tierData.pain_point} {tierData.ad_body_copy}
               </p>
               <p className="text-xs text-blue-600 font-medium">
-                {mk.hashtags}
+                {tierData.hashtags}
               </p>
             </div>
 
@@ -70,7 +65,7 @@ export default function MarketingKit({ tierData }: { tierData: Tier }) {
             <div className="aspect-video bg-gray-100 rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-4 text-center mb-3 group cursor-help relative">
                <ImageIcon className="text-gray-400 mb-2" />
                <p className="text-[10px] text-gray-500 font-mono uppercase">AI Suggested Visual</p>
-               <p className="text-xs text-gray-800 font-medium mt-1">"{mk.ad_creative_visual}"</p>
+               <p className="text-xs text-gray-800 font-medium mt-1">"{tierData.ad_creative_visual}"</p>
                
                {/* Tooltip for context */}
                <div className="absolute inset-0 bg-black/5 rounded opacity-0 group-hover:opacity-100 transition-all" />
@@ -95,9 +90,9 @@ export default function MarketingKit({ tierData }: { tierData: Tier }) {
             {/* Asset 1: Headline */}
             <div className="bg-gray-900 p-3 rounded border border-gray-700 group hover:border-blue-500 transition-colors relative">
               <label className="text-[10px] text-gray-500 uppercase font-bold block mb-1">Headline</label>
-              <p className="text-gray-200 text-sm font-medium pr-8">{mk.ad_headline}</p>
+              <p className="text-gray-200 text-sm font-medium pr-8">{tierData.ad_headline}</p>
               <button 
-                onClick={() => handleCopy(mk.ad_headline, 'head')}
+                onClick={() => handleCopy(tierData.ad_headline, 'head')}
                 className="absolute right-2 top-2 p-1.5 bg-gray-800 rounded text-gray-400 hover:text-white hover:bg-blue-600 transition-all"
               >
                 {copied === 'head' ? <Check size={14} /> : <Copy size={14} />}
@@ -110,9 +105,9 @@ export default function MarketingKit({ tierData }: { tierData: Tier }) {
                 <Mail size={10} className="text-purple-400" />
                 <label className="text-[10px] text-gray-500 uppercase font-bold">Email Subject Line</label>
               </div>
-              <p className="text-gray-200 text-sm font-medium pr-8">{mk.email_subject}</p>
+              <p className="text-gray-200 text-sm font-medium pr-8">{tierData.email_subject}</p>
               <button 
-                onClick={() => handleCopy(mk.email_subject, 'subj')}
+                onClick={() => handleCopy(tierData.email_subject, 'subj')}
                 className="absolute right-2 top-2 p-1.5 bg-gray-800 rounded text-gray-400 hover:text-white hover:bg-purple-600 transition-all"
               >
                 {copied === 'subj' ? <Check size={14} /> : <Copy size={14} />}
@@ -123,7 +118,7 @@ export default function MarketingKit({ tierData }: { tierData: Tier }) {
              <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
               <label className="text-[10px] text-blue-400 uppercase font-bold block mb-1">Visual Direction</label>
               <p className="text-blue-100 text-xs italic">
-                "Tell your designer to use: {mk.ad_creative_visual}"
+                "Tell your designer to use: {tierData.ad_creative_visual}"
               </p>
             </div>
 

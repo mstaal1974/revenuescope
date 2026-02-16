@@ -73,7 +73,7 @@ export default function SkillPathways({ data }: SkillPathwaysProps) {
                     </div>
 
                     <h3 className="text-xl font-bold text-white mb-2 leading-tight">{tier.title}</h3>
-                    <p className="text-slate-400 text-sm flex-grow mb-6">{tier.marketing_playbook.pain_point}</p>
+                    <p className="text-slate-400 text-sm flex-grow mb-6">{tier.pain_point}</p>
 
                     <div className="space-y-3 mb-6">
                         {tier.included_units.map((unit, index) => (
