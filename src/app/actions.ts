@@ -26,7 +26,8 @@ import type {
   CourseTimelineActionResult,
   SectorCampaignKitActionResult,
   ScopeFallbackActionResult,
-  ComplianceActionResult
+  ComplianceActionResult,
+  FullAuditOutput
 } from "@/ai/types";
 
 /**
@@ -42,7 +43,7 @@ function atomicSafe<T>(data: T): T {
     ));
   } catch (e) {
     console.error("SERVER ACTION: Atomic serialization failed", e);
-    // Return a guaranteed serializable fallback
+    // Return a guaranteed serializable fallback structure
     return { ok: false, error: "Critical data serialization failure on server." } as unknown as T;
   }
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useContext, useEffect } from 'react';
@@ -18,7 +17,7 @@ interface LeadCaptureOverlayProps {
 
 /**
  * LeadCaptureOverlay captures user contact info before revealing the dashboard.
- * It is used as a safety net if users navigate directly to the report.
+ * Keyed to the specific analysis session.
  */
 export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +32,7 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
   const { toast } = useToast();
 
   useEffect(() => {
-    // Pre-fill from local storage if details were previously submitted
+    // Pre-fill from local storage if details were previously submitted for convenience
     setFormData({
       name: localStorage.getItem('leadName') || '',
       email: localStorage.getItem('leadEmail') || '',
@@ -77,7 +76,9 @@ export function LeadCaptureOverlay({ rtoCode, onUnlock }: LeadCaptureOverlayProp
       localStorage.setItem('leadName', formData.name);
       localStorage.setItem('leadEmail', formData.email);
       localStorage.setItem('leadPhone', formData.phoneNumber);
-      sessionStorage.setItem('currentAuditLeadId', leadId);
+      
+      // Set session-specific unlock
+      sessionStorage.setItem(`unlocked_${rtoCode}`, 'true');
       
       onUnlock();
       

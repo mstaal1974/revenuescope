@@ -7,7 +7,12 @@ This project is a Next.js application integrated with Firebase and Genkit for AI
 1. Clone the repository from GitHub.
 2. Install dependencies: `npm install`.
 3. Set up your environment variables in `.env.local`.
-4. Run the development server: `npm run dev`.
+4. **Recommended Git Configuration:**
+   Run the following command to ensure standard pull behavior:
+   ```bash
+   git config pull.rebase false
+   ```
+5. Run the development server: `npm run dev`.
 
 ## Deployment (GitHub Actions)
 

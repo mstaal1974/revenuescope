@@ -243,6 +243,10 @@ const AuditWidget: React.FC = () => {
       localStorage.setItem('leadEmail', leadForm.email);
       localStorage.setItem('leadPhone', leadForm.phone);
       
+      // NEW: Set a session-specific unlock flag for this code
+      const identifier = result?.rto_id || rtoCode || qualCode || 'N/A';
+      sessionStorage.setItem(`unlocked_${identifier}`, 'true');
+      
       if (result) {
         localStorage.setItem("auditData", JSON.stringify(result));
         router.push('/dashboard');
@@ -401,14 +405,14 @@ const AuditWidget: React.FC = () => {
   
   if (state === AuditState.RESULTS) {
     return (
-        <div className="bg-slate-800/50 border border-slate-700 p-8 md:p-12 max-w-lg mx-auto text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-3xl shadow-2xl">
+        <div className="bg-slate-800/50 border border-slate-700 p-8 md:p-12 w-full max-w-xl mx-auto text-center relative overflow-hidden animate-in fade-in zoom-in-95 rounded-3xl shadow-2xl">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-500"></div>
             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/20 shadow-inner">
                 <Lock className="w-8 h-8 text-blue-400" />
             </div>
             <h5 className="font-black text-2xl text-white mb-2 tracking-tight uppercase italic">Professional Access Required</h5>
             <p className="text-slate-400 text-sm mb-8 font-medium leading-relaxed">
-                Verify your details to unlock the full strategic unbundling report for <b className="text-blue-400">{result?.rto_id || 'your scope'}</b>.
+                Verify your professional details to unlock the full strategic unbundling report for <b className="text-blue-400">{result?.rto_id || 'your scope'}</b>.
             </p>
             <form onSubmit={handleLeadSubmit} className="space-y-4">
                 <div className="relative">

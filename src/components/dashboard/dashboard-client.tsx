@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -20,17 +19,15 @@ export function DashboardClient({ data }: { data: AuditData }) {
   const [isMounting, setIsMounting] = useState(true);
 
   useEffect(() => {
-    // Check if lead has been captured in this specific session
-    const sessionLeadId = sessionStorage.getItem('currentAuditLeadId');
-    const globalLeadId = localStorage.getItem('leadId');
+    // Check if lead has been captured in this specific session for this RTO ID
+    const unlockKey = `unlocked_${data.rto_id}`;
+    const sessionUnlocked = sessionStorage.getItem(unlockKey);
     
-    if (sessionLeadId || globalLeadId) {
-      // Even if global lead exists, we still want them to acknowledge the current capture in the AuditWidget.
-      // But if they refresh the dashboard page, we keep them unlocked.
+    if (sessionUnlocked === 'true') {
       setIsUnlocked(true);
     }
     setIsMounting(false);
-  }, []);
+  }, [data.rto_id]);
 
   if (isMounting) {
     return (
